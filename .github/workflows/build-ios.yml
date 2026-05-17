@@ -1,0 +1,45 @@
+name: Build iOS
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Link iOS framework (simulator arm64, debug)
+        run: ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64 --no-configuration-cache
+
+      - name: Run iOS simulator arm64 tests
+        run: ./gradlew :composeApp:iosSimulatorArm64Test --no-configuration-cache
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-reports
+          path: composeApp/build/reports/tests/**
+          retention-days: 7
