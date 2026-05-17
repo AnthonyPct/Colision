@@ -15,7 +15,7 @@ user_name: 'Anthony Picquet'
 date: '2026-05-16'
 completed: '2026-05-16'
 epic_count: 6
-story_count: 34
+story_count: 35
 fr_coverage: '43/43'
 ---
 

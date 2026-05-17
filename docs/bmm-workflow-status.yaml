@@ -45,5 +45,10 @@ workflow_status:
     user: Anthony Picquet
     metrics:
       epic_count: 6
-      story_count: 34
+      story_count: 35
       fr_coverage: "43/43"
+    github_issues:
+      labels_created: 8
+      epic_issues: "#1..#6"
+      story_issues: "#7..#41"
+      sub_issue_links: 35
