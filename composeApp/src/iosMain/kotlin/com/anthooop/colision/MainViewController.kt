@@ -2,33 +2,23 @@ package com.anthooop.colision
 
 import androidx.compose.ui.window.ComposeUIViewController
 import com.anthooop.colision.app.App
-import com.anthooop.colision.config.BuildConfig
 import com.anthooop.colision.core.di.appModule
 import com.anthooop.colision.core.di.coreModule
 import com.anthooop.colision.core.di.featureModules
 import com.anthooop.colision.core.di.iosPlatformModule
-import io.sentry.kotlin.multiplatform.Sentry
 import org.koin.core.context.startKoin
 
-private var bootstrapped: Boolean = false
+private var koinStarted: Boolean = false
 
+// Sentry iOS is initialized from Swift in iosApp/ (follow-up) using the
+// native Sentry iOS SDK via SPM — keeping the Kotlin framework free of
+// the Sentry iOS framework link dependency. PostHog iOS same story.
 fun MainViewController() = ComposeUIViewController {
-    if (!bootstrapped) {
-        initSentry()
+    if (!koinStarted) {
         startKoin {
             modules(appModule, coreModule, iosPlatformModule, *featureModules.toTypedArray())
         }
-        bootstrapped = true
+        koinStarted = true
     }
     App()
-}
-
-private fun initSentry() {
-    val dsn = BuildConfig.sentryDsn
-    if (dsn.isBlank()) return // Ops fills BuildConfig.sentryDsn post-merge.
-    Sentry.init { options ->
-        options.dsn = dsn
-        options.environment = if (BuildConfig.isDevelopmentFlavor) "development" else "production"
-        options.debug = BuildConfig.isDevelopmentFlavor
-    }
 }

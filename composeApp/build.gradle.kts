@@ -36,6 +36,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.security.crypto)
             implementation(libs.posthog.android)
+            implementation(libs.sentry.kmp)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -75,9 +76,6 @@ kotlin {
 
             // Navigation Compose
             implementation(libs.androidx.navigation.compose)
-
-            // Sentry
-            implementation(libs.sentry.kmp)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
