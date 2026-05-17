@@ -7,28 +7,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.anthooop.colision.app.App
-import com.anthooop.colision.core.di.androidPlatformModule
-import com.anthooop.colision.core.di.appModule
-import com.anthooop.colision.core.di.coreModule
-import com.anthooop.colision.core.di.featureModules
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.startKoin
-
-private var koinStarted: Boolean = false
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
-        if (!koinStarted) {
-            startKoin {
-                androidContext(this@MainActivity.applicationContext)
-                modules(appModule, coreModule, androidPlatformModule, *featureModules.toTypedArray())
-            }
-            koinStarted = true
-        }
-
         setContent {
             App()
         }
