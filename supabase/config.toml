@@ -1,0 +1,45 @@
+# Supabase local development config for the Colision project.
+# After provisioning the staging project in the dashboard, run:
+#   supabase link --project-ref <ref>
+# which appends [api]/[db]/[studio] sections for the linked project. Keep
+# this file versioned — secrets stay in .env / Supabase CLI keychain.
+
+project_id = "colision-dev"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1"
+
+[auth]
+enabled = true
+# Anonymous Auth is the device-only auth model. See decision #2 in
+# docs/architecture.md and story 1.8 for the client-side wiring.
+enable_anonymous_sign_ins = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["colision://"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+security_refresh_token_reuse_interval = 10
+
+[storage]
+enabled = false
+
+[edge_runtime]
+enabled = true
+inspector_port = 8083
+
+[analytics]
+enabled = false
