@@ -6,14 +6,16 @@ import com.anthooop.colision.core.di.appModule
 import com.anthooop.colision.core.di.coreModule
 import com.anthooop.colision.core.di.featureModules
 import com.anthooop.colision.core.di.iosPlatformModule
-import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 
+private var koinStarted: Boolean = false
+
 fun MainViewController() = ComposeUIViewController {
-    if (GlobalContext.getOrNull() == null) {
+    if (!koinStarted) {
         startKoin {
             modules(appModule, coreModule, iosPlatformModule, *featureModules.toTypedArray())
         }
+        koinStarted = true
     }
     App()
 }

@@ -12,19 +12,21 @@ import com.anthooop.colision.core.di.appModule
 import com.anthooop.colision.core.di.coreModule
 import com.anthooop.colision.core.di.featureModules
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
+
+private var koinStarted: Boolean = false
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        if (GlobalContext.getOrNull() == null) {
+        if (!koinStarted) {
             startKoin {
                 androidContext(this@MainActivity.applicationContext)
                 modules(appModule, coreModule, androidPlatformModule, *featureModules.toTypedArray())
             }
+            koinStarted = true
         }
 
         setContent {
