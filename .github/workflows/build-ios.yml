@@ -22,7 +22,12 @@ env:
 
 jobs:
   build:
-    runs-on: macos-14
+    # macos-15 ships Xcode 16+ by default. macos-14 (Xcode 15.4) misses the
+    # Swift runtime autolink paths Kotlin/Native expects when test binaries
+    # pull a transitive dep using CryptoKit interop (whyoleg.cryptography
+    # via supabase-auth) — "_swift_Builtin_float not found" errors at the
+    # `linkDebugTestIosSimulatorArm64` step.
+    runs-on: macos-15
     timeout-minutes: 45
     steps:
       - name: Checkout
