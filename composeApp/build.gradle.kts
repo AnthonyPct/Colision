@@ -175,7 +175,24 @@ sentryKmp {
         // from the cocoapods Gradle plugin, SPM is the long-term path.
         cocoapods { enabled = false }
         linker {
-            xcodeprojPath = file("../iosApp/iosApp.xcodeproj").absolutePath
+            // Local dev: read the framework from Xcode's DerivedData for the
+            // SPM-resolved Sentry. Requires a one-time `Cmd+B` in Xcode after
+            // adding the SPM dep, then Gradle picks it up from there.
+            //
+            // CI: a fresh runner has no DerivedData, and bootstrapping it via
+            // `xcodebuild build` is circular (xcodebuild → Compile Kotlin
+            // Framework script phase → Gradle → Sentry KMP linker → needs
+            // Sentry.xcframework which is what we'd be trying to build).
+            // Workaround: CI downloads the pre-built Sentry.xcframework from
+            // the sentry-cocoa GitHub release and exports
+            // SENTRY_FRAMEWORK_PATH; we override the linker's framework path
+            // when that env var is set.
+            val ciFrameworkPath: String? = System.getenv("SENTRY_FRAMEWORK_PATH")
+            if (!ciFrameworkPath.isNullOrBlank()) {
+                frameworkPath = ciFrameworkPath
+            } else {
+                xcodeprojPath = file("../iosApp/iosApp.xcodeproj").absolutePath
+            }
         }
     }
 }
