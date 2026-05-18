@@ -1,10 +1,10 @@
 package com.anthooop.colision.core.common
 
 import android.util.Log
-import com.anthooop.colision.config.BuildConfig
+import com.anthooop.colision.config.BuildKonfig
 
 class LoggerAndroid(
-    private val isDevelopmentFlavor: Boolean = BuildConfig.isDevelopmentFlavor,
+    private val isDevelopmentFlavor: Boolean = BuildKonfig.IS_DEVELOPMENT_FLAVOR,
 ) : Logger {
     override fun debug(tag: String, message: String, throwable: Throwable?) {
         if (isDevelopmentFlavor) Log.d(tag, message, throwable)

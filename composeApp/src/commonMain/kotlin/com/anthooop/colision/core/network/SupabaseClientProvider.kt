@@ -1,6 +1,6 @@
 package com.anthooop.colision.core.network
 
-import com.anthooop.colision.config.BuildConfig
+import com.anthooop.colision.config.BuildKonfig
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.SupabaseClientBuilder
 import io.github.jan.supabase.auth.Auth
@@ -19,8 +19,8 @@ import io.github.jan.supabase.postgrest.Postgrest
 object SupabaseClientProvider {
     fun create(builder: SupabaseClientBuilder.() -> Unit = {}): SupabaseClient =
         createSupabaseClient(
-            supabaseUrl = BuildConfig.supabaseUrl,
-            supabaseKey = BuildConfig.supabaseAnonKey,
+            supabaseUrl = BuildKonfig.SUPABASE_URL,
+            supabaseKey = BuildKonfig.SUPABASE_ANON_KEY,
         ) {
             install(Auth)
             install(Postgrest)

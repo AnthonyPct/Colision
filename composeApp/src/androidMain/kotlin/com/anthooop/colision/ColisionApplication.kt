@@ -1,7 +1,7 @@
 package com.anthooop.colision
 
 import android.app.Application
-import com.anthooop.colision.config.BuildConfig
+import com.anthooop.colision.config.BuildKonfig
 import com.anthooop.colision.core.di.androidPlatformModule
 import com.anthooop.colision.core.di.appModule
 import com.anthooop.colision.core.di.coreModule
@@ -22,23 +22,23 @@ class ColisionApplication : Application() {
     }
 
     private fun initSentry() {
-        val dsn = BuildConfig.sentryDsn
-        if (dsn.isBlank()) return // Ops fills BuildConfig.sentryDsn post-merge.
+        val dsn = BuildKonfig.SENTRY_DSN
+        if (dsn.isBlank()) return
         Sentry.init { options ->
             options.dsn = dsn
-            options.environment = if (BuildConfig.isDevelopmentFlavor) "development" else "production"
-            options.debug = BuildConfig.isDevelopmentFlavor
+            options.environment = if (BuildKonfig.IS_DEVELOPMENT_FLAVOR) "development" else "production"
+            options.debug = BuildKonfig.IS_DEVELOPMENT_FLAVOR
         }
     }
 
     private fun initPostHog() {
-        val apiKey = BuildConfig.posthogApiKey
-        if (apiKey.isBlank()) return // Ops fills BuildConfig.posthogApiKey post-merge.
+        val apiKey = BuildKonfig.POSTHOG_API_KEY
+        if (apiKey.isBlank()) return
         PostHogAndroid.setup(
             context = this,
             config = PostHogAndroidConfig(
                 apiKey = apiKey,
-                host = BuildConfig.posthogHost,
+                host = BuildKonfig.POSTHOG_HOST,
             ).apply {
                 captureScreenViews = false
                 sendFeatureFlagEvent = false

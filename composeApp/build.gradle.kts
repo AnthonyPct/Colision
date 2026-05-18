@@ -1,5 +1,8 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -9,7 +12,23 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    alias(libs.plugins.buildkonfig)
 }
+
+// Secrets reader: local.properties (gitignored) overrides the in-repo
+// defaults. CI loads secrets via env vars — the same key wins regardless of
+// source. Public values (Supabase anon key, Sentry DSN — both meant to be
+// client-visible) are kept as defaults so a fresh clone builds out of the
+// box without any setup.
+val localProperties: Properties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+fun secret(name: String, default: String = ""): String =
+    System.getenv(name)
+        ?: localProperties.getProperty(name)
+        ?: default
 
 kotlin {
     androidTarget {
@@ -128,6 +147,77 @@ android {
 
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+// Auto-align the BuildKonfig flavor with the Android product flavor being
+// built. If any task name on the Gradle command line contains "Production",
+// switch BuildKonfig to `prod` before its config block evaluates. This
+// removes the need for CI / users to pass `-Pbuildkonfig.flavor=prod`
+// manually for production builds.
+run {
+    val producingProd = gradle.startParameter.taskNames.any { task ->
+        task.contains("Production", ignoreCase = false) || task.contains("production")
+    }
+    if (producingProd) {
+        project.extensions.extraProperties.set("buildkonfig.flavor", "prod")
+    }
+}
+
+// Generates `com.anthooop.colision.config.BuildKonfig` per BuildKonfig
+// flavor (`dev` / `prod`). The active flavor is picked via the Gradle
+// property `buildkonfig.flavor` — `dev` by default (set in
+// gradle.properties), `prod` for release builds (passed by CI or auto-
+// detected above when an Android `*Production*` task is in the graph).
+//
+// Secret resolution order for every field:
+//   1. environment variable (CI)
+//   2. local.properties (gitignored — for ops to override locally)
+//   3. literal default below
+// The Supabase URL + anon JWT and the Sentry DSN are intentionally public
+// per docs/architecture.md (RLS enforces isolation; Sentry DSNs are
+// client-visible by design), so committing them as defaults is fine and
+// keeps `git clone && ./gradlew build` green.
+buildkonfig {
+    packageName = "com.anthooop.colision.config"
+
+    val supabaseUrlDev = "https://uxmzeqlnrpydiiephfem.supabase.co"
+    val supabaseAnonKeyDev = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." +
+        "eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4bXplcWxucnB5ZGlpZXBoZmVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzg1NDgsImV4cCI6MjA5NDYxNDU0OH0." +
+        "0XrWNO1qSMfVK3E9FflmtrACSTbLjRdRap-N26O-k_A"
+    val sentryDsnShared = "https://6ea8ec9466dd998073c6d372d39885f4@o4511406962966528.ingest.de.sentry.io/4511406968406096"
+
+    // Shared defaults — every flavor inherits these unless overridden.
+    defaultConfigs {
+        buildConfigField(STRING, "SUPABASE_URL", secret("SUPABASE_URL", default = supabaseUrlDev))
+        buildConfigField(STRING, "SUPABASE_ANON_KEY", secret("SUPABASE_ANON_KEY", default = supabaseAnonKeyDev))
+        buildConfigField(STRING, "SENTRY_DSN", secret("SENTRY_DSN", default = sentryDsnShared))
+        buildConfigField(STRING, "POSTHOG_API_KEY", secret("POSTHOG_API_KEY"))
+        buildConfigField(STRING, "POSTHOG_HOST", secret("POSTHOG_HOST", default = "https://eu.i.posthog.com"))
+        buildConfigField(BOOLEAN, "IS_DEVELOPMENT_FLAVOR", "true")
+    }
+
+    defaultConfigs("dev") {
+        buildConfigField(BOOLEAN, "IS_DEVELOPMENT_FLAVOR", "true")
+    }
+
+    defaultConfigs("prod") {
+        // A dedicated production Supabase project is a follow-up — until
+        // it lands prod builds point at the same dev project but tag
+        // Sentry events with environment="production". Override these via
+        // SUPABASE_URL_PROD / SUPABASE_ANON_KEY_PROD env vars when the
+        // prod project is provisioned.
+        buildConfigField(
+            STRING,
+            "SUPABASE_URL",
+            secret("SUPABASE_URL_PROD", default = secret("SUPABASE_URL", default = supabaseUrlDev)),
+        )
+        buildConfigField(
+            STRING,
+            "SUPABASE_ANON_KEY",
+            secret("SUPABASE_ANON_KEY_PROD", default = secret("SUPABASE_ANON_KEY", default = supabaseAnonKeyDev)),
+        )
+        buildConfigField(BOOLEAN, "IS_DEVELOPMENT_FLAVOR", "false")
+    }
 }
 
 dependencies {
