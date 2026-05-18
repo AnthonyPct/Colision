@@ -4,7 +4,7 @@ import io.sentry.kotlin.multiplatform.Sentry
 import io.sentry.kotlin.multiplatform.protocol.Breadcrumb
 import io.sentry.kotlin.multiplatform.protocol.User
 
-actual class PlatformCrashReporter actual constructor() : CrashReporter {
+class SentryCrashReporter : CrashReporter {
 
     override fun captureException(throwable: Throwable, tag: String?) {
         Sentry.captureException(throwable) { scope ->

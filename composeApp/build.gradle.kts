@@ -13,6 +13,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.buildkonfig)
+    alias(libs.plugins.sentryKmp)
 }
 
 // Secrets reader: local.properties (gitignored) overrides the in-repo
@@ -55,7 +56,8 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.security.crypto)
             implementation(libs.posthog.android)
-            implementation(libs.sentry.kmp)
+            // sentry-kotlin-multiplatform is auto-installed by the
+            // `io.sentry.kotlin.multiplatform.gradle` plugin (commonMain).
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -147,6 +149,33 @@ android {
 
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+// Sentry Kotlin Multiplatform configuration.
+//
+// The plugin auto-installs sentry-kotlin-multiplatform into commonMain
+// (no manual dependency declaration needed) and configures the iOS
+// framework link path to point at the Sentry Cocoa SDK resolved by SPM
+// in the Xcode project's derived data.
+//
+// One-time manual step required in Xcode: open iosApp/iosApp.xcodeproj,
+// File > Add Package Dependencies, paste
+//   https://github.com/getsentry/sentry-cocoa
+// pin to "Up to Next Major" 8.x, and add the `Sentry` library product
+// to the iosApp target. After Xcode resolves and builds once, the
+// plugin's linker block below picks up the framework from derived
+// data and `./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64`
+// succeeds end-to-end.
+sentryKmp {
+    autoInstall {
+        enabled = true
+        // CocoaPods is intentionally NOT used — JetBrains is moving away
+        // from the cocoapods Gradle plugin, SPM is the long-term path.
+        cocoapods { enabled = false }
+        linker {
+            xcodeprojPath = file("../iosApp/iosApp.xcodeproj").absolutePath
+        }
+    }
 }
 
 // Auto-align the BuildKonfig flavor with the Android product flavor being

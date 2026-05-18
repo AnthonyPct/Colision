@@ -90,7 +90,9 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 
 # Observability
-sentry-kmp = { module = "io.sentry:sentry-kotlin-multiplatform", version.ref = "sentry-kmp" }
+# Note: sentry-kotlin-multiplatform is installed automatically into
+# commonMain by the `io.sentry.kotlin.multiplatform.gradle` plugin. We
+# don't declare it as a library here.
 posthog-android = { module = "com.posthog:posthog-android", version.ref = "posthog-android" }
 
 # Test
@@ -106,3 +108,4 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
+sentryKmp = { id = "io.sentry.kotlin.multiplatform.gradle", version.ref = "sentry-kmp" }
