@@ -27,7 +27,6 @@ kotlinxCoroutines = "1.10.2"
 navigationCompose = "2.9.2"
 firebase-bom = "34.13.0"
 sentry-kmp = "0.26.0"
-posthog-android = "3.44.1"
 turbine = "1.2.1"
 detekt = "1.23.7"
 buildkonfig = "0.21.0"
@@ -92,8 +91,8 @@ firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 # Observability
 # Note: sentry-kotlin-multiplatform is installed automatically into
 # commonMain by the `io.sentry.kotlin.multiplatform.gradle` plugin. We
-# don't declare it as a library here.
-posthog-android = { module = "com.posthog:posthog-android", version.ref = "posthog-android" }
+# don't declare it as a library here. Both crash reporting AND product
+# events go through Sentry — see core/common/SentryAnalytics.kt.
 
 # Test
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }

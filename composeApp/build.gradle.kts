@@ -55,9 +55,9 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.security.crypto)
-            implementation(libs.posthog.android)
             // sentry-kotlin-multiplatform is auto-installed by the
             // `io.sentry.kotlin.multiplatform.gradle` plugin (commonMain).
+            // Product events also go through Sentry — no PostHog dep.
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -223,8 +223,6 @@ buildkonfig {
         buildConfigField(STRING, "SUPABASE_URL", secret("SUPABASE_URL", default = supabaseUrlDev))
         buildConfigField(STRING, "SUPABASE_ANON_KEY", secret("SUPABASE_ANON_KEY", default = supabaseAnonKeyDev))
         buildConfigField(STRING, "SENTRY_DSN", secret("SENTRY_DSN", default = sentryDsnShared))
-        buildConfigField(STRING, "POSTHOG_API_KEY", secret("POSTHOG_API_KEY"))
-        buildConfigField(STRING, "POSTHOG_HOST", secret("POSTHOG_HOST", default = "https://eu.i.posthog.com"))
         buildConfigField(BOOLEAN, "IS_DEVELOPMENT_FLAVOR", "true")
     }
 
