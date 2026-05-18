@@ -16,7 +16,7 @@ fun ColisionTheme(
     val colorScheme = if (darkTheme) darkForestColorScheme else lightForestColorScheme
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = colisionTypography,
+        typography = colisionTypography(),
         shapes = colisionShapes,
         content = content,
     )
