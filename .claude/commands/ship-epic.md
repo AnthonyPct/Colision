@@ -8,7 +8,7 @@ Implement epic **#$ARGUMENTS** end-to-end: one branch, one commit per story sub-
 ## 0. Preflight — stop on any failure
 
 1. `git status` must be clean. If dirty, stop.
-2. `git fetch origin && git switch main && git pull --ff-only origin main`.
+2. `git fetch origin && git switch develop && git pull --ff-only origin develop`.
 3. `gh auth status` — needs the `project` scope. If missing, stop and tell the user to run `gh auth refresh -s project`.
 4. `gh issue view $ARGUMENTS --json number,title,body,labels,state,projectItems,url`. The issue must be `OPEN` and labeled `epic` (or its title must start with "Epic"). If unsure it's an epic, stop and ask.
 
