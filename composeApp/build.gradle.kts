@@ -54,7 +54,6 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.androidx.security.crypto)
             // sentry-kotlin-multiplatform is auto-installed by the
             // `io.sentry.kotlin.multiplatform.gradle` plugin (commonMain).
             // Product events also go through Sentry — no PostHog dep.

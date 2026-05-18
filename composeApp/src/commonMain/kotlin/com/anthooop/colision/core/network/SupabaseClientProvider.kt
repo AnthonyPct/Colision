@@ -11,11 +11,12 @@ import io.github.jan.supabase.postgrest.Postgrest
 // Single source of the Supabase client. Stories 2+ pull this through Koin
 // (registered in CoreModule by story 1.8 wiring).
 //
-// Session storage: supabase-kt 3.x exposes a SessionManager you can swap to
-// route token persistence through our SecureStorage wrapper. That swap is
-// deferred to a follow-up — at MVP the default (in-memory + platform
-// equivalent) is fine since `signInAnonymously()` is idempotent enough for
-// cold starts.
+// Session storage uses supabase-kt's built-in SessionManager — in-memory on
+// JVM/Android, platform-equivalent on iOS. Re-signing anonymously on cold
+// start is idempotent enough at MVP and avoids us shipping a custom secure
+// storage layer. If we later need to persist sessions across cold starts
+// (e.g. to avoid creating a new auth.users row when localStorage is wiped),
+// plug a SessionManager backed by a real keychain wrapper at that point.
 object SupabaseClientProvider {
     fun create(builder: SupabaseClientBuilder.() -> Unit = {}): SupabaseClient =
         createSupabaseClient(

@@ -178,7 +178,7 @@ La toute première story du backlog d'implémentation devra :
 | # | Decision | Choice | Rationale |
 |---|---|---|---|
 | 1 | Navigation library | **Compose Navigation Multiplatform** (`androidx.navigation:navigation-compose` KMP) | Officiel JetBrains, deep-linking natif via `uriPattern`, API familière, boring technology |
-| 2 | Auth "device-only" | **Supabase Anonymous Auth** + `SecureStorage` `expect`/`actual` | Signé, RLS native via `auth.uid()`, transparent pour Sophie, évolue vers compte nommé en V2 via `linkIdentity()` |
+| 2 | Auth "device-only" | **Supabase Anonymous Auth** + session manager par défaut de supabase-kt | Signé, RLS native via `auth.uid()`, transparent pour Sophie, évolue vers compte nommé en V2 via `linkIdentity()`. `signInAnonymously()` est idempotent au cold start — pas besoin d'un wrapper SecureStorage custom au MVP. |
 | 3 | Conflict detection | **Hybride** : Kotlin pré-check + Postgres function source de vérité | UX réactive (latence 0 pendant la saisie) + cohérence stricte au tap "Vérifier", même algo réutilisé par triggers post-insert |
 | 4 | Sync Room ↔ Supabase | **Pull-on-foreground + optimistic local writes + push notifs comme seul signal live**. **Pas de Realtime.** | Plus simple, moins cher (pas de pression concurrent connections), batterie économisée, push couvre les cas urgents (NFR-P4 5 s end-to-end) |
 | 5 | Génération code projet | Alphabet 30 chars sans ambigus + UNIQUE constraint + retry + génération via Postgres function `create_project(p_name)` | Aucune confusion à l'oral/SMS, 730M combinaisons, source de vérité serveur |
@@ -323,11 +323,10 @@ create policy "members of project can read meetings"
 #### Modèle "Device-Only" via Supabase Anonymous Auth
 
 - Au 1er lancement : `supabase.auth.signInAnonymously()` → JWT + uid opaque.
-- Stockage du JWT et refresh token via interface `SecureStorage` `expect`/`actual` :
-  - **Android** : `EncryptedSharedPreferences`
-  - **iOS** : Keychain Services
+- Stockage du JWT et refresh token : session manager par défaut de supabase-kt (in-memory côté JVM/Android, plate-forme côté iOS). Re-signer anonymement au cold start est idempotent et acceptable au MVP — pas de wrapper SecureStorage custom à maintenir.
 - supabase-kt utilise automatiquement le JWT à chaque requête.
 - Trigger Postgres `on_auth_user_created` crée une row `device` à chaque INSERT sur `auth.users`.
+- Évolution V1.1 si nécessaire : si on veut **persister la session entre cold starts** (pour éviter de créer une nouvelle row `auth.users` à chaque relaunch après wipe localStorage), brancher un `SessionManager` supabase-kt custom backé par un vrai keychain. Pas requis au MVP.
 
 #### Generation du Code Projet
 
@@ -555,7 +554,7 @@ Configuré via `deepLink { uriPattern = "colision://meeting/{id}" }` dans le Nav
 #### Implementation Sequence
 
 1. **Bootstrap** : starter + Koin + Ktor + tokens design → app vide qui démarre.
-2. **Schema & Auth** : schéma Postgres, RLS policies, Supabase Anonymous Auth, `SecureStorage`, trigger `on_auth_user_created`.
+2. **Schema & Auth** : schéma Postgres, RLS policies, Supabase Anonymous Auth (session manager par défaut), trigger `on_auth_user_created`.
 3. **Project Management** : feature `onboarding` (J1 + J2), Postgres functions `create_project` + `try_resolve_code` (sans rate limit au MVP).
 4. **Member & Commission Management** : CRUD via supabase-kt + RPC pour les opérations transactionnelles.
 5. **Meeting Scheduling + Conflict Detection** : feature `meeting` (J3), Postgres function `detect_conflicts`, pré-check Kotlin client, tests miroirs.
@@ -879,8 +878,7 @@ Colision/
         │       │   │   ├── ResultHelpers.kt   # appErrorResult, foldAppError
         │       │   │   ├── Logger.kt           # interface
         │       │   │   ├── CrashReporter.kt    # interface
-        │       │   │   ├── Analytics.kt        # interface
-        │       │   │   ├── SecureStorage.kt    # interface expect
+        │       │   │   ├── Analytics.kt        # interface + SentryAnalytics impl
         │       │   │   ├── NotificationPermissionManager.kt  # interface expect
         │       │   │   └── DispatcherProvider.kt
         │       │   ├── design/
@@ -952,7 +950,6 @@ Colision/
         │   │   │   └── ColisionMessagingService.kt   # FirebaseMessagingService
         │   │   ├── core/
         │   │   │   ├── common/
-        │   │   │   │   ├── SecureStorageAndroid.kt           # EncryptedSharedPreferences
         │   │   │   │   ├── NotificationPermissionManagerAndroid.kt
         │   │   │   │   └── LoggerAndroid.kt
         │   │   │   └── database/
@@ -970,7 +967,6 @@ Colision/
         │       ├── MainViewController.kt      # ComposeUIViewController { App() }
         │       ├── core/
         │       │   ├── common/
-        │       │   │   ├── SecureStorageIos.kt              # Keychain Services
         │       │   │   ├── NotificationPermissionManagerIos.kt
         │       │   │   └── LoggerIos.kt
         │       │   └── database/
@@ -1026,7 +1022,7 @@ Colision/
 
 #### Boundary 3 — Frontière Common ↔ Plateforme
 
-- **expect/actual** pour : `SecureStorage`, `NotificationPermissionManager`, `Logger` (impl différente Android/iOS), Room database provider. `CrashReporter` et `Analytics` vivent en `commonMain` (Sentry KMP couvre les 2 plateformes).
+- **expect/actual** pour : `NotificationPermissionManager`, `Logger` (impl différente Android/iOS), Room database provider. `CrashReporter` et `Analytics` vivent en `commonMain` (Sentry KMP couvre les 2 plateformes). Pas de `SecureStorage` au MVP — supabase-kt gère son JWT en interne.
 - Tout le reste du code business vit en `commonMain`.
 
 #### Boundary 4 — Frontière App ↔ Backend Supabase
@@ -1058,7 +1054,7 @@ Colision/
 
 | Concern | Location |
 |---|---|
-| Anonymous Auth + JWT storage | `core/common/SecureStorage.{android,ios}.kt` + init dans `ColisionApplication.kt` / `iOSApp.swift` |
+| Anonymous Auth + JWT storage | `core/network/SupabaseClientProvider.kt` (session manager par défaut de supabase-kt) + init dans `ColisionApplication.kt` Android et au boot du framework côté iOS |
 | Logging | `core/common/Logger.kt` + actuals |
 | Crash reporting | `core/common/CrashReporter.kt` + `SentryCrashReporter` (commonMain, via plugin Sentry KMP) |
 | Analytics | `core/common/Analytics.kt` + `SentryAnalytics` (commonMain, `captureMessage` INFO + tags) |
@@ -1259,4 +1255,4 @@ Avec la décision "Pas de Realtime", la propagation se fait via :
 - Pas d'écart au pattern MVI sans validation explicite
 
 **First Implementation Priority:**
-Story 1 — Bootstrap (cf. section "Initial Implementation Story" plus haut). Doit livrer une app vide qui démarre sur les 2 plateformes, avec les wrappers `core/common/` en place (Logger, CrashReporter, Analytics, SecureStorage en NoopImpl ou impl minimale) et la CI verte.
+Story 1 — Bootstrap (cf. section "Initial Implementation Story" plus haut). Doit livrer une app vide qui démarre sur les 2 plateformes, avec les wrappers `core/common/` en place (Logger, CrashReporter, Analytics en NoopImpl ou impl minimale) et la CI verte.
