@@ -155,7 +155,7 @@ Ces dépendances seront introduites dans la **première implementation story** (
 | **APNs iOS** | Pas de dépendance Kotlin — usage de l'API iOS native via `expect`/`actual` | Push iOS |
 | **KSP** | `com.google.devtools.ksp` (plugin) | Requis par Room |
 | **Tests** | `org.jetbrains.kotlin:kotlin-test`, `app.cash.turbine:turbine` (Flow testing), `io.mockk:mockk` (Android-only) | Tests communs + plateforme |
-| **Crash reporting / Analytics** | À décider en étape 4 (Sentry vs Crashlytics ; PostHog vs Firebase Analytics) | Décision pendante |
+| **Crash reporting / Analytics** | `io.sentry:sentry-kotlin-multiplatform` (auto-installé via le plugin Gradle `io.sentry.kotlin.multiplatform.gradle`) couvre les deux — crashes et events produit (`captureMessage` au level INFO) | Cf. décisions 8 + 9 |
 
 ### Initial Implementation Story (Bootstrap)
 
@@ -185,7 +185,7 @@ La toute première story du backlog d'implémentation devra :
 | 6 | Rate limiting | **Différé V1.1**. NFR-S2 noté comme deferred. | Risque résiduel acceptable au MVP (pas de visibilité publique, peu d'incitation à brute-force). Trade-off explicite et conscient. |
 | 7 | CI/CD | **GH Actions** (PR build + tests + lint) + **Bitrise** (release pipeline signed, différé au 1er test externe) | GH Actions intégré, gratuit, YAML versionné ; Bitrise spécialisé mobile quand le signing devient un sujet ; pas de précipitation |
 | 8 | Crash monitoring | **Sentry** (SDK officiel KMP) + hosting EU + wrapper `CrashReporter` Koin | Seul à avoir un vrai SDK KMP, hébergement Frankfurt aligne NFR-S5, breadcrumbs partagés common ↔ plateforme |
-| 9 | Analytics produit | **PostHog** (cloud EU) + wrapper `Analytics` Koin + events anonymisés (pas d'`identify(userId)` au MVP) | Hébergement EU, free tier 1M events/mois, all-in-one (events + funnels + retention), self-hostable si besoin |
+| 9 | Analytics produit | **Sentry** (réutilise le DSN crash reporting, events via `captureMessage` au level INFO) + wrapper `Analytics` Koin + events anonymisés | Décision révisée 2026-05-18 : PostHog n'a pas de SDK KMP officiel, l'iOS aurait nécessité un bridge Swift dédié. Au MVP (~0 user pendant plusieurs mois), Sentry suffit pour compter les events et drill-down via tags. Pas de funnels / retention cohorts — à revisiter post-launch si besoin. Une seule backend observabilité = un seul DSN, zéro bridge iOS, swap futur trivial via le binding Koin. |
 | 10 | Modèle d'erreur | **`kotlin.Result<T>`** stdlib + `sealed AppError : Throwable` pour typage métier | Pas de dépendance, syntaxe `.fold` familière, sealed AppError pour les cas métier ; mitigation explicite de la non-exhaustivité par convention de code review et tests |
 
 ### Decision Priority Analysis
@@ -516,26 +516,21 @@ Configuré via `deepLink { uriPattern = "colision://meeting/{id}" }` dans le Nav
 - Upload Play Internal Track (via Google Play Developer API)
 - Triggered manuellement ou sur tag `v*`
 
-#### Crash Monitoring : Sentry
+#### Crash Monitoring + Product Analytics : Sentry (unifié)
 
-- Dépendance : `io.sentry:sentry-kotlin-multiplatform`
-- Wrapper `CrashReporter` dans `core/common/`, injecté via Koin
-- DSN différents par flavor (`SENTRY_DSN_DEV`, `SENTRY_DSN_PROD` dans `BuildConfig.kt` par flavor)
-- Hosting : Sentry Cloud EU (Frankfurt)
-- Init au démarrage Android (`MainActivity`) et iOS (`MainViewController`)
-- `setUserContext(deviceId)` après `signInAnonymously()` réussi
-- Implémentation `NoopCrashReporter` pour les tests unitaires
+- Plugin Gradle : `io.sentry.kotlin.multiplatform.gradle` (auto-installe `io.sentry:sentry-kotlin-multiplatform` en `commonMain`). Pas de déclaration manuelle dans le version catalog.
+- iOS link : Sentry Cocoa résolu via Swift Package Manager dans `iosApp/iosApp.xcodeproj` (pas Cocoapods — JetBrains déprécie le plugin `kotlin-native-cocoapods`). Version pinnée 8.58.2 — la 9.x casse les symboles internes attendus par sentry-kotlin-multiplatform 0.26 (à unpin quand le plugin Kotlin sort une version compatible 9.x).
+- Wrapper `CrashReporter` dans `core/common/`, injecté via Koin (impl `SentryCrashReporter`).
+- Wrapper `Analytics` dans `core/common/`, injecté via Koin (impl `SentryAnalytics`) — `track(event, properties)` délègue à `Sentry.captureMessage("event:$name")` au level INFO. Chaque event name groupe en un seul Sentry Issue, les properties partent en tags filtrables.
+- DSN unique partagé dev + prod, lu via `BuildKonfig.SENTRY_DSN`. Différentiation via `Sentry.init { options.environment = "development"|"production" }` driven by `BuildKonfig.IS_DEVELOPMENT_FLAVOR`.
+- Hosting : Sentry Cloud EU (région DE Frankfurt — `o4511406962966528.ingest.de.sentry.io`).
+- Init au démarrage Android (`ColisionApplication.onCreate`) et iOS (`MainViewController` via le plugin SPM).
+- `setUserContext(deviceId)` après `signInAnonymously()` réussi — `deviceId` reste un opaque UUID, pas de PII.
+- `NoopCrashReporter` / `NoopAnalytics` disponibles pour tests unitaires.
 
-#### Analytics : PostHog
+**Limites assumées au MVP** : pas de funnels (J1 install → J7 first meeting), pas de retention cohorts, pas de feature flags. Si ces besoins apparaissent post-launch, swapper le binding Koin `Analytics` vers PostHog/Aptabase/etc. sans toucher les call sites.
 
-- Dépendance Android : `com.posthog:posthog-android`
-- Dépendance iOS : PostHog iOS via SPM dans `iosApp/iosApp.xcodeproj`
-- Wrapper `Analytics` `expect`/`actual` dans `core/common/`, injecté via Koin
-- Hosting : PostHog Cloud EU
-- Projets séparés par flavor : "Colision Dev" + "Colision Prod"
-- Pas d'`identify(userId)` au MVP — events anonymisés
-- Option "Disable IP capture" activée côté projet PostHog
-- Events instrumentés dès le MVP (alignés NFR-M5) :
+**Events instrumentés dès le MVP (alignés NFR-M5)** :
   - `app_opened` (cold start) : `flavor`, `app_version`
   - `project_created` : `project_id` (hashé)
   - `project_joined` : `project_id` (hashé), `time_since_install`
@@ -547,12 +542,11 @@ Configuré via `deepLink { uriPattern = "colision://meeting/{id}" }` dans le Nav
 
 #### Environments
 
-- **Supabase Dev** : staging, EU Frankfurt, lié flavor `development`
-- **Supabase Prod** : production, EU Frankfurt, lié flavor `production`
-- **Apple Developer Account** : 99 $/an
-- **Google Play Developer Account** : 25 $ one-shot
-- **Sentry** : 1 projet, environnements `dev` / `prod`
-- **PostHog** : 2 projets séparés (Dev / Prod)
+- **Supabase Dev** : staging, EU Ireland (eu-west-1), lié flavor `development`. Projet ref `uxmzeqlnrpydiiephfem`.
+- **Supabase Prod** : à provisionner ultérieurement (production builds pointent encore sur le projet dev avec `environment=production` côté Sentry).
+- **Apple Developer Account** : 99 $/an.
+- **Google Play Developer Account** : 25 $ one-shot.
+- **Sentry** : 1 projet (org `anthooop`, région DE), environnements `dev` / `prod`. Crashes ET events produit dedans.
 
 ---
 
@@ -856,9 +850,10 @@ Colision/
 │   └── iosApp/
 │       ├── iOSApp.swift                   # @main SwiftUI App entry point
 │       ├── ContentView.swift              # Wrap du ComposeUIViewController KMP
-│       ├── AppDelegate.swift              # APNs registration + Sentry init + PostHog init
+│       ├── AppDelegate.swift              # APNs registration (Sentry init est driven par Kotlin via le plugin)
 │       ├── Info.plist
-│       └── GoogleService-Info-Dev.plist   # Firebase iOS (FCM) — flavor dev
+│       ├── GoogleService-Info-Dev.plist   # Firebase iOS (FCM) — flavor dev
+│       └── Package.resolved                # SPM lockfile (versionné — pin Sentry Cocoa 8.58.2)
 └── composeApp/                            # Module Gradle KMP unique
     ├── build.gradle.kts                   # Configure flavors development/production + KSP
     └── src/
@@ -951,17 +946,15 @@ Colision/
         ├── androidMain/
         │   ├── AndroidManifest.xml            # Permissions, FirebaseMessagingService
         │   ├── kotlin/com/anthooop/colision/
-        │   │   ├── MainActivity.kt            # setContent { App() }, startKoin
-        │   │   ├── ColisionApplication.kt     # init Sentry, PostHog, FCM token
+        │   │   ├── MainActivity.kt            # setContent { App() }
+        │   │   ├── ColisionApplication.kt     # init Sentry, startKoin, FCM token
         │   │   ├── push/
         │   │   │   └── ColisionMessagingService.kt   # FirebaseMessagingService
         │   │   ├── core/
         │   │   │   ├── common/
-        │   │   │   │   ├── SecureStorage.android.kt           # EncryptedSharedPreferences
-        │   │   │   │   ├── NotificationPermissionManager.android.kt
-        │   │   │   │   ├── LoggerAndroid.kt
-        │   │   │   │   ├── CrashReporterSentry.android.kt
-        │   │   │   │   └── AnalyticsPostHog.android.kt
+        │   │   │   │   ├── SecureStorageAndroid.kt           # EncryptedSharedPreferences
+        │   │   │   │   ├── NotificationPermissionManagerAndroid.kt
+        │   │   │   │   └── LoggerAndroid.kt
         │   │   │   └── database/
         │   │   │       └── ColisionDatabaseProvider.android.kt  # Room driver Android
         │   │   └── di/
@@ -977,15 +970,17 @@ Colision/
         │       ├── MainViewController.kt      # ComposeUIViewController { App() }
         │       ├── core/
         │       │   ├── common/
-        │       │   │   ├── SecureStorage.ios.kt              # Keychain Services
-        │       │   │   ├── NotificationPermissionManager.ios.kt
-        │       │   │   ├── LoggerIos.kt
-        │       │   │   ├── CrashReporterSentry.ios.kt
-        │       │   │   └── AnalyticsPostHog.ios.kt
+        │       │   │   ├── SecureStorageIos.kt              # Keychain Services
+        │       │   │   ├── NotificationPermissionManagerIos.kt
+        │       │   │   └── LoggerIos.kt
         │       │   └── database/
         │       │       └── ColisionDatabaseProvider.ios.kt   # Room driver iOS
         │       └── di/
         │           └── IosPlatformModule.kt
+        │
+        │   Note: SentryCrashReporter et SentryAnalytics vivent en
+        │   commonMain — pas de actuals per-plateforme (Sentry KMP couvre
+        │   les 2 plateformes via le plugin Gradle + SPM côté iOS).
         ├── commonTest/
         │   └── kotlin/com/anthooop/colision/
         │       ├── feature/
@@ -1031,7 +1026,7 @@ Colision/
 
 #### Boundary 3 — Frontière Common ↔ Plateforme
 
-- **expect/actual** pour : `SecureStorage`, `NotificationPermissionManager`, `Logger` (impl différente Android/iOS), `Analytics` impl, `CrashReporter` impl, Room database provider.
+- **expect/actual** pour : `SecureStorage`, `NotificationPermissionManager`, `Logger` (impl différente Android/iOS), Room database provider. `CrashReporter` et `Analytics` vivent en `commonMain` (Sentry KMP couvre les 2 plateformes).
 - Tout le reste du code business vit en `commonMain`.
 
 #### Boundary 4 — Frontière App ↔ Backend Supabase
@@ -1065,8 +1060,8 @@ Colision/
 |---|---|
 | Anonymous Auth + JWT storage | `core/common/SecureStorage.{android,ios}.kt` + init dans `ColisionApplication.kt` / `iOSApp.swift` |
 | Logging | `core/common/Logger.kt` + actuals |
-| Crash reporting | `core/common/CrashReporter.kt` + actuals (Sentry) |
-| Analytics | `core/common/Analytics.kt` + actuals (PostHog) |
+| Crash reporting | `core/common/CrashReporter.kt` + `SentryCrashReporter` (commonMain, via plugin Sentry KMP) |
+| Analytics | `core/common/Analytics.kt` + `SentryAnalytics` (commonMain, `captureMessage` INFO + tags) |
 | Push token registration | `androidMain/push/ColisionMessagingService.kt` + `iosApp/AppDelegate.swift` → POST vers Supabase pour mise à jour `device.fcm_token` / `apns_token` |
 | Deep linking | `app/nav/DeepLinks.kt` + NavGraph entries |
 | Theming | `app/ColisionTheme.kt` (mapping tokens.jsx → Compose) |
@@ -1127,7 +1122,7 @@ Colision/
 | NFR-S2 rate limit code | ❌ **Différé V1.1** | Décision explicite (cf. Décision 6) |
 | NFR-S3 TLS partout | ✅ | Standard Supabase + Ktor |
 | NFR-S4 pas de PII sensible | ✅ | Schéma ne stocke que prénom + appartenances |
-| NFR-S5 hébergement UE | ✅ | Supabase Frankfurt + Sentry EU + PostHog Cloud EU |
+| NFR-S5 hébergement UE | ✅ | Supabase EU Ireland (eu-west-1) + Sentry EU (région DE Frankfurt) |
 | NFR-S6 privacy policy publiée | ⚠️ **À produire avant soumission stores** (gap #2) |
 | NFR-S7 deletion 24h | ✅ | Cascading deletes Postgres + RLS DELETE policies |
 | NFR-R1 99,5 % crash-free | ✅ | Sentry monitoring |
@@ -1216,7 +1211,7 @@ Avec la décision "Pas de Realtime", la propagation se fait via :
 **✅ Architectural Decisions**
 - [x] 10 décisions critiques/importantes documentées avec rationale
 - [x] Technology stack fully specified avec versions pinnées
-- [x] Integration patterns defined (Supabase, FCM/APNs, Sentry, PostHog)
+- [x] Integration patterns defined (Supabase, FCM/APNs, Sentry pour crashes + analytics)
 - [x] Performance considerations addressed (objectifs NFR-P traçables)
 
 **✅ Implementation Patterns**
