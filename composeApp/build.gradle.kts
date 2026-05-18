@@ -158,14 +158,17 @@ room {
 // framework link path to point at the Sentry Cocoa SDK resolved by SPM
 // in the Xcode project's derived data.
 //
-// One-time manual step required in Xcode: open iosApp/iosApp.xcodeproj,
-// File > Add Package Dependencies, paste
-//   https://github.com/getsentry/sentry-cocoa
-// pin to "Up to Next Major" 8.x, and add the `Sentry` library product
-// to the iosApp target. After Xcode resolves and builds once, the
-// plugin's linker block below picks up the framework from derived
-// data and `./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64`
-// succeeds end-to-end.
+// iOS setup (already done in iosApp/iosApp.xcodeproj):
+// - Swift Package: https://github.com/getsentry/sentry-cocoa
+// - Dependency Rule: **Exact Version 8.58.2** — DO NOT bump to 9.x.
+//   The sentry-kotlin-multiplatform 0.26.0 plugin we use here is
+//   compiled against Sentry Cocoa 8.x; 9.x changed internal symbols
+//   (SentryDependencyContainer, SentryId Swift-port) and produces
+//   "Undefined symbols" at the iOS link step. Unpin when the Kotlin
+//   plugin ships a release that supports Sentry Cocoa 9.x — track
+//   https://github.com/getsentry/sentry-kotlin-multiplatform/releases.
+// - Product: `Sentry`, linked to the `iosApp` target.
+// - Build Settings: Other Linker Flags contains `-ObjC`.
 sentryKmp {
     autoInstall {
         enabled = true
