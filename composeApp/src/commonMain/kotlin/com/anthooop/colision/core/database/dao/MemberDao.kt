@@ -22,6 +22,15 @@ interface MemberDao {
     @Query("SELECT * FROM member WHERE deviceId = :deviceId LIMIT 1")
     fun observeOwnMember(deviceId: String): Flow<MemberEntity?>
 
+    @Query(
+        "SELECT DISTINCT m.* FROM member m " +
+            "INNER JOIN member_commission mc ON mc.memberId = m.id " +
+            "INNER JOIN meeting_commission mtc ON mtc.commissionId = mc.commissionId " +
+            "WHERE mtc.meetingId = :meetingId " +
+            "ORDER BY m.displayName ASC",
+    )
+    fun observeAttendingMeeting(meetingId: String): Flow<List<MemberEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(member: MemberEntity)
 

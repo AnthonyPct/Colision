@@ -141,4 +141,13 @@
     <string name="agenda_toggle_month">Mois</string>
     <string name="agenda_empty">Aucune réunion à venir — bravo !</string>
     <string name="agenda_create_meeting">Nouvelle réunion</string>
+
+    <!-- MeetingDetailScreen -->
+    <string name="meeting_detail_loading">Chargement…</string>
+    <string name="meeting_detail_no_title_fallback">Réunion sans titre</string>
+    <string name="meeting_detail_duration_minutes">%1$s – %2$s · %3$d minutes</string>
+    <string name="meeting_detail_attendees">Convoqués (%1$d)</string>
+    <string name="meeting_detail_created_by">Créée par %1$s</string>
+    <string name="meeting_detail_deleted_title">Cette réunion a été supprimée</string>
+    <string name="meeting_detail_deleted_body">Quelqu\'un l\'a annulée pendant que tu étais hors ligne.</string>
 </resources>
