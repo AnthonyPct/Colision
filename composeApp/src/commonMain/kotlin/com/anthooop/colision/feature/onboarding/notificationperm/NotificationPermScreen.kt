@@ -25,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.design.Spacing
 
 @Composable
@@ -153,5 +155,13 @@ private fun InfoCard(title: String, supporting: String) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun NotificationPermScreenPreview() {
+    ColisionTheme {
+        NotificationPermScreen(state = NotificationPermState(), onIntent = {})
     }
 }

@@ -42,6 +42,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
+import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.common.AppError
 import com.anthooop.colision.core.design.Spacing
 
@@ -227,6 +229,39 @@ private fun ErrorBanner(error: AppError) {
             text = message,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onErrorContainer,
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun JoinCodeScreenEmptyPreview() {
+    ColisionTheme {
+        JoinCodeScreen(state = JoinCodeState(), onIntent = {})
+    }
+}
+
+@Preview
+@Composable
+private fun JoinCodeScreenResolvedPreview() {
+    ColisionTheme {
+        JoinCodeScreen(
+            state = JoinCodeState(
+                code = "KQ7H2P",
+                resolvedProjectName = "Conseil municipal de Saint-Machin",
+            ),
+            onIntent = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun JoinCodeScreenInvalidPreview() {
+    ColisionTheme {
+        JoinCodeScreen(
+            state = JoinCodeState(code = "ZZZZZZ", error = AppError.ProjectCodeInvalid),
+            onIntent = {},
         )
     }
 }

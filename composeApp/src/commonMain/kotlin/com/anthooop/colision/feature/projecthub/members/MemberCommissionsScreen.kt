@@ -26,7 +26,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.design.Spacing
 
@@ -130,6 +132,26 @@ private fun AssignmentRow(
             text = commission.name,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun MemberCommissionsScreenPreview() {
+    ColisionTheme {
+        MemberCommissionsScreen(
+            state = MemberCommissionsState(
+                memberName = "Sophie Picquet",
+                commissions = listOf(
+                    CommissionEntity("c1", "p1", "Jeunesse", "", ""),
+                    CommissionEntity("c2", "p1", "École", "", ""),
+                    CommissionEntity("c3", "p1", "Urbanisme", "", ""),
+                ),
+                assignedIds = setOf("c1", "c2"),
+                isLoading = false,
+            ),
+            onIntent = {},
         )
     }
 }

@@ -25,6 +25,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.ui.tooling.preview.Preview
+import com.anthooop.colision.app.ColisionTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -274,6 +276,37 @@ private fun ConfirmingDialog(
                     )
                 }
             },
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ProjectSettingsScreenPreview() {
+    ColisionTheme {
+        ProjectSettingsScreen(
+            state = ProjectSettingsState(
+                projectName = "Conseil municipal de Saint-Machin",
+                shareCode = "KQ7H2P",
+            ),
+            snackbarHostState = androidx.compose.runtime.remember { SnackbarHostState() },
+            onIntent = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun ProjectSettingsScreenDeleteDialogPreview() {
+    ColisionTheme {
+        ProjectSettingsScreen(
+            state = ProjectSettingsState(
+                projectName = "Conseil municipal de Saint-Machin",
+                shareCode = "KQ7H2P",
+                confirming = ConfirmingAction.Delete(typed = "suppri"),
+            ),
+            snackbarHostState = androidx.compose.runtime.remember { SnackbarHostState() },
+            onIntent = {},
         )
     }
 }

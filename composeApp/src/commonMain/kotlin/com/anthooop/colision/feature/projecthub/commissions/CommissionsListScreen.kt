@@ -32,8 +32,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.anthooop.colision.core.design.Spacing
+import androidx.compose.ui.tooling.preview.Preview
+import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.CommissionEntity
+import com.anthooop.colision.core.design.Spacing
 
 @Composable
 fun CommissionsListScreen(
@@ -243,6 +245,35 @@ private fun EditingDialog(
                 },
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun CommissionsListScreenPreview() {
+    ColisionTheme {
+        CommissionsListScreen(
+            state = CommissionsListState(
+                isLoading = false,
+                commissions = listOf(
+                    CommissionEntity("c1", "p1", "Jeunesse", "", ""),
+                    CommissionEntity("c2", "p1", "École", "", ""),
+                    CommissionEntity("c3", "p1", "Urbanisme", "", ""),
+                ),
+            ),
+            onIntent = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun CommissionsListScreenEmptyPreview() {
+    ColisionTheme {
+        CommissionsListScreen(
+            state = CommissionsListState(isLoading = false),
+            onIntent = {},
+        )
     }
 }
 

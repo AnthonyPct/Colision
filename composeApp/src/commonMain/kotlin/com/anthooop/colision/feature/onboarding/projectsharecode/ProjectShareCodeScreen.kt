@@ -23,6 +23,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import com.anthooop.colision.app.ColisionTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -152,5 +154,21 @@ private fun ShareCodeDisplay(code: String) {
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun ProjectShareCodeScreenPreview() {
+    ColisionTheme {
+        ProjectShareCodeScreen(
+            state = ProjectShareCodeState(
+                projectName = "Conseil municipal de Saint-Machin",
+                shareCode = "KQ7H2P",
+                isLoading = false,
+            ),
+            snackbarHostState = androidx.compose.runtime.remember { SnackbarHostState() },
+            onIntent = {},
+        )
     }
 }

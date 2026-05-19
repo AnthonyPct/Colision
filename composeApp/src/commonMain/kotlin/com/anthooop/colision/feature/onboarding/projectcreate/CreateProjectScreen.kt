@@ -26,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.common.AppError
 import com.anthooop.colision.core.design.Spacing
 
@@ -138,4 +140,29 @@ private fun errorMessage(error: AppError): String = when (error) {
         "Impossible de créer le projet — vérifie ta connexion."
     is AppError.Unknown -> "Impossible de créer le projet — réessaie dans un instant."
     else -> "Impossible de créer le projet — réessaie dans un instant."
+}
+
+@Preview
+@Composable
+private fun CreateProjectScreenPreview() {
+    ColisionTheme {
+        CreateProjectScreen(
+            state = CreateProjectState(name = "Conseil municipal de Saint-Machin"),
+            onIntent = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun CreateProjectScreenSubmittingPreview() {
+    ColisionTheme {
+        CreateProjectScreen(
+            state = CreateProjectState(
+                name = "Conseil municipal de Saint-Machin",
+                isSubmitting = true,
+            ),
+            onIntent = {},
+        )
+    }
 }

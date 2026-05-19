@@ -28,6 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.design.Spacing
 
 @Composable
@@ -198,5 +200,13 @@ private fun HeroIllustration(modifier: Modifier = Modifier) {
                 style = Stroke(width = 1.2f),
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun WelcomeScreenPreview() {
+    ColisionTheme {
+        WelcomeScreen(state = WelcomeState(), onIntent = {})
     }
 }

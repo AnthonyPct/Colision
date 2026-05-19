@@ -29,6 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.anthooop.colision.app.ColisionTheme
+import com.anthooop.colision.core.database.entity.MemberEntity
 import com.anthooop.colision.core.design.Spacing
 
 @Composable
@@ -150,5 +153,32 @@ private fun MemberRowItem(row: MemberRow, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun MembersListScreenPreview() {
+    ColisionTheme {
+        MembersListScreen(
+            state = MembersListState(
+                isLoading = false,
+                rows = listOf(
+                    MemberRow(
+                        MemberEntity("m1", "p1", null, "Antoine Durand", "", ""),
+                        listOf("Urbanisme", "Voirie"),
+                    ),
+                    MemberRow(
+                        MemberEntity("m2", "p1", "d1", "Sophie Picquet", "", ""),
+                        listOf("Jeunesse", "École"),
+                    ),
+                    MemberRow(
+                        MemberEntity("m3", "p1", null, "Camille Roux", "", ""),
+                        emptyList(),
+                    ),
+                ),
+            ),
+            onIntent = {},
+        )
     }
 }

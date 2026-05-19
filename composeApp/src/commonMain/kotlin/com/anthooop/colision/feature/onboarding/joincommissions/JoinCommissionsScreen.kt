@@ -30,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.design.Spacing
 
@@ -190,5 +192,25 @@ private fun CommissionRow(commission: CommissionEntity, checked: Boolean, onTogg
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun JoinCommissionsScreenPreview() {
+    ColisionTheme {
+        JoinCommissionsScreen(
+            state = JoinCommissionsState(
+                isLoading = false,
+                commissions = listOf(
+                    CommissionEntity("c1", "p1", "Jeunesse", "", ""),
+                    CommissionEntity("c2", "p1", "École", "", ""),
+                    CommissionEntity("c3", "p1", "Urbanisme", "", ""),
+                    CommissionEntity("c4", "p1", "Voirie", "", ""),
+                ),
+                checkedIds = setOf("c1", "c2"),
+            ),
+            onIntent = {},
+        )
     }
 }

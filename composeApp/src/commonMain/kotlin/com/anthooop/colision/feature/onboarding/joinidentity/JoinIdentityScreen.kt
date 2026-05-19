@@ -31,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.MemberEntity
 import com.anthooop.colision.core.design.Spacing
 
@@ -236,5 +238,24 @@ private fun initialsFor(name: String): String {
         parts.isEmpty() -> "?"
         parts.size == 1 -> parts[0].take(2).uppercase()
         else -> (parts[0].take(1) + parts[1].take(1)).uppercase()
+    }
+}
+
+@Preview
+@Composable
+private fun JoinIdentityScreenPreview() {
+    ColisionTheme {
+        JoinIdentityScreen(
+            state = JoinIdentityState(
+                isLoading = false,
+                members = listOf(
+                    MemberEntity("m1", "p1", null, "Antoine Durand", "", ""),
+                    MemberEntity("m2", "p1", null, "Sophie Picquet", "", ""),
+                    MemberEntity("m3", "p1", null, "Camille Roux", "", ""),
+                ),
+                selectedMemberId = "m2",
+            ),
+            onIntent = {},
+        )
     }
 }
