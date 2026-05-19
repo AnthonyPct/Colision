@@ -43,8 +43,19 @@ class JoinCodeViewModel(
                     .uppercase()
                     .filter { it.isLetterOrDigit() }
                     .take(6)
+                val previous = _state.value.code
+                // No-op if the cleaned text matches the existing code. The
+                // IME re-sends `onValueChange` multiple times when the user
+                // commits the last digit (composition → committed). Without
+                // this short-circuit we tear down `resolvedProjectName` and
+                // immediately re-fetch, which makes the success banner blink.
+                if (cleaned == previous) return
                 _state.update {
-                    it.copy(code = cleaned, error = null, resolvedProjectName = null)
+                    it.copy(
+                        code = cleaned,
+                        error = null,
+                        resolvedProjectName = null,
+                    )
                 }
                 if (cleaned.length == 6) resolve()
             }

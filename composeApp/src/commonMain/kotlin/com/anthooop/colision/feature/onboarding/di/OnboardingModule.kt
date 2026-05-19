@@ -29,5 +29,6 @@ val onboardingModule: Module = module {
     viewModelOf(::JoinConfirmViewModel)
     viewModelOf(::JoinIdentityViewModel)
     viewModelOf(::JoinCommissionsViewModel)
+    // (logger is resolved automatically by the viewModelOf factory)
     viewModelOf(::NotificationPermViewModel)
 }

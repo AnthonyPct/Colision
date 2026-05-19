@@ -2,6 +2,7 @@ package com.anthooop.colision.feature.projecthub.members
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.core.database.dao.MemberCommissionDao
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.database.entity.MemberCommissionEntity
@@ -30,6 +31,7 @@ class MembersListViewModel(
     private val membersRepository: MembersRepository,
     private val commissionsRepository: CommissionsRepository,
     private val memberCommissionDao: MemberCommissionDao,
+    private val currentMemberProvider: CurrentMemberProvider,
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -72,24 +74,42 @@ class MembersListViewModel(
             activeProject.observe()
                 .flatMapLatest { project ->
                     if (project == null) {
-                        flowOf(Triple(emptyList<MemberEntity>(), emptyList<CommissionEntity>(), emptyList<MemberCommissionEntity>()))
+                        flowOf(
+                            MembersSnapshot(
+                                members = emptyList(),
+                                commissions = emptyList(),
+                                links = emptyList(),
+                                currentMemberId = null,
+                            ),
+                        )
                     } else {
                         combine(
                             membersRepository.observeByProject(project.id),
                             commissionsRepository.observeByProject(project.id),
                             memberCommissionDao.observeForProject(project.id),
-                        ) { members, commissions, links ->
-                            Triple(members, commissions, links)
+                            currentMemberProvider.observe(),
+                        ) { members, commissions, links, currentMember ->
+                            MembersSnapshot(
+                                members = members,
+                                commissions = commissions,
+                                links = links,
+                                currentMemberId = currentMember?.id,
+                            )
                         }
                     }
                 }
-                .collectLatest { (members, commissions, links) ->
-                    val commissionsById = commissions.associateBy { it.id }
-                    val linksByMember: Map<String, List<MemberCommissionEntity>> = links.groupBy { it.memberId }
-                    val rows = members.map { member ->
+                .collectLatest { snapshot ->
+                    val commissionsById = snapshot.commissions.associateBy { it.id }
+                    val linksByMember: Map<String, List<MemberCommissionEntity>> =
+                        snapshot.links.groupBy { it.memberId }
+                    val rows = snapshot.members.map { member ->
                         val labels = linksByMember[member.id].orEmpty()
                             .mapNotNull { commissionsById[it.commissionId]?.name }
-                        MemberRow(member = member, commissionLabels = labels)
+                        MemberRow(
+                            member = member,
+                            commissionLabels = labels,
+                            isCurrentUser = member.id == snapshot.currentMemberId,
+                        )
                     }
                     _state.update { it.copy(rows = rows, isLoading = false) }
                 }
@@ -127,4 +147,11 @@ class MembersListViewModel(
     private fun emit(event: MembersListEvent) {
         viewModelScope.launch { _events.emit(event) }
     }
+
+    private data class MembersSnapshot(
+        val members: List<MemberEntity>,
+        val commissions: List<CommissionEntity>,
+        val links: List<MemberCommissionEntity>,
+        val currentMemberId: String?,
+    )
 }

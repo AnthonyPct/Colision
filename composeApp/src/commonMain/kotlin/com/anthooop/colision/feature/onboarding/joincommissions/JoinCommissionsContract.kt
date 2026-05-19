@@ -13,7 +13,7 @@ data class JoinCommissionsState(
 }
 
 sealed interface JoinCommissionsError {
-    data object PartialSave : JoinCommissionsError
+    data class PartialSave(val reason: String) : JoinCommissionsError
 }
 
 sealed interface JoinCommissionsIntent {

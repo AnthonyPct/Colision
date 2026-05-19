@@ -135,8 +135,9 @@ fun JoinCommissionsScreen(
             text = {
                 Text(
                     when (error) {
-                        JoinCommissionsError.PartialSave ->
-                            stringResource(Res.string.join_commissions_error_partial)
+                        is JoinCommissionsError.PartialSave -> stringResource(
+                            Res.string.join_commissions_error_partial,
+                        ) + error.reason.takeIf { it.isNotBlank() }?.let { " — $it" }.orEmpty()
                     },
                 )
             },

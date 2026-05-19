@@ -6,6 +6,7 @@ import com.anthooop.colision.core.database.entity.MemberEntity
 data class MemberRow(
     val member: MemberEntity,
     val commissionLabels: List<String>,
+    val isCurrentUser: Boolean = false,
 )
 
 data class MembersListState(

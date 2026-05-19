@@ -128,6 +128,7 @@
     <string name="members_list_dialog_title">Nouveau membre</string>
     <string name="members_list_dialog_placeholder">Prénom (et nom optionnel)</string>
     <string name="members_list_row_no_commission">Aucune commission</string>
+    <string name="members_list_row_you_badge">Toi</string>
     <string name="members_list_error_add">Impossible d\'ajouter — %1$s.</string>
 
     <!-- MemberCommissionsScreen -->
