@@ -15,7 +15,7 @@ import kotlinx.serialization.json.put
 interface ProjectsRepository {
     fun observeProject(projectId: String): Flow<ProjectEntity?>
     suspend fun getProject(projectId: String): ProjectEntity?
-    suspend fun createProject(name: String): Result<ProjectEntity>
+    suspend fun createProject(name: String, displayName: String): Result<ProjectEntity>
     suspend fun resolveByCode(code: String): Result<ProjectEntity>
     suspend fun deleteLocalProject(projectId: String)
 }
@@ -33,10 +33,13 @@ class DefaultProjectsRepository(
     override suspend fun getProject(projectId: String): ProjectEntity? =
         projectDao.findById(projectId)
 
-    override suspend fun createProject(name: String): Result<ProjectEntity> = runCatching {
+    override suspend fun createProject(name: String, displayName: String): Result<ProjectEntity> = runCatching {
         val dto = supabase.postgrest.rpc(
             function = "create_project",
-            parameters = buildJsonObject { put("p_name", name) },
+            parameters = buildJsonObject {
+                put("p_name", name)
+                put("p_display_name", displayName)
+            },
         ).decodeAs<ProjectDto>()
         val entity = dto.toEntity()
         projectDao.upsert(entity)

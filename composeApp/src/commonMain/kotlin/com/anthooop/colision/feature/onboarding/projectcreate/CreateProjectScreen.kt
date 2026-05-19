@@ -98,6 +98,27 @@ fun CreateProjectScreen(
             shape = RoundedCornerShape(14.dp),
         )
 
+        Spacer(Modifier.height(Spacing.SP4))
+
+        OutlinedTextField(
+            value = state.displayName,
+            onValueChange = { onIntent(CreateProjectIntent.DisplayNameChanged(it)) },
+            placeholder = {
+                Text(
+                    text = "Ex. Antoine",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+            label = {
+                Text(text = "Ton prénom", style = MaterialTheme.typography.labelMedium)
+            },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !state.isSubmitting,
+            shape = RoundedCornerShape(14.dp),
+        )
+
         if (state.error != null) {
             Spacer(Modifier.height(Spacing.SP3))
             Text(
@@ -147,7 +168,10 @@ private fun errorMessage(error: AppError): String = when (error) {
 private fun CreateProjectScreenPreview() {
     ColisionTheme {
         CreateProjectScreen(
-            state = CreateProjectState(name = "Conseil municipal de Saint-Machin"),
+            state = CreateProjectState(
+                name = "Conseil municipal de Saint-Machin",
+                displayName = "Antoine",
+            ),
             onIntent = {},
         )
     }
@@ -160,6 +184,7 @@ private fun CreateProjectScreenSubmittingPreview() {
         CreateProjectScreen(
             state = CreateProjectState(
                 name = "Conseil municipal de Saint-Machin",
+                displayName = "Antoine",
                 isSubmitting = true,
             ),
             onIntent = {},

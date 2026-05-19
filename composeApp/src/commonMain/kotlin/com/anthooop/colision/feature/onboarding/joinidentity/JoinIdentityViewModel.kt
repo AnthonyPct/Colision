@@ -103,20 +103,17 @@ class JoinIdentityViewModel(
         }
         _state.update { it.copy(isSubmitting = true) }
         viewModelScope.launch {
-            val added = membersRepository.addMember(projectId, adding.name.trim())
-            val createdMember = added.getOrNull()
-            if (createdMember == null) {
-                _state.update {
-                    it.copy(
-                        isSubmitting = false,
-                        addNewIdentity = null,
-                        pendingError = "Impossible d'ajouter — ${added.exceptionOrNull()?.message ?: "erreur réseau"}.",
-                    )
-                }
-                return@launch
-            }
-            membersRepository.claimIdentity(createdMember.id, deviceId).fold(
-                onSuccess = {
+            // Insert with device_id in a single call — the RLS policy
+            // accepts a row whose device_id matches the current device even
+            // before the device is a member of the project (self-bootstrap).
+            // This replaces the previous insert(device_id=null) + update
+            // pattern, which couldn't pass WITH CHECK.
+            membersRepository.addMember(
+                projectId = projectId,
+                displayName = adding.name.trim(),
+                deviceId = deviceId,
+            ).fold(
+                onSuccess = { createdMember ->
                     _state.update {
                         it.copy(
                             isSubmitting = false,

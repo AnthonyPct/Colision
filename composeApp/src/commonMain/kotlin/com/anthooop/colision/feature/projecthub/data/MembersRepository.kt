@@ -13,7 +13,11 @@ interface MembersRepository {
     fun observeByProject(projectId: String): Flow<List<MemberEntity>>
     fun observeAssignments(memberId: String): Flow<List<MemberCommissionEntity>>
     suspend fun refresh(projectId: String): Result<Unit>
-    suspend fun addMember(projectId: String, displayName: String): Result<MemberEntity>
+    suspend fun addMember(
+        projectId: String,
+        displayName: String,
+        deviceId: String? = null,
+    ): Result<MemberEntity>
     suspend fun setAssignment(memberId: String, commissionId: String, assigned: Boolean): Result<Unit>
     suspend fun claimIdentity(memberId: String, deviceId: String): Result<Unit>
     suspend fun releaseIdentity(memberId: String): Result<Unit>
@@ -51,9 +55,19 @@ class DefaultMembersRepository(
         )
     }
 
-    override suspend fun addMember(projectId: String, displayName: String): Result<MemberEntity> = runCatching {
+    override suspend fun addMember(
+        projectId: String,
+        displayName: String,
+        deviceId: String?,
+    ): Result<MemberEntity> = runCatching {
         val dto = supabase.from("member")
-            .insert(MemberInsertDto(projectId = projectId, displayName = displayName)) {
+            .insert(
+                MemberInsertDto(
+                    projectId = projectId,
+                    displayName = displayName,
+                    deviceId = deviceId,
+                ),
+            ) {
                 select()
             }
             .decodeSingle<MemberDto>()

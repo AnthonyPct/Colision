@@ -4,14 +4,17 @@ import com.anthooop.colision.core.common.AppError
 
 data class CreateProjectState(
     val name: String = "",
+    val displayName: String = "",
     val isSubmitting: Boolean = false,
     val error: AppError? = null,
 ) {
-    val canSubmit: Boolean = name.trim().length >= 2 && !isSubmitting
+    val canSubmit: Boolean =
+        name.trim().length >= 2 && displayName.trim().length >= 2 && !isSubmitting
 }
 
 sealed interface CreateProjectIntent {
     data class NameChanged(val value: String) : CreateProjectIntent
+    data class DisplayNameChanged(val value: String) : CreateProjectIntent
     data object SubmitTapped : CreateProjectIntent
     data object ErrorDismissed : CreateProjectIntent
     data object BackTapped : CreateProjectIntent

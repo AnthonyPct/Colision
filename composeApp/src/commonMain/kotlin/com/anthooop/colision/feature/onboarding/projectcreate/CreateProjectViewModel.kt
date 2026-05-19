@@ -31,6 +31,9 @@ class CreateProjectViewModel(
     fun onIntent(intent: CreateProjectIntent) {
         when (intent) {
             is CreateProjectIntent.NameChanged -> _state.update { it.copy(name = intent.value, error = null) }
+            is CreateProjectIntent.DisplayNameChanged -> _state.update {
+                it.copy(displayName = intent.value, error = null)
+            }
             CreateProjectIntent.SubmitTapped -> submit()
             CreateProjectIntent.ErrorDismissed -> _state.update { it.copy(error = null) }
             CreateProjectIntent.BackTapped -> emit(CreateProjectEvent.NavigateBack)
@@ -42,7 +45,10 @@ class CreateProjectViewModel(
         if (!current.canSubmit) return
         _state.update { it.copy(isSubmitting = true, error = null) }
         viewModelScope.launch {
-            val result = projectsRepository.createProject(current.name.trim())
+            val result = projectsRepository.createProject(
+                name = current.name.trim(),
+                displayName = current.displayName.trim(),
+            )
             result.fold(
                 onSuccess = { project ->
                     _state.update { it.copy(isSubmitting = false) }

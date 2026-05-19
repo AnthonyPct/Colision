@@ -18,6 +18,7 @@ data class MemberDto(
 data class MemberInsertDto(
     @SerialName("project_id") val projectId: String,
     @SerialName("display_name") val displayName: String,
+    @SerialName("device_id") val deviceId: String? = null,
 )
 
 @Serializable
