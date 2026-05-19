@@ -100,7 +100,7 @@ class MembersListViewModel(
                     _state.update {
                         it.copy(
                             addingMember = null,
-                            pendingError = "Impossible d'ajouter — ${t.message ?: "erreur réseau"}.",
+                            pendingError = MembersListError.Add(t.message.orEmpty()),
                         )
                     }
                 },

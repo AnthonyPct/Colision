@@ -12,8 +12,12 @@ data class MembersListState(
     val isLoading: Boolean = true,
     val rows: List<MemberRow> = emptyList(),
     val addingMember: AddingMember? = null,
-    val pendingError: String? = null,
+    val pendingError: MembersListError? = null,
 )
+
+sealed interface MembersListError {
+    data class Add(val reason: String) : MembersListError
+}
 
 data class AddingMember(
     val name: String = "",

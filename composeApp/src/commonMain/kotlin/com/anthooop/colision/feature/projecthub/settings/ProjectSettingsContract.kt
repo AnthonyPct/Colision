@@ -5,9 +5,13 @@ data class ProjectSettingsState(
     val shareCode: String = "",
     val confirming: ConfirmingAction? = null,
     val transientMessage: String? = null,
-    val pendingError: String? = null,
+    val pendingError: ProjectSettingsError? = null,
     val isProcessing: Boolean = false,
 )
+
+sealed interface ProjectSettingsError {
+    data class Network(val reason: String) : ProjectSettingsError
+}
 
 sealed interface ConfirmingAction {
     data object Leave : ConfirmingAction

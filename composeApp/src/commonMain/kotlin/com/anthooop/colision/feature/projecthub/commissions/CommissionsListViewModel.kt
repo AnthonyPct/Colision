@@ -99,7 +99,7 @@ class CommissionsListViewModel(
                     _state.update {
                         it.copy(
                             editing = null,
-                            pendingError = "Impossible — vérifie ta connexion (${t.message ?: "erreur réseau"}).",
+                            pendingError = CommissionsListError.Network(t.message.orEmpty()),
                         )
                     }
                 },

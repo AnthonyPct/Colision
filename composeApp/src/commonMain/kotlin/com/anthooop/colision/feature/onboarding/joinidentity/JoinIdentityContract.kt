@@ -9,7 +9,7 @@ data class JoinIdentityState(
     val selectedMemberId: String? = null,
     val addNewIdentity: AddNewIdentity? = null,
     val isSubmitting: Boolean = false,
-    val pendingError: String? = null,
+    val pendingError: JoinIdentityError? = null,
 ) {
     val filteredMembers: List<MemberEntity>
         get() = if (query.isBlank()) members
@@ -19,6 +19,12 @@ data class JoinIdentityState(
 
 data class AddNewIdentity(val name: String = "") {
     val canSubmit: Boolean = name.trim().length >= 2
+}
+
+sealed interface JoinIdentityError {
+    data object SessionMissing : JoinIdentityError
+    data class Claim(val reason: String) : JoinIdentityError
+    data class Add(val reason: String) : JoinIdentityError
 }
 
 sealed interface JoinIdentityIntent {

@@ -23,16 +23,24 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
-import com.anthooop.colision.app.ColisionTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.action_continue
+import colision.composeapp.generated.resources.action_copy
+import colision.composeapp.generated.resources.share_code_subtitle
+import colision.composeapp.generated.resources.share_code_subtitle_project_fallback
+import colision.composeapp.generated.resources.share_code_title
+import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProjectShareCodeScreen(
@@ -62,7 +70,7 @@ fun ProjectShareCodeScreen(
                     contentPadding = PaddingValues(horizontal = Spacing.SP3),
                 ) {
                     Text(
-                        text = "Retour",
+                        text = stringResource(Res.string.action_back),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
@@ -70,13 +78,16 @@ fun ProjectShareCodeScreen(
             }
 
             Text(
-                text = "Voici ton code\nde partage",
+                text = stringResource(Res.string.share_code_title),
                 style = MaterialTheme.typography.displayMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.height(Spacing.SP3))
+            val projectLabel = state.projectName.ifEmpty {
+                stringResource(Res.string.share_code_subtitle_project_fallback)
+            }
             Text(
-                text = "Partage ce code aux autres membres de ton conseil pour qu'ils rejoignent ${state.projectName.ifEmpty { "le projet" }}.",
+                text = stringResource(Res.string.share_code_subtitle, projectLabel),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -94,7 +105,7 @@ fun ProjectShareCodeScreen(
                 enabled = state.shareCode.isNotEmpty(),
             ) {
                 Text(
-                    text = "Copier",
+                    text = stringResource(Res.string.action_copy),
                     style = MaterialTheme.typography.labelLarge,
                     textAlign = TextAlign.Center,
                 )
@@ -110,7 +121,7 @@ fun ProjectShareCodeScreen(
                 enabled = !state.isLoading,
             ) {
                 Text(
-                    text = "Continuer",
+                    text = stringResource(Res.string.action_continue),
                     style = MaterialTheme.typography.labelLarge,
                     textAlign = TextAlign.Center,
                 )

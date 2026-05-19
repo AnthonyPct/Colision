@@ -6,8 +6,12 @@ data class CommissionsListState(
     val isLoading: Boolean = true,
     val commissions: List<CommissionEntity> = emptyList(),
     val editing: EditingState? = null,
-    val pendingError: String? = null,
+    val pendingError: CommissionsListError? = null,
 )
+
+sealed interface CommissionsListError {
+    data class Network(val reason: String) : CommissionsListError
+}
 
 sealed interface EditingState {
     data class Create(val name: String = "") : EditingState

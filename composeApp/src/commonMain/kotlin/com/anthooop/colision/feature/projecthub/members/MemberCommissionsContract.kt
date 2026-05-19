@@ -7,8 +7,12 @@ data class MemberCommissionsState(
     val commissions: List<CommissionEntity> = emptyList(),
     val assignedIds: Set<String> = emptySet(),
     val isLoading: Boolean = true,
-    val pendingError: String? = null,
+    val pendingError: MemberCommissionsError? = null,
 )
+
+sealed interface MemberCommissionsError {
+    data class Toggle(val reason: String) : MemberCommissionsError
+}
 
 sealed interface MemberCommissionsIntent {
     data object BackTapped : MemberCommissionsIntent

@@ -7,9 +7,13 @@ data class JoinCommissionsState(
     val commissions: List<CommissionEntity> = emptyList(),
     val checkedIds: Set<String> = emptySet(),
     val isSubmitting: Boolean = false,
-    val pendingError: String? = null,
+    val pendingError: JoinCommissionsError? = null,
 ) {
     val canSubmit: Boolean = checkedIds.isNotEmpty() && !isSubmitting
+}
+
+sealed interface JoinCommissionsError {
+    data object PartialSave : JoinCommissionsError
 }
 
 sealed interface JoinCommissionsIntent {

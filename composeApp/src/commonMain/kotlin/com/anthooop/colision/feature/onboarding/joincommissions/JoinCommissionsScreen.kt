@@ -29,11 +29,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.action_ok
+import colision.composeapp.generated.resources.dialog_error_title
+import colision.composeapp.generated.resources.join_commissions_action_continue
+import colision.composeapp.generated.resources.join_commissions_banner
+import colision.composeapp.generated.resources.join_commissions_error_partial
+import colision.composeapp.generated.resources.join_commissions_subtitle
+import colision.composeapp.generated.resources.join_commissions_title
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun JoinCommissionsScreen(
@@ -55,29 +66,27 @@ fun JoinCommissionsScreen(
         Row(modifier = Modifier.fillMaxWidth()) {
             TextButton(onClick = { onIntent(JoinCommissionsIntent.BackTapped) }) {
                 Text(
-                    text = "Retour",
+                    text = stringResource(Res.string.action_back),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
         Text(
-            text = "Tes commissions",
+            text = stringResource(Res.string.join_commissions_title),
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(Spacing.SP2))
         Text(
-            text = "Coche celles dont tu es membre. Tu pourras les modifier plus tard.",
+            text = stringResource(Res.string.join_commissions_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         Spacer(Modifier.height(Spacing.SP4))
 
-        InfoBanner(
-            text = "Tu peux ajuster cette sélection à tout moment depuis les réglages.",
-        )
+        InfoBanner(text = stringResource(Res.string.join_commissions_banner))
 
         Spacer(Modifier.height(Spacing.SP4))
 
@@ -106,23 +115,31 @@ fun JoinCommissionsScreen(
             contentPadding = PaddingValues(horizontal = Spacing.SP6),
         ) {
             val n = state.checkedIds.size
-            val plural = if (n > 1) "cochées" else "cochée"
             Text(
-                text = "Continuer ($n $plural)",
+                text = pluralStringResource(Res.plurals.join_commissions_action_continue, n, n),
                 style = MaterialTheme.typography.labelLarge,
                 textAlign = TextAlign.Center,
             )
         }
     }
 
-    state.pendingError?.let { msg ->
+    state.pendingError?.let { error ->
         AlertDialog(
             onDismissRequest = { onIntent(JoinCommissionsIntent.ErrorDismissed) },
             confirmButton = {
-                TextButton(onClick = { onIntent(JoinCommissionsIntent.ErrorDismissed) }) { Text("OK") }
+                TextButton(onClick = { onIntent(JoinCommissionsIntent.ErrorDismissed) }) {
+                    Text(stringResource(Res.string.action_ok))
+                }
             },
-            title = { Text("Erreur") },
-            text = { Text(msg) },
+            title = { Text(stringResource(Res.string.dialog_error_title)) },
+            text = {
+                Text(
+                    when (error) {
+                        JoinCommissionsError.PartialSave ->
+                            stringResource(Res.string.join_commissions_error_partial)
+                    },
+                )
+            },
         )
     }
 }

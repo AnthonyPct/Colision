@@ -30,9 +30,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.action_cancel
+import colision.composeapp.generated.resources.action_add
+import colision.composeapp.generated.resources.action_ok
+import colision.composeapp.generated.resources.dialog_error_title
+import colision.composeapp.generated.resources.error_reason_fallback
+import colision.composeapp.generated.resources.members_list_action_add
+import colision.composeapp.generated.resources.members_list_dialog_placeholder
+import colision.composeapp.generated.resources.members_list_dialog_title
+import colision.composeapp.generated.resources.members_list_empty
+import colision.composeapp.generated.resources.members_list_error_add
+import colision.composeapp.generated.resources.members_list_row_no_commission
+import colision.composeapp.generated.resources.members_list_title
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.MemberEntity
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun MembersListScreen(
@@ -54,16 +69,25 @@ fun MembersListScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TextButton(onClick = { onIntent(MembersListIntent.BackTapped) }) {
-                Text("Retour", style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurface)
+                Text(
+                    text = stringResource(Res.string.action_back),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
             }
             Spacer(Modifier.weight(1f))
-            Text("Membres", style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                text = stringResource(Res.string.members_list_title),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             Spacer(Modifier.weight(1f))
             TextButton(onClick = { onIntent(MembersListIntent.AddTapped) }) {
-                Text("+ Ajouter", style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary)
+                Text(
+                    text = stringResource(Res.string.members_list_action_add),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -74,7 +98,7 @@ fun MembersListScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Aucun membre pour l'instant.\nAjoute-en avec + Ajouter.",
+                    text = stringResource(Res.string.members_list_empty),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -100,17 +124,19 @@ fun MembersListScreen(
                 Button(
                     onClick = { onIntent(MembersListIntent.AddConfirmed) },
                     enabled = adding.canConfirm,
-                ) { Text("Ajouter") }
+                ) { Text(stringResource(Res.string.action_add)) }
             },
             dismissButton = {
-                TextButton(onClick = { onIntent(MembersListIntent.AddCancelled) }) { Text("Annuler") }
+                TextButton(onClick = { onIntent(MembersListIntent.AddCancelled) }) {
+                    Text(stringResource(Res.string.action_cancel))
+                }
             },
-            title = { Text("Nouveau membre") },
+            title = { Text(stringResource(Res.string.members_list_dialog_title)) },
             text = {
                 OutlinedTextField(
                     value = adding.name,
                     onValueChange = { onIntent(MembersListIntent.AddNameChanged(it)) },
-                    placeholder = { Text("Prénom (et nom optionnel)") },
+                    placeholder = { Text(stringResource(Res.string.members_list_dialog_placeholder)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -118,16 +144,26 @@ fun MembersListScreen(
         )
     }
 
-    state.pendingError?.let { msg ->
+    state.pendingError?.let { error ->
         AlertDialog(
             onDismissRequest = { onIntent(MembersListIntent.ErrorDismissed) },
             confirmButton = {
-                TextButton(onClick = { onIntent(MembersListIntent.ErrorDismissed) }) { Text("OK") }
+                TextButton(onClick = { onIntent(MembersListIntent.ErrorDismissed) }) {
+                    Text(stringResource(Res.string.action_ok))
+                }
             },
-            title = { Text("Erreur") },
-            text = { Text(msg) },
+            title = { Text(stringResource(Res.string.dialog_error_title)) },
+            text = { Text(membersListErrorMessage(error)) },
         )
     }
+}
+
+@Composable
+private fun membersListErrorMessage(error: MembersListError): String = when (error) {
+    is MembersListError.Add -> stringResource(
+        Res.string.members_list_error_add,
+        error.reason.ifEmpty { stringResource(Res.string.error_reason_fallback) },
+    )
 }
 
 @Composable
@@ -147,8 +183,11 @@ private fun MemberRowItem(row: MemberRow, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = if (row.commissionLabels.isEmpty()) "Aucune commission"
-                else row.commissionLabels.joinToString(" · "),
+                text = if (row.commissionLabels.isEmpty()) {
+                    stringResource(Res.string.members_list_row_no_commission)
+                } else {
+                    row.commissionLabels.joinToString(" · ")
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

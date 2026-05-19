@@ -79,7 +79,7 @@ class MemberCommissionsViewModel(
         viewModelScope.launch {
             membersRepository.setAssignment(memberId, commissionId, !currentlyAssigned).onFailure { t ->
                 _state.update {
-                    it.copy(pendingError = "Impossible — ${t.message ?: "erreur réseau"}.")
+                    it.copy(pendingError = MemberCommissionsError.Toggle(t.message.orEmpty()))
                 }
             }
         }

@@ -100,7 +100,7 @@ class JoinCommissionsViewModel(
                 _state.update {
                     it.copy(
                         isSubmitting = false,
-                        pendingError = "Impossible d'enregistrer toutes les commissions — réessaie.",
+                        pendingError = JoinCommissionsError.PartialSave,
                     )
                 }
             }

@@ -1,6 +1,5 @@
 package com.anthooop.colision.feature.onboarding.projectcreate
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,11 +24,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.create_project_action_submit
+import colision.composeapp.generated.resources.create_project_display_name_label
+import colision.composeapp.generated.resources.create_project_display_name_placeholder
+import colision.composeapp.generated.resources.create_project_error_generic
+import colision.composeapp.generated.resources.create_project_error_network
+import colision.composeapp.generated.resources.create_project_name_label
+import colision.composeapp.generated.resources.create_project_name_placeholder
+import colision.composeapp.generated.resources.create_project_subtitle
+import colision.composeapp.generated.resources.create_project_title
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.common.AppError
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CreateProjectScreen(
@@ -48,7 +59,6 @@ fun CreateProjectScreen(
                 bottom = Spacing.SP8 + safe.calculateBottomPadding(),
             ),
     ) {
-        // Back button row.
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = Spacing.SP6),
             verticalAlignment = Alignment.CenterVertically,
@@ -58,7 +68,7 @@ fun CreateProjectScreen(
                 contentPadding = PaddingValues(horizontal = Spacing.SP3),
             ) {
                 Text(
-                    text = "Retour",
+                    text = stringResource(Res.string.action_back),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -66,13 +76,13 @@ fun CreateProjectScreen(
         }
 
         Text(
-            text = "Crée ton projet",
+            text = stringResource(Res.string.create_project_title),
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(Spacing.SP3))
         Text(
-            text = "Donne-lui un nom pour que tes collègues le reconnaissent au premier coup d'œil.",
+            text = stringResource(Res.string.create_project_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -84,13 +94,16 @@ fun CreateProjectScreen(
             onValueChange = { onIntent(CreateProjectIntent.NameChanged(it)) },
             placeholder = {
                 Text(
-                    text = "Ex. Conseil municipal de Saint-Machin",
+                    text = stringResource(Res.string.create_project_name_placeholder),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
             label = {
-                Text(text = "Nom du projet", style = MaterialTheme.typography.labelMedium)
+                Text(
+                    text = stringResource(Res.string.create_project_name_label),
+                    style = MaterialTheme.typography.labelMedium,
+                )
             },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -105,13 +118,16 @@ fun CreateProjectScreen(
             onValueChange = { onIntent(CreateProjectIntent.DisplayNameChanged(it)) },
             placeholder = {
                 Text(
-                    text = "Ex. Antoine",
+                    text = stringResource(Res.string.create_project_display_name_placeholder),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
             label = {
-                Text(text = "Ton prénom", style = MaterialTheme.typography.labelMedium)
+                Text(
+                    text = stringResource(Res.string.create_project_display_name_label),
+                    style = MaterialTheme.typography.labelMedium,
+                )
             },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -147,7 +163,7 @@ fun CreateProjectScreen(
                 }
             } else {
                 Text(
-                    text = "Créer",
+                    text = stringResource(Res.string.create_project_action_submit),
                     style = MaterialTheme.typography.labelLarge,
                     textAlign = TextAlign.Center,
                 )
@@ -156,11 +172,11 @@ fun CreateProjectScreen(
     }
 }
 
+@Composable
 private fun errorMessage(error: AppError): String = when (error) {
     AppError.NetworkUnavailable, AppError.ServerUnreachable ->
-        "Impossible de créer le projet — vérifie ta connexion."
-    is AppError.Unknown -> "Impossible de créer le projet — réessaie dans un instant."
-    else -> "Impossible de créer le projet — réessaie dans un instant."
+        stringResource(Res.string.create_project_error_network)
+    else -> stringResource(Res.string.create_project_error_generic)
 }
 
 @Preview

@@ -88,7 +88,7 @@ class ProjectSettingsViewModel(
                         it.copy(
                             confirming = null,
                             isProcessing = false,
-                            pendingError = "Impossible — vérifie ta connexion (${t.message ?: "erreur réseau"}).",
+                            pendingError = ProjectSettingsError.Network(t.message.orEmpty()),
                         )
                     }
                 },

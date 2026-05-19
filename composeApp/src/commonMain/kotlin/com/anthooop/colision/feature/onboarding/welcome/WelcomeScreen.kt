@@ -29,8 +29,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.welcome_action_create
+import colision.composeapp.generated.resources.welcome_action_join
+import colision.composeapp.generated.resources.welcome_subtitle
+import colision.composeapp.generated.resources.welcome_title
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun WelcomeScreen(
@@ -61,13 +67,13 @@ fun WelcomeScreen(
             )
 
             Text(
-                text = "Plus jamais deux\nréunions en même temps.",
+                text = stringResource(Res.string.welcome_title),
                 style = MaterialTheme.typography.displayMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.height(Spacing.SP3))
             Text(
-                text = "Colision détecte les conflits d'agenda entre vos commissions, en temps réel. Sans compte, sans inscription.",
+                text = stringResource(Res.string.welcome_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -87,7 +93,7 @@ fun WelcomeScreen(
                 enabled = !state.isLoading,
             ) {
                 Text(
-                    text = "Créer un projet",
+                    text = stringResource(Res.string.welcome_action_create),
                     style = MaterialTheme.typography.labelLarge,
                     textAlign = TextAlign.Center,
                 )
@@ -103,7 +109,7 @@ fun WelcomeScreen(
                 ),
             ) {
                 Text(
-                    text = "Rejoindre un projet",
+                    text = stringResource(Res.string.welcome_action_join),
                     style = MaterialTheme.typography.labelLarge,
                     textAlign = TextAlign.Center,
                 )

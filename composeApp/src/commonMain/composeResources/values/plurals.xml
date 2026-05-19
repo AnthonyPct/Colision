@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- JoinConfirmScreen: "1 commission." / "N commissions." -->
+    <plurals name="join_confirm_commissions_count">
+        <item quantity="one">%1$d commission.</item>
+        <item quantity="other">%1$d commissions.</item>
+    </plurals>
+
+    <!-- JoinCommissionsScreen: "Continuer (1 cochée)" / "Continuer (N cochées)" -->
+    <plurals name="join_commissions_action_continue">
+        <item quantity="one">Continuer (%1$d cochée)</item>
+        <item quantity="other">Continuer (%1$d cochées)</item>
+    </plurals>
+</resources>

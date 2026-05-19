@@ -26,8 +26,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.notif_perm_action_activate
+import colision.composeapp.generated.resources.notif_perm_action_later
+import colision.composeapp.generated.resources.notif_perm_card_arbitration_supporting
+import colision.composeapp.generated.resources.notif_perm_card_arbitration_title
+import colision.composeapp.generated.resources.notif_perm_card_conflict_supporting
+import colision.composeapp.generated.resources.notif_perm_card_conflict_title
+import colision.composeapp.generated.resources.notif_perm_card_meeting_supporting
+import colision.composeapp.generated.resources.notif_perm_card_meeting_title
+import colision.composeapp.generated.resources.notif_perm_subtitle
+import colision.composeapp.generated.resources.notif_perm_title
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun NotificationPermScreen(
@@ -64,13 +76,13 @@ fun NotificationPermScreen(
         Spacer(Modifier.height(Spacing.SP6))
 
         Text(
-            text = "Ne rate plus\nune coordination.",
+            text = stringResource(Res.string.notif_perm_title),
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(Spacing.SP3))
         Text(
-            text = "Colision t'envoie une notification quand une réunion crée un conflit avec ton agenda — pour que tu puisses trancher sans débat WhatsApp.",
+            text = stringResource(Res.string.notif_perm_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -78,18 +90,18 @@ fun NotificationPermScreen(
         Spacer(Modifier.height(Spacing.SP6))
 
         InfoCard(
-            title = "Conflit détecté",
-            supporting = "Quand quelqu'un programme une réunion qui chevauche la tienne.",
+            title = stringResource(Res.string.notif_perm_card_conflict_title),
+            supporting = stringResource(Res.string.notif_perm_card_conflict_supporting),
         )
         Spacer(Modifier.height(Spacing.SP3))
         InfoCard(
-            title = "Nouvelle réunion",
-            supporting = "Pour chaque réunion d'une commission dont tu es membre.",
+            title = stringResource(Res.string.notif_perm_card_meeting_title),
+            supporting = stringResource(Res.string.notif_perm_card_meeting_supporting),
         )
         Spacer(Modifier.height(Spacing.SP3))
         InfoCard(
-            title = "Arbitrages",
-            supporting = "Quand un autre membre choisit où il va.",
+            title = stringResource(Res.string.notif_perm_card_arbitration_title),
+            supporting = stringResource(Res.string.notif_perm_card_arbitration_supporting),
         )
 
         Spacer(Modifier.weight(1f))
@@ -102,7 +114,7 @@ fun NotificationPermScreen(
             enabled = !state.isRequesting,
         ) {
             Text(
-                text = "Activer les notifications",
+                text = stringResource(Res.string.notif_perm_action_activate),
                 style = MaterialTheme.typography.labelLarge,
                 textAlign = TextAlign.Center,
             )
@@ -114,7 +126,7 @@ fun NotificationPermScreen(
             enabled = !state.isRequesting,
         ) {
             Text(
-                text = "Plus tard",
+                text = stringResource(Res.string.notif_perm_action_later),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

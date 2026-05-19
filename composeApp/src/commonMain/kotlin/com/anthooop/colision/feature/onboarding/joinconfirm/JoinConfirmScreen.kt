@@ -25,11 +25,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.join_confirm_action_confirm
+import colision.composeapp.generated.resources.join_confirm_action_wrong
+import colision.composeapp.generated.resources.join_confirm_commissions_count
+import colision.composeapp.generated.resources.join_confirm_eyebrow
+import colision.composeapp.generated.resources.join_confirm_loading_placeholder
+import colision.composeapp.generated.resources.join_confirm_section_commissions
+import colision.composeapp.generated.resources.join_confirm_section_commissions_empty
+import colision.composeapp.generated.resources.join_confirm_section_members
+import colision.composeapp.generated.resources.join_confirm_section_members_supporting
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun JoinConfirmScreen(
@@ -53,7 +66,7 @@ fun JoinConfirmScreen(
         ) {
             TextButton(onClick = { onIntent(JoinConfirmIntent.BackTapped) }) {
                 Text(
-                    text = "Retour",
+                    text = stringResource(Res.string.action_back),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -61,19 +74,25 @@ fun JoinConfirmScreen(
         }
 
         Text(
-            text = "TU REJOINS",
+            text = stringResource(Res.string.join_confirm_eyebrow),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(Spacing.SP2))
         Text(
-            text = state.projectName.ifEmpty { "..." },
+            text = state.projectName.ifEmpty {
+                stringResource(Res.string.join_confirm_loading_placeholder)
+            },
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(Spacing.SP2))
         Text(
-            text = "${state.commissions.size} commission${if (state.commissions.size > 1) "s" else ""}.",
+            text = pluralStringResource(
+                Res.plurals.join_confirm_commissions_count,
+                state.commissions.size,
+                state.commissions.size,
+            ),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -92,7 +111,7 @@ fun JoinConfirmScreen(
             enabled = state.projectName.isNotEmpty(),
         ) {
             Text(
-                text = "C'est bien mon projet",
+                text = stringResource(Res.string.join_confirm_action_confirm),
                 style = MaterialTheme.typography.labelLarge,
                 textAlign = TextAlign.Center,
             )
@@ -103,7 +122,7 @@ fun JoinConfirmScreen(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "Ce n'est pas le bon projet",
+                text = stringResource(Res.string.join_confirm_action_wrong),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -120,14 +139,14 @@ private fun ProjectPreviewCard(commissions: List<CommissionEntity>) {
     ) {
         Column(modifier = Modifier.padding(Spacing.SP4)) {
             Text(
-                text = "Les commissions",
+                text = stringResource(Res.string.join_confirm_section_commissions),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(Spacing.SP2))
             if (commissions.isEmpty()) {
                 Text(
-                    text = "Aucune commission pour le moment.",
+                    text = stringResource(Res.string.join_confirm_section_commissions_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -159,13 +178,13 @@ private fun ProjectPreviewCard(commissions: List<CommissionEntity>) {
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         Column(modifier = Modifier.padding(Spacing.SP4)) {
             Text(
-                text = "Quelques membres déjà inscrits",
+                text = stringResource(Res.string.join_confirm_section_members),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(Spacing.SP2))
             Text(
-                text = "Tu pourras choisir ton identité à l'étape suivante.",
+                text = stringResource(Res.string.join_confirm_section_members_supporting),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

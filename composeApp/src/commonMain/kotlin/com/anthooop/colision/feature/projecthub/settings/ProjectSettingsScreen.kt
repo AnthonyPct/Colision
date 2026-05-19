@@ -25,8 +25,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.ui.tooling.preview.Preview
-import com.anthooop.colision.app.ColisionTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,9 +32,41 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.action_cancel
+import colision.composeapp.generated.resources.action_copy
+import colision.composeapp.generated.resources.action_delete
+import colision.composeapp.generated.resources.action_leave
+import colision.composeapp.generated.resources.action_ok
+import colision.composeapp.generated.resources.dialog_error_title
+import colision.composeapp.generated.resources.error_reason_fallback
+import colision.composeapp.generated.resources.project_settings_delete_action_in_progress
+import colision.composeapp.generated.resources.project_settings_delete_dialog_body
+import colision.composeapp.generated.resources.project_settings_delete_dialog_title
+import colision.composeapp.generated.resources.project_settings_delete_dialog_typed_error
+import colision.composeapp.generated.resources.project_settings_delete_dialog_typed_hint
+import colision.composeapp.generated.resources.project_settings_error
+import colision.composeapp.generated.resources.project_settings_leave_dialog_body
+import colision.composeapp.generated.resources.project_settings_leave_dialog_title
+import colision.composeapp.generated.resources.project_settings_row_commissions
+import colision.composeapp.generated.resources.project_settings_row_commissions_supporting
+import colision.composeapp.generated.resources.project_settings_row_delete
+import colision.composeapp.generated.resources.project_settings_row_delete_supporting
+import colision.composeapp.generated.resources.project_settings_row_leave
+import colision.composeapp.generated.resources.project_settings_row_leave_supporting
+import colision.composeapp.generated.resources.project_settings_row_members
+import colision.composeapp.generated.resources.project_settings_row_members_supporting
+import colision.composeapp.generated.resources.project_settings_section_danger
+import colision.composeapp.generated.resources.project_settings_section_management
+import colision.composeapp.generated.resources.project_settings_share_code_label
+import colision.composeapp.generated.resources.project_settings_share_code_placeholder
+import colision.composeapp.generated.resources.project_settings_title_fallback
+import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProjectSettingsScreen(
@@ -59,7 +89,9 @@ fun ProjectSettingsScreen(
                 ),
         ) {
             Text(
-                text = state.projectName.ifEmpty { "Mon projet" },
+                text = state.projectName.ifEmpty {
+                    stringResource(Res.string.project_settings_title_fallback)
+                },
                 style = MaterialTheme.typography.displayMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -73,34 +105,34 @@ fun ProjectSettingsScreen(
 
             Spacer(Modifier.height(Spacing.SP8))
 
-            SectionLabel("Gestion")
+            SectionLabel(stringResource(Res.string.project_settings_section_management))
             Spacer(Modifier.height(Spacing.SP3))
             SettingsRow(
-                title = "Commissions",
-                subtitle = "Ajouter, renommer, supprimer",
+                title = stringResource(Res.string.project_settings_row_commissions),
+                subtitle = stringResource(Res.string.project_settings_row_commissions_supporting),
                 onClick = { onIntent(ProjectSettingsIntent.OpenCommissions) },
             )
             Spacer(Modifier.height(Spacing.SP2))
             SettingsRow(
-                title = "Membres",
-                subtitle = "Ajouter et assigner aux commissions",
+                title = stringResource(Res.string.project_settings_row_members),
+                subtitle = stringResource(Res.string.project_settings_row_members_supporting),
                 onClick = { onIntent(ProjectSettingsIntent.OpenMembers) },
             )
 
             Spacer(Modifier.height(Spacing.SP8))
 
-            SectionLabel("Zone sensible")
+            SectionLabel(stringResource(Res.string.project_settings_section_danger))
             Spacer(Modifier.height(Spacing.SP3))
             SettingsRow(
-                title = "Quitter ce projet",
-                subtitle = "Je retire mon identité du projet",
+                title = stringResource(Res.string.project_settings_row_leave),
+                subtitle = stringResource(Res.string.project_settings_row_leave_supporting),
                 onClick = { onIntent(ProjectSettingsIntent.LeaveTapped) },
                 emphasised = false,
             )
             Spacer(Modifier.height(Spacing.SP2))
             SettingsRow(
-                title = "Supprimer le projet",
-                subtitle = "Action définitive pour tous les membres",
+                title = stringResource(Res.string.project_settings_row_delete),
+                subtitle = stringResource(Res.string.project_settings_row_delete_supporting),
                 onClick = { onIntent(ProjectSettingsIntent.DeleteTapped) },
                 emphasised = true,
             )
@@ -115,18 +147,26 @@ fun ProjectSettingsScreen(
     }
 
     state.confirming?.let { ConfirmingDialog(it, state.isProcessing, onIntent) }
-    state.pendingError?.let { msg ->
+    state.pendingError?.let { error ->
         AlertDialog(
             onDismissRequest = { onIntent(ProjectSettingsIntent.ErrorDismissed) },
             confirmButton = {
                 TextButton(onClick = { onIntent(ProjectSettingsIntent.ErrorDismissed) }) {
-                    Text("OK")
+                    Text(stringResource(Res.string.action_ok))
                 }
             },
-            title = { Text("Erreur") },
-            text = { Text(msg) },
+            title = { Text(stringResource(Res.string.dialog_error_title)) },
+            text = { Text(projectSettingsErrorMessage(error)) },
         )
     }
+}
+
+@Composable
+private fun projectSettingsErrorMessage(error: ProjectSettingsError): String = when (error) {
+    is ProjectSettingsError.Network -> stringResource(
+        Res.string.project_settings_error,
+        error.reason.ifEmpty { stringResource(Res.string.error_reason_fallback) },
+    )
 }
 
 @Composable
@@ -140,13 +180,15 @@ private fun ShareCodeCard(code: String, onCopy: () -> Unit) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Code de partage",
+                text = stringResource(Res.string.project_settings_share_code_label),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(Spacing.SP1))
             Text(
-                text = code.ifEmpty { "------" },
+                text = code.ifEmpty {
+                    stringResource(Res.string.project_settings_share_code_placeholder)
+                },
                 fontFamily = FontFamily.Monospace,
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp,
@@ -154,7 +196,10 @@ private fun ShareCodeCard(code: String, onCopy: () -> Unit) {
             )
         }
         TextButton(onClick = onCopy, enabled = code.isNotEmpty()) {
-            Text("Copier", style = MaterialTheme.typography.labelLarge)
+            Text(
+                text = stringResource(Res.string.action_copy),
+                style = MaterialTheme.typography.labelLarge,
+            )
         }
     }
 }
@@ -212,19 +257,15 @@ private fun ConfirmingDialog(
                 Button(
                     onClick = { onIntent(ProjectSettingsIntent.ConfirmCurrentAction) },
                     enabled = !isProcessing,
-                ) { Text("Quitter") }
+                ) { Text(stringResource(Res.string.action_leave)) }
             },
             dismissButton = {
                 TextButton(onClick = { onIntent(ProjectSettingsIntent.CancelCurrentAction) }) {
-                    Text("Annuler")
+                    Text(stringResource(Res.string.action_cancel))
                 }
             },
-            title = { Text("Quitter le projet ?") },
-            text = {
-                Text(
-                    text = "Tu vas quitter ce projet. Ton historique d'arbitrage sera effacé. Continuer ?",
-                )
-            },
+            title = { Text(stringResource(Res.string.project_settings_leave_dialog_title)) },
+            text = { Text(stringResource(Res.string.project_settings_leave_dialog_body)) },
         )
         is ConfirmingAction.Delete -> AlertDialog(
             onDismissRequest = { onIntent(ProjectSettingsIntent.CancelCurrentAction) },
@@ -236,23 +277,26 @@ private fun ConfirmingDialog(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError,
                     ),
-                ) { Text(if (isProcessing) "Suppression…" else "Supprimer") }
+                ) {
+                    Text(
+                        if (isProcessing) stringResource(Res.string.project_settings_delete_action_in_progress)
+                        else stringResource(Res.string.action_delete),
+                    )
+                }
             },
             dismissButton = {
                 TextButton(
                     onClick = { onIntent(ProjectSettingsIntent.CancelCurrentAction) },
                     enabled = !isProcessing,
-                ) { Text("Annuler") }
+                ) { Text(stringResource(Res.string.action_cancel)) }
             },
-            title = { Text("Supprimer le projet ?") },
+            title = { Text(stringResource(Res.string.project_settings_delete_dialog_title)) },
             text = {
                 Column {
-                    Text(
-                        text = "Cette action supprime DÉFINITIVEMENT le projet et toutes ses données pour tous ses membres. Cette suppression se propage à tous les appareils.",
-                    )
+                    Text(text = stringResource(Res.string.project_settings_delete_dialog_body))
                     Spacer(Modifier.height(Spacing.SP3))
                     Text(
-                        text = "Pour confirmer, tape « supprimer ».",
+                        text = stringResource(Res.string.project_settings_delete_dialog_typed_hint),
                         style = MaterialTheme.typography.labelMedium,
                     )
                     Spacer(Modifier.height(Spacing.SP2))
@@ -266,7 +310,7 @@ private fun ConfirmingDialog(
                         supportingText = {
                             if (action.typed.isNotEmpty() && !action.canConfirm) {
                                 Text(
-                                    text = "Le mot ne correspond pas.",
+                                    text = stringResource(Res.string.project_settings_delete_dialog_typed_error),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.error,
                                 )

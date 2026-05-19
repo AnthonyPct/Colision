@@ -28,9 +28,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.action_ok
+import colision.composeapp.generated.resources.dialog_error_title
+import colision.composeapp.generated.resources.error_reason_fallback
+import colision.composeapp.generated.resources.member_commissions_empty
+import colision.composeapp.generated.resources.member_commissions_error
+import colision.composeapp.generated.resources.member_commissions_subtitle
+import colision.composeapp.generated.resources.member_commissions_title_fallback
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun MemberCommissionsScreen(
@@ -50,7 +60,7 @@ fun MemberCommissionsScreen(
         ) {
             TextButton(onClick = { onIntent(MemberCommissionsIntent.BackTapped) }) {
                 Text(
-                    text = "Retour",
+                    text = stringResource(Res.string.action_back),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -60,13 +70,15 @@ fun MemberCommissionsScreen(
 
         Column(modifier = Modifier.padding(horizontal = Spacing.SP6, vertical = Spacing.SP4)) {
             Text(
-                text = state.memberName.ifEmpty { "Membre" },
+                text = state.memberName.ifEmpty {
+                    stringResource(Res.string.member_commissions_title_fallback)
+                },
                 style = MaterialTheme.typography.displayMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.padding(top = Spacing.SP2))
             Text(
-                text = "Coche les commissions auxquelles cette personne appartient.",
+                text = stringResource(Res.string.member_commissions_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -78,7 +90,7 @@ fun MemberCommissionsScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Pas encore de commission. Crée-en d'abord.",
+                    text = stringResource(Res.string.member_commissions_empty),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -100,16 +112,26 @@ fun MemberCommissionsScreen(
         }
     }
 
-    state.pendingError?.let { msg ->
+    state.pendingError?.let { error ->
         AlertDialog(
             onDismissRequest = { onIntent(MemberCommissionsIntent.ErrorDismissed) },
             confirmButton = {
-                TextButton(onClick = { onIntent(MemberCommissionsIntent.ErrorDismissed) }) { Text("OK") }
+                TextButton(onClick = { onIntent(MemberCommissionsIntent.ErrorDismissed) }) {
+                    Text(stringResource(Res.string.action_ok))
+                }
             },
-            title = { Text("Erreur") },
-            text = { Text(msg) },
+            title = { Text(stringResource(Res.string.dialog_error_title)) },
+            text = { Text(memberCommissionsErrorMessage(error)) },
         )
     }
+}
+
+@Composable
+private fun memberCommissionsErrorMessage(error: MemberCommissionsError): String = when (error) {
+    is MemberCommissionsError.Toggle -> stringResource(
+        Res.string.member_commissions_error,
+        error.reason.ifEmpty { stringResource(Res.string.error_reason_fallback) },
+    )
 }
 
 @Composable

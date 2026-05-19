@@ -33,9 +33,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.action_add
+import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.action_cancel
+import colision.composeapp.generated.resources.action_delete
+import colision.composeapp.generated.resources.action_modify
+import colision.composeapp.generated.resources.action_ok
+import colision.composeapp.generated.resources.action_save
+import colision.composeapp.generated.resources.commissions_list_action_add
+import colision.composeapp.generated.resources.commissions_list_dialog_create_title
+import colision.composeapp.generated.resources.commissions_list_dialog_delete_body
+import colision.composeapp.generated.resources.commissions_list_dialog_delete_title
+import colision.composeapp.generated.resources.commissions_list_dialog_placeholder
+import colision.composeapp.generated.resources.commissions_list_dialog_rename_title
+import colision.composeapp.generated.resources.commissions_list_empty
+import colision.composeapp.generated.resources.commissions_list_error
+import colision.composeapp.generated.resources.commissions_list_title
+import colision.composeapp.generated.resources.dialog_error_title
+import colision.composeapp.generated.resources.error_reason_fallback
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun CommissionsListScreen(
@@ -53,9 +73,9 @@ fun CommissionsListScreen(
             ),
     ) {
         TopBar(
-            title = "Commissions",
+            title = stringResource(Res.string.commissions_list_title),
             onBack = { onIntent(CommissionsListIntent.BackTapped) },
-            actionLabel = "+ Ajouter",
+            actionLabel = stringResource(Res.string.commissions_list_action_add),
             onAction = { onIntent(CommissionsListIntent.AddTapped) },
         )
 
@@ -65,7 +85,7 @@ fun CommissionsListScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Aucune commission pour l'instant.\nAjoute-en une avec + Ajouter.",
+                    text = stringResource(Res.string.commissions_list_empty),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -100,13 +120,21 @@ fun CommissionsListScreen(
             onDismissRequest = { onIntent(CommissionsListIntent.ErrorDismissed) },
             confirmButton = {
                 TextButton(onClick = { onIntent(CommissionsListIntent.ErrorDismissed) }) {
-                    Text("OK")
+                    Text(stringResource(Res.string.action_ok))
                 }
             },
-            title = { Text("Erreur") },
-            text = { Text(error) },
+            title = { Text(stringResource(Res.string.dialog_error_title)) },
+            text = { Text(commissionsListErrorMessage(error)) },
         )
     }
+}
+
+@Composable
+private fun commissionsListErrorMessage(error: CommissionsListError): String = when (error) {
+    is CommissionsListError.Network -> stringResource(
+        Res.string.commissions_list_error,
+        error.reason.ifEmpty { stringResource(Res.string.error_reason_fallback) },
+    )
 }
 
 @Composable
@@ -124,7 +152,7 @@ private fun TopBar(
     ) {
         TextButton(onClick = onBack) {
             Text(
-                text = "Retour",
+                text = stringResource(Res.string.action_back),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -171,11 +199,14 @@ private fun CommissionRow(
             modifier = Modifier.weight(1f),
         )
         TextButton(onClick = onRename) {
-            Text("Modifier", style = MaterialTheme.typography.labelMedium)
+            Text(
+                text = stringResource(Res.string.action_modify),
+                style = MaterialTheme.typography.labelMedium,
+            )
         }
         TextButton(onClick = onDelete) {
             Text(
-                text = "Supprimer",
+                text = stringResource(Res.string.action_delete),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.error,
             )
@@ -190,10 +221,20 @@ private fun EditingDialog(
 ) {
     when (editing) {
         is EditingState.Create, is EditingState.Rename -> {
-            val (name, title, confirmLabel) = when (editing) {
-                is EditingState.Create -> Triple(editing.name, "Nouvelle commission", "Ajouter")
-                is EditingState.Rename -> Triple(editing.name, "Renommer la commission", "Enregistrer")
-                else -> Triple("", "", "")
+            val name = when (editing) {
+                is EditingState.Create -> editing.name
+                is EditingState.Rename -> editing.name
+                else -> ""
+            }
+            val title = when (editing) {
+                is EditingState.Create -> stringResource(Res.string.commissions_list_dialog_create_title)
+                is EditingState.Rename -> stringResource(Res.string.commissions_list_dialog_rename_title)
+                else -> ""
+            }
+            val confirmLabel = when (editing) {
+                is EditingState.Create -> stringResource(Res.string.action_add)
+                is EditingState.Rename -> stringResource(Res.string.action_save)
+                else -> ""
             }
             AlertDialog(
                 onDismissRequest = { onIntent(CommissionsListIntent.EditorCancelled) },
@@ -205,7 +246,7 @@ private fun EditingDialog(
                 },
                 dismissButton = {
                     TextButton(onClick = { onIntent(CommissionsListIntent.EditorCancelled) }) {
-                        Text("Annuler")
+                        Text(stringResource(Res.string.action_cancel))
                     }
                 },
                 title = { Text(title) },
@@ -213,7 +254,9 @@ private fun EditingDialog(
                     OutlinedTextField(
                         value = name,
                         onValueChange = { onIntent(CommissionsListIntent.EditorNameChanged(it)) },
-                        placeholder = { Text("Ex. Jeunesse") },
+                        placeholder = {
+                            Text(stringResource(Res.string.commissions_list_dialog_placeholder))
+                        },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -230,18 +273,23 @@ private fun EditingDialog(
                             containerColor = MaterialTheme.colorScheme.error,
                             contentColor = MaterialTheme.colorScheme.onError,
                         ),
-                    ) { Text("Supprimer") }
+                    ) { Text(stringResource(Res.string.action_delete)) }
                 },
                 dismissButton = {
                     TextButton(onClick = { onIntent(CommissionsListIntent.EditorCancelled) }) {
-                        Text("Annuler")
+                        Text(stringResource(Res.string.action_cancel))
                     }
                 },
-                title = { Text("Supprimer ${editing.name} ?") },
-                text = {
+                title = {
                     Text(
-                        text = "Toutes les réunions rattachées à cette commission seront également supprimées. Cette action est définitive.",
+                        stringResource(
+                            Res.string.commissions_list_dialog_delete_title,
+                            editing.name,
+                        ),
                     )
+                },
+                text = {
+                    Text(stringResource(Res.string.commissions_list_dialog_delete_body))
                 },
             )
         }

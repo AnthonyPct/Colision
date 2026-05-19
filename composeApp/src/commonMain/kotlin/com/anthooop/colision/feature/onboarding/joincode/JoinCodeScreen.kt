@@ -40,12 +40,22 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.action_continue
+import colision.composeapp.generated.resources.join_code_banner_resolved
+import colision.composeapp.generated.resources.join_code_error_generic
+import colision.composeapp.generated.resources.join_code_error_invalid
+import colision.composeapp.generated.resources.join_code_error_offline
+import colision.composeapp.generated.resources.join_code_subtitle
+import colision.composeapp.generated.resources.join_code_title
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.common.AppError
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun JoinCodeScreen(
@@ -73,7 +83,7 @@ fun JoinCodeScreen(
         ) {
             TextButton(onClick = { onIntent(JoinCodeIntent.BackTapped) }) {
                 Text(
-                    text = "Retour",
+                    text = stringResource(Res.string.action_back),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -81,13 +91,13 @@ fun JoinCodeScreen(
         }
 
         Text(
-            text = "Saisis le code\nde ton projet",
+            text = stringResource(Res.string.join_code_title),
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(Spacing.SP2))
         Text(
-            text = "Six lettres ou chiffres, partagés par la personne qui a créé le projet.",
+            text = stringResource(Res.string.join_code_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -134,7 +144,7 @@ fun JoinCodeScreen(
             contentPadding = PaddingValues(horizontal = Spacing.SP6),
         ) {
             Text(
-                text = "Continuer",
+                text = stringResource(Res.string.action_continue),
                 style = MaterialTheme.typography.labelLarge,
                 textAlign = TextAlign.Center,
             )
@@ -199,7 +209,7 @@ private fun SuccessBanner(projectName: String) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "Code reconnu : $projectName",
+            text = stringResource(Res.string.join_code_banner_resolved, projectName),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
         )
@@ -209,11 +219,10 @@ private fun SuccessBanner(projectName: String) {
 @Composable
 private fun ErrorBanner(error: AppError) {
     val message = when (error) {
-        AppError.ProjectCodeInvalid ->
-            "Code introuvable. Vérifie auprès de la personne qui te l'a partagé."
+        AppError.ProjectCodeInvalid -> stringResource(Res.string.join_code_error_invalid)
         AppError.NetworkUnavailable, AppError.ServerUnreachable ->
-            "Pas de connexion. Vérifie ton réseau et réessaie."
-        else -> "Impossible de vérifier le code — réessaie."
+            stringResource(Res.string.join_code_error_offline)
+        else -> stringResource(Res.string.join_code_error_generic)
     }
     Row(
         modifier = Modifier

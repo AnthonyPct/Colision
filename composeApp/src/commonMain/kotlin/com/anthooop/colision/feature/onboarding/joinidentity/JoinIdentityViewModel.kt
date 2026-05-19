@@ -72,7 +72,7 @@ class JoinIdentityViewModel(
     private fun confirmAndClaim() {
         val memberId = _state.value.selectedMemberId ?: return
         val deviceId = currentDeviceId() ?: run {
-            _state.update { it.copy(pendingError = "Session manquante — relance l'application.") }
+            _state.update { it.copy(pendingError = JoinIdentityError.SessionMissing) }
             return
         }
         _state.update { it.copy(isSubmitting = true) }
@@ -86,7 +86,7 @@ class JoinIdentityViewModel(
                     _state.update {
                         it.copy(
                             isSubmitting = false,
-                            pendingError = "Impossible — ${t.message ?: "erreur réseau"}.",
+                            pendingError = JoinIdentityError.Claim(t.message.orEmpty()),
                         )
                     }
                 },
@@ -98,7 +98,7 @@ class JoinIdentityViewModel(
         val adding = _state.value.addNewIdentity ?: return
         if (!adding.canSubmit) return
         val deviceId = currentDeviceId() ?: run {
-            _state.update { it.copy(pendingError = "Session manquante — relance l'application.") }
+            _state.update { it.copy(pendingError = JoinIdentityError.SessionMissing) }
             return
         }
         _state.update { it.copy(isSubmitting = true) }
@@ -106,8 +106,6 @@ class JoinIdentityViewModel(
             // Insert with device_id in a single call — the RLS policy
             // accepts a row whose device_id matches the current device even
             // before the device is a member of the project (self-bootstrap).
-            // This replaces the previous insert(device_id=null) + update
-            // pattern, which couldn't pass WITH CHECK.
             membersRepository.addMember(
                 projectId = projectId,
                 displayName = adding.name.trim(),
@@ -128,7 +126,7 @@ class JoinIdentityViewModel(
                         it.copy(
                             isSubmitting = false,
                             addNewIdentity = null,
-                            pendingError = "Impossible — ${t.message ?: "erreur réseau"}.",
+                            pendingError = JoinIdentityError.Add(t.message.orEmpty()),
                         )
                     }
                 },

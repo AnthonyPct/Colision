@@ -33,8 +33,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.anthooop.colision.app.ColisionTheme
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.action_cancel
+import colision.composeapp.generated.resources.action_continue
+import colision.composeapp.generated.resources.action_ok
+import colision.composeapp.generated.resources.dialog_error_title
+import colision.composeapp.generated.resources.error_reason_fallback
+import colision.composeapp.generated.resources.join_identity_action_add_self
+import colision.composeapp.generated.resources.join_identity_action_confirm
+import colision.composeapp.generated.resources.join_identity_avatar_fallback
+import colision.composeapp.generated.resources.join_identity_dialog_placeholder
+import colision.composeapp.generated.resources.join_identity_dialog_title
+import colision.composeapp.generated.resources.join_identity_error_add
+import colision.composeapp.generated.resources.join_identity_error_claim
+import colision.composeapp.generated.resources.join_identity_error_session_missing
+import colision.composeapp.generated.resources.join_identity_search_placeholder
+import colision.composeapp.generated.resources.join_identity_subtitle
+import colision.composeapp.generated.resources.join_identity_title
 import com.anthooop.colision.core.database.entity.MemberEntity
 import com.anthooop.colision.core.design.Spacing
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun JoinIdentityScreen(
@@ -56,20 +75,20 @@ fun JoinIdentityScreen(
         Row(modifier = Modifier.fillMaxWidth()) {
             TextButton(onClick = { onIntent(JoinIdentityIntent.BackTapped) }) {
                 Text(
-                    text = "Retour",
+                    text = stringResource(Res.string.action_back),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
         Text(
-            text = "Qui es-tu ?",
+            text = stringResource(Res.string.join_identity_title),
             style = MaterialTheme.typography.displayMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(Spacing.SP2))
         Text(
-            text = "Choisis ton nom dans la liste. Tu n'y es pas ? Ajoute-toi en bas.",
+            text = stringResource(Res.string.join_identity_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -79,7 +98,7 @@ fun JoinIdentityScreen(
         OutlinedTextField(
             value = state.query,
             onValueChange = { onIntent(JoinIdentityIntent.QueryChanged(it)) },
-            placeholder = { Text("Rechercher ton nom") },
+            placeholder = { Text(stringResource(Res.string.join_identity_search_placeholder)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(percent = 50),
@@ -113,7 +132,7 @@ fun JoinIdentityScreen(
             contentPadding = PaddingValues(horizontal = Spacing.SP6),
         ) {
             Text(
-                text = "C'est moi",
+                text = stringResource(Res.string.join_identity_action_confirm),
                 style = MaterialTheme.typography.labelLarge,
                 textAlign = TextAlign.Center,
             )
@@ -127,31 +146,37 @@ fun JoinIdentityScreen(
                 Button(
                     onClick = { onIntent(JoinIdentityIntent.AddConfirmed) },
                     enabled = adding.canSubmit && !state.isSubmitting,
-                ) { Text("Continuer") }
+                ) { Text(stringResource(Res.string.action_continue)) }
             },
             dismissButton = {
-                TextButton(onClick = { onIntent(JoinIdentityIntent.AddCancelled) }) { Text("Annuler") }
+                TextButton(onClick = { onIntent(JoinIdentityIntent.AddCancelled) }) {
+                    Text(stringResource(Res.string.action_cancel))
+                }
             },
-            title = { Text("Ton nom") },
+            title = { Text(stringResource(Res.string.join_identity_dialog_title)) },
             text = {
                 OutlinedTextField(
                     value = adding.name,
                     onValueChange = { onIntent(JoinIdentityIntent.AddNameChanged(it)) },
-                    placeholder = { Text("Prénom (et nom optionnel)") },
+                    placeholder = {
+                        Text(stringResource(Res.string.join_identity_dialog_placeholder))
+                    },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
             },
         )
     }
-    state.pendingError?.let { msg ->
+    state.pendingError?.let { error ->
         AlertDialog(
             onDismissRequest = { onIntent(JoinIdentityIntent.ErrorDismissed) },
             confirmButton = {
-                TextButton(onClick = { onIntent(JoinIdentityIntent.ErrorDismissed) }) { Text("OK") }
+                TextButton(onClick = { onIntent(JoinIdentityIntent.ErrorDismissed) }) {
+                    Text(stringResource(Res.string.action_ok))
+                }
             },
-            title = { Text("Erreur") },
-            text = { Text(msg) },
+            title = { Text(stringResource(Res.string.dialog_error_title)) },
+            text = { Text(joinIdentityErrorMessage(error)) },
         )
     }
 }
@@ -209,7 +234,7 @@ private fun AddMyselfRow(onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "+ Je m'ajoute moi-même",
+            text = stringResource(Res.string.join_identity_action_add_self),
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -232,13 +257,28 @@ private fun AvatarBubble(initials: String) {
     }
 }
 
+@Composable
 private fun initialsFor(name: String): String {
     val parts = name.trim().split(" ").filter { it.isNotBlank() }
     return when {
-        parts.isEmpty() -> "?"
+        parts.isEmpty() -> stringResource(Res.string.join_identity_avatar_fallback)
         parts.size == 1 -> parts[0].take(2).uppercase()
         else -> (parts[0].take(1) + parts[1].take(1)).uppercase()
     }
+}
+
+@Composable
+private fun joinIdentityErrorMessage(error: JoinIdentityError): String = when (error) {
+    JoinIdentityError.SessionMissing ->
+        stringResource(Res.string.join_identity_error_session_missing)
+    is JoinIdentityError.Claim -> stringResource(
+        Res.string.join_identity_error_claim,
+        error.reason.ifEmpty { stringResource(Res.string.error_reason_fallback) },
+    )
+    is JoinIdentityError.Add -> stringResource(
+        Res.string.join_identity_error_add,
+        error.reason.ifEmpty { stringResource(Res.string.error_reason_fallback) },
+    )
 }
 
 @Preview
