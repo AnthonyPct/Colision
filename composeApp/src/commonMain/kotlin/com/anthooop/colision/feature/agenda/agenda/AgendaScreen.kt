@@ -38,6 +38,8 @@ import colision.composeapp.generated.resources.Res
 import colision.composeapp.generated.resources.agenda_create_meeting
 import colision.composeapp.generated.resources.agenda_empty
 import colision.composeapp.generated.resources.agenda_greeting
+import colision.composeapp.generated.resources.agenda_offline_banner
+import colision.composeapp.generated.resources.agenda_offline_banner_no_sync
 import colision.composeapp.generated.resources.agenda_toggle_month
 import colision.composeapp.generated.resources.agenda_toggle_week
 import com.anthooop.colision.core.design.Spacing
@@ -60,6 +62,9 @@ fun AgendaScreen(
                 .fillMaxSize()
                 .padding(top = safe.calculateTopPadding()),
         ) {
+            if (!state.isOnline) {
+                OfflineBanner(lastSyncTime = state.lastSyncTime)
+            }
             Header(firstName = state.firstName)
             ViewToggle(view = state.view, onSelect = { onIntent(AgendaIntent.ViewSelected(it)) })
             Spacer(Modifier.height(Spacing.SP2))
@@ -87,6 +92,26 @@ fun AgendaScreen(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = Spacing.SP5, bottom = Spacing.SP5 + safe.calculateBottomPadding()),
+        )
+    }
+}
+
+@Composable
+private fun OfflineBanner(lastSyncTime: String?) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .padding(horizontal = Spacing.SP5, vertical = Spacing.SP2),
+    ) {
+        Text(
+            text = if (lastSyncTime != null) {
+                stringResource(Res.string.agenda_offline_banner, lastSyncTime)
+            } else {
+                stringResource(Res.string.agenda_offline_banner_no_sync)
+            },
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

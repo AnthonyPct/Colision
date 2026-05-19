@@ -3,6 +3,7 @@ package com.anthooop.colision.feature.agenda.agenda
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anthooop.colision.core.common.CurrentMemberProvider
+import com.anthooop.colision.core.common.ProjectSyncManager
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingCommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingEntity
@@ -22,12 +23,17 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 class AgendaViewModel(
     private val activeProjectProvider: ActiveProjectProvider,
     private val currentMemberProvider: CurrentMemberProvider,
     private val meetingsRepository: MeetingsRepository,
     private val commissionsRepository: CommissionsRepository,
+    private val syncManager: ProjectSyncManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AgendaState())
@@ -38,7 +44,8 @@ class AgendaViewModel(
 
     init {
         viewModelScope.launch { observeData() }
-        viewModelScope.launch { refresh() }
+        viewModelScope.launch { observeSync() }
+        syncManager.refreshNow()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -47,9 +54,29 @@ class AgendaViewModel(
             .flatMapLatest { project -> snapshotFlow(project?.id) }
             .collect { snapshot ->
                 _state.update { current ->
-                    snapshot.copy(view = current.view)
+                    current.copy(
+                        isLoading = false,
+                        firstName = snapshot.firstName,
+                        meetings = snapshot.meetings,
+                    )
                 }
             }
+    }
+
+    private suspend fun observeSync() {
+        combine(
+            syncManager.isOnline,
+            syncManager.lastSyncAt,
+        ) { online, lastSync ->
+            online to lastSync
+        }.collect { (online, lastSync) ->
+            _state.update {
+                it.copy(
+                    isOnline = online,
+                    lastSyncTime = lastSync?.let(::formatLocalTime),
+                )
+            }
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -97,9 +124,12 @@ class AgendaViewModel(
         )
     }
 
-    private suspend fun refresh() {
-        val projectId = activeProjectProvider.current()?.id ?: return
-        meetingsRepository.refresh(projectId)
+    @OptIn(ExperimentalTime::class)
+    private fun formatLocalTime(instant: Instant): String {
+        val ldt = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+        val hh = ldt.hour.toString().padStart(2, '0')
+        val mm = ldt.minute.toString().padStart(2, '0')
+        return "${hh}h${mm}"
     }
 
     fun onIntent(intent: AgendaIntent) {

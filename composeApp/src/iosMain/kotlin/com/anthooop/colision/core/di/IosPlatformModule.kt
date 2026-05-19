@@ -2,6 +2,8 @@ package com.anthooop.colision.core.di
 
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import com.anthooop.colision.core.common.ConnectivityObserver
+import com.anthooop.colision.core.common.IosConnectivityObserver
 import com.anthooop.colision.core.common.Logger
 import com.anthooop.colision.core.common.LoggerIos
 import com.anthooop.colision.core.common.NotificationPermissionManager
@@ -20,6 +22,7 @@ import platform.Foundation.NSUserDomainMask
 val iosPlatformModule: Module = module {
     single<Logger> { LoggerIos() }
     single<NotificationPermissionManager> { NotificationPermissionManagerIos() }
+    single<ConnectivityObserver> { IosConnectivityObserver() }
     single<ColisionDatabase> {
         Room.databaseBuilder<ColisionDatabase>(
             name = iosDatabasePath(),

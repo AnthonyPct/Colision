@@ -141,6 +141,8 @@
     <string name="agenda_toggle_month">Mois</string>
     <string name="agenda_empty">Aucune réunion à venir — bravo !</string>
     <string name="agenda_create_meeting">Nouvelle réunion</string>
+    <string name="agenda_offline_banner">Mode hors-ligne — dernière synchro à %1$s</string>
+    <string name="agenda_offline_banner_no_sync">Mode hors-ligne — pas encore synchronisé</string>
 
     <!-- CommissionDetailScreen -->
     <string name="commission_detail_subtitle">%1$d membres · %2$d réunions</string>

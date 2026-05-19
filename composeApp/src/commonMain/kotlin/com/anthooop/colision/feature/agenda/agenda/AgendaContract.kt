@@ -16,6 +16,8 @@ data class AgendaState(
     val view: AgendaView = AgendaView.Week,
     val firstName: String = "",
     val meetings: List<AgendaMeeting> = emptyList(),
+    val isOnline: Boolean = true,
+    val lastSyncTime: String? = null,
 )
 
 sealed interface AgendaIntent {
