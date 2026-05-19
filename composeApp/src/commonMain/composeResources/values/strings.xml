@@ -134,4 +134,11 @@
     <string name="member_commissions_subtitle">Coche les commissions auxquelles cette personne appartient.</string>
     <string name="member_commissions_empty">Pas encore de commission. Crée-en d\'abord.</string>
     <string name="member_commissions_error">Impossible — %1$s.</string>
+
+    <!-- AgendaScreen -->
+    <string name="agenda_greeting">Bonjour %1$s</string>
+    <string name="agenda_toggle_week">Semaine</string>
+    <string name="agenda_toggle_month">Mois</string>
+    <string name="agenda_empty">Aucune réunion à venir — bravo !</string>
+    <string name="agenda_create_meeting">Nouvelle réunion</string>
 </resources>
