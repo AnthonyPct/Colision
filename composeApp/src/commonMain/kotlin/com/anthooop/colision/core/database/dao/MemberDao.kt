@@ -31,6 +31,14 @@ interface MemberDao {
     )
     fun observeAttendingMeeting(meetingId: String): Flow<List<MemberEntity>>
 
+    @Query(
+        "SELECT m.* FROM member m " +
+            "INNER JOIN member_commission mc ON mc.memberId = m.id " +
+            "WHERE mc.commissionId = :commissionId " +
+            "ORDER BY m.displayName ASC",
+    )
+    fun observeByCommission(commissionId: String): Flow<List<MemberEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(member: MemberEntity)
 

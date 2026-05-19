@@ -22,6 +22,7 @@ sealed interface EditingState {
 sealed interface CommissionsListIntent {
     data object BackTapped : CommissionsListIntent
     data object AddTapped : CommissionsListIntent
+    data class RowTapped(val id: String) : CommissionsListIntent
     data class RenameTapped(val id: String, val name: String) : CommissionsListIntent
     data class DeleteTapped(val id: String, val name: String) : CommissionsListIntent
     data class EditorNameChanged(val value: String) : CommissionsListIntent
@@ -32,4 +33,5 @@ sealed interface CommissionsListIntent {
 
 sealed interface CommissionsListEvent {
     data object NavigateBack : CommissionsListEvent
+    data class NavigateToDetail(val commissionId: String) : CommissionsListEvent
 }

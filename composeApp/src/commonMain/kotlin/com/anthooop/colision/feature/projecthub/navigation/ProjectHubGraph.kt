@@ -6,6 +6,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.anthooop.colision.feature.agenda.navigation.AgendaDestination
 import com.anthooop.colision.feature.projecthub.commissions.CommissionsListRoute
 import com.anthooop.colision.feature.projecthub.members.MemberCommissionsRoute
 import com.anthooop.colision.feature.projecthub.members.MembersListRoute
@@ -30,6 +31,9 @@ fun NavGraphBuilder.projectHubDestinations(
     composable<ProjectHubDestination.Commissions> {
         CommissionsListRoute(
             onNavigateBack = { navController.popBackStack() },
+            onNavigateToDetail = { commissionId ->
+                navController.navigate(AgendaDestination.CommissionDetail(commissionId))
+            },
             modifier = Modifier.fillMaxSize(),
         )
     }

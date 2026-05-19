@@ -44,6 +44,8 @@ class CommissionsListViewModel(
     fun onIntent(intent: CommissionsListIntent) {
         when (intent) {
             CommissionsListIntent.BackTapped -> emit(CommissionsListEvent.NavigateBack)
+            is CommissionsListIntent.RowTapped ->
+                emit(CommissionsListEvent.NavigateToDetail(intent.id))
             CommissionsListIntent.AddTapped -> _state.update {
                 it.copy(editing = EditingState.Create())
             }

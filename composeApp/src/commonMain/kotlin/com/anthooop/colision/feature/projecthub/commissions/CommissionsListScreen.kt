@@ -3,6 +3,7 @@ package com.anthooop.colision.feature.projecthub.commissions
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -100,6 +101,7 @@ fun CommissionsListScreen(
                 items(state.commissions, key = { it.id }) { commission ->
                     CommissionRow(
                         commission = commission,
+                        onTap = { onIntent(CommissionsListIntent.RowTapped(commission.id)) },
                         onRename = { onIntent(CommissionsListIntent.RenameTapped(commission.id, commission.name)) },
                         onDelete = { onIntent(CommissionsListIntent.DeleteTapped(commission.id, commission.name)) },
                     )
@@ -182,6 +184,7 @@ private fun TopBar(
 @Composable
 private fun CommissionRow(
     commission: CommissionEntity,
+    onTap: () -> Unit,
     onRename: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -196,7 +199,7 @@ private fun CommissionRow(
             text = commission.name,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).clickable(onClick = onTap),
         )
         TextButton(onClick = onRename) {
             Text(

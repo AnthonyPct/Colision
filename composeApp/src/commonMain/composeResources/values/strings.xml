@@ -142,6 +142,12 @@
     <string name="agenda_empty">Aucune réunion à venir — bravo !</string>
     <string name="agenda_create_meeting">Nouvelle réunion</string>
 
+    <!-- CommissionDetailScreen -->
+    <string name="commission_detail_subtitle">%1$d membres · %2$d réunions</string>
+    <string name="commission_detail_upcoming_meetings">Réunions à venir</string>
+    <string name="commission_detail_no_meetings">Aucune réunion à venir.</string>
+    <string name="commission_detail_members">Membres (%1$d)</string>
+
     <!-- MeetingDetailScreen -->
     <string name="meeting_detail_loading">Chargement…</string>
     <string name="meeting_detail_no_title_fallback">Réunion sans titre</string>
