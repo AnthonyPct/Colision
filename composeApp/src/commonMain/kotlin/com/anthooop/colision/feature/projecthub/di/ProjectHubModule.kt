@@ -34,6 +34,7 @@ val projectHubModule: Module = module {
             projectDao = get(),
             memberDao = get(),
             memberCommissionDao = get(),
+            currentMemberProvider = get(),
         )
     }
 

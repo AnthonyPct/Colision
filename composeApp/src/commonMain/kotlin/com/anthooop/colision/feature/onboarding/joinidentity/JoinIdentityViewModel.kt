@@ -2,9 +2,8 @@ package com.anthooop.colision.feature.onboarding.joinidentity
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.feature.projecthub.data.MembersRepository
-import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +17,7 @@ import kotlinx.coroutines.launch
 
 class JoinIdentityViewModel(
     private val membersRepository: MembersRepository,
-    private val supabase: SupabaseClient,
+    private val currentMemberProvider: CurrentMemberProvider,
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -93,16 +92,16 @@ class JoinIdentityViewModel(
     // HELPER
     ///////////////////////////////////////////////////////////////////////////
 
-    private fun currentDeviceId(): String? = supabase.auth.currentUserOrNull()?.id
-
     private fun confirmAndClaim() {
         val memberId = _state.value.selectedMemberId ?: return
-        val deviceId = currentDeviceId() ?: run {
-            _state.update { it.copy(pendingError = JoinIdentityError.SessionMissing) }
-            return
-        }
         _state.update { it.copy(isSubmitting = true) }
         viewModelScope.launch {
+            val deviceId = currentMemberProvider.deviceId() ?: run {
+                _state.update {
+                    it.copy(isSubmitting = false, pendingError = JoinIdentityError.SessionMissing)
+                }
+                return@launch
+            }
             membersRepository.claimIdentity(memberId, deviceId).fold(
                 onSuccess = {
                     _state.update { it.copy(isSubmitting = false) }
@@ -123,12 +122,14 @@ class JoinIdentityViewModel(
     private fun addNewIdentityAndClaim() {
         val adding = _state.value.addNewIdentity ?: return
         if (!adding.canSubmit) return
-        val deviceId = currentDeviceId() ?: run {
-            _state.update { it.copy(pendingError = JoinIdentityError.SessionMissing) }
-            return
-        }
         _state.update { it.copy(isSubmitting = true) }
         viewModelScope.launch {
+            val deviceId = currentMemberProvider.deviceId() ?: run {
+                _state.update {
+                    it.copy(isSubmitting = false, pendingError = JoinIdentityError.SessionMissing)
+                }
+                return@launch
+            }
             // Insert with device_id in a single call — the RLS policy
             // accepts a row whose device_id matches the current device even
             // before the device is a member of the project (self-bootstrap).
