@@ -66,13 +66,23 @@ class JoinIdentityViewModel(
         this.projectId = projectId
         viewModelScope.launch { membersRepository.refresh(projectId) }
         viewModelScope.launch {
-            membersRepository.observeByProject(projectId).collectLatest { members ->
+            membersRepository.observeByProject(projectId).collectLatest { allMembers ->
+                // Only unclaimed identities are pickable: the RLS policy
+                // `member claim-an-unclaimed-row` (migration 008) requires
+                // `device_id IS NULL`, so showing already-claimed rows just
+                // surfaces a 42501 when the user taps "C'est moi". The
+                // creator (and anyone who already joined) lives in this
+                // claimed bucket — those users go through "+ Je m'ajoute".
+                val pickable = allMembers.filter { it.deviceId == null }
                 _state.update {
                     it.copy(
-                        members = members,
+                        members = pickable,
                         isLoading = false,
-                        // Auto-preselect the first member to match the design (Sophie default).
-                        selectedMemberId = it.selectedMemberId ?: members.firstOrNull()?.id,
+                        // Auto-preselect the first unclaimed member to match
+                        // the design (Sophie default).
+                        selectedMemberId = it.selectedMemberId?.takeIf { id ->
+                            pickable.any { m -> m.id == id }
+                        } ?: pickable.firstOrNull()?.id,
                     )
                 }
             }
