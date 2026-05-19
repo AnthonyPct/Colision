@@ -21,33 +21,24 @@ class JoinIdentityViewModel(
     private val supabase: SupabaseClient,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(JoinIdentityState())
     val state: StateFlow<JoinIdentityState> = _state.asStateFlow()
+
+    private var projectId: String = ""
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<JoinIdentityEvent>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val events: SharedFlow<JoinIdentityEvent> = _events.asSharedFlow()
-
-    private var projectId: String = ""
-
-    fun load(projectId: String) {
-        this.projectId = projectId
-        viewModelScope.launch { membersRepository.refresh(projectId) }
-        viewModelScope.launch {
-            membersRepository.observeByProject(projectId).collectLatest { members ->
-                _state.update {
-                    it.copy(
-                        members = members,
-                        isLoading = false,
-                        // Auto-preselect the first member to match the design (Sophie default).
-                        selectedMemberId = it.selectedMemberId ?: members.firstOrNull()?.id,
-                    )
-                }
-            }
-        }
-    }
 
     fun onIntent(intent: JoinIdentityIntent) {
         when (intent) {
@@ -66,6 +57,31 @@ class JoinIdentityViewModel(
             JoinIdentityIntent.ErrorDismissed -> _state.update { it.copy(pendingError = null) }
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
+    fun load(projectId: String) {
+        this.projectId = projectId
+        viewModelScope.launch { membersRepository.refresh(projectId) }
+        viewModelScope.launch {
+            membersRepository.observeByProject(projectId).collectLatest { members ->
+                _state.update {
+                    it.copy(
+                        members = members,
+                        isLoading = false,
+                        // Auto-preselect the first member to match the design (Sophie default).
+                        selectedMemberId = it.selectedMemberId ?: members.firstOrNull()?.id,
+                    )
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun currentDeviceId(): String? = supabase.auth.currentUserOrNull()?.id
 

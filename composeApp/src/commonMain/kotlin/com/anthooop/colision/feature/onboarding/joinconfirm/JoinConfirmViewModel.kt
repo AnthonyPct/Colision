@@ -20,8 +20,18 @@ class JoinConfirmViewModel(
     private val commissionsRepository: CommissionsRepository,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(JoinConfirmState())
     val state: StateFlow<JoinConfirmState> = _state.asStateFlow()
+
+    private var projectId: String = ""
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<JoinConfirmEvent>(
         extraBufferCapacity = 1,
@@ -29,7 +39,17 @@ class JoinConfirmViewModel(
     )
     val events: SharedFlow<JoinConfirmEvent> = _events.asSharedFlow()
 
-    private var projectId: String = ""
+    fun onIntent(intent: JoinConfirmIntent) {
+        when (intent) {
+            JoinConfirmIntent.ConfirmTapped -> emit(JoinConfirmEvent.NavigateToIdentity(projectId))
+            JoinConfirmIntent.WrongProjectTapped, JoinConfirmIntent.BackTapped ->
+                emit(JoinConfirmEvent.NavigateBack)
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
 
     fun load(projectId: String) {
         this.projectId = projectId
@@ -46,13 +66,9 @@ class JoinConfirmViewModel(
         }
     }
 
-    fun onIntent(intent: JoinConfirmIntent) {
-        when (intent) {
-            JoinConfirmIntent.ConfirmTapped -> emit(JoinConfirmEvent.NavigateToIdentity(projectId))
-            JoinConfirmIntent.WrongProjectTapped, JoinConfirmIntent.BackTapped ->
-                emit(JoinConfirmEvent.NavigateBack)
-        }
-    }
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun emit(event: JoinConfirmEvent) {
         viewModelScope.launch { _events.emit(event) }

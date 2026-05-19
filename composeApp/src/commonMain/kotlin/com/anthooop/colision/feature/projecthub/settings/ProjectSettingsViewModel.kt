@@ -20,27 +20,22 @@ class ProjectSettingsViewModel(
     private val projectLifecycle: ProjectLifecycleRepository,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(ProjectSettingsState())
     val state: StateFlow<ProjectSettingsState> = _state.asStateFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<ProjectSettingsEvent>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val events: SharedFlow<ProjectSettingsEvent> = _events.asSharedFlow()
-
-    init {
-        viewModelScope.launch {
-            activeProject.observe().collectLatest { project ->
-                _state.update {
-                    it.copy(
-                        projectName = project?.name.orEmpty(),
-                        shareCode = project?.shareCode.orEmpty(),
-                    )
-                }
-            }
-        }
-    }
 
     fun onIntent(intent: ProjectSettingsIntent) {
         when (intent) {
@@ -62,6 +57,27 @@ class ProjectSettingsViewModel(
             ProjectSettingsIntent.TransientMessageShown -> _state.update { it.copy(transientMessage = null) }
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INIT
+    ///////////////////////////////////////////////////////////////////////////
+
+    init {
+        viewModelScope.launch {
+            activeProject.observe().collectLatest { project ->
+                _state.update {
+                    it.copy(
+                        projectName = project?.name.orEmpty(),
+                        shareCode = project?.shareCode.orEmpty(),
+                    )
+                }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun commitConfirming() {
         val current = _state.value.confirming ?: return

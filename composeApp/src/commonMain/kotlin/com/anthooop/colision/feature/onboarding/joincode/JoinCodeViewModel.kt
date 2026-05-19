@@ -19,8 +19,16 @@ class JoinCodeViewModel(
     private val projectsRepository: ProjectsRepository,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(JoinCodeState())
     val state: StateFlow<JoinCodeState> = _state.asStateFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<JoinCodeEvent>(
         extraBufferCapacity = 1,
@@ -52,6 +60,10 @@ class JoinCodeViewModel(
             JoinCodeIntent.ErrorDismissed -> _state.update { it.copy(error = null) }
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun resolve(navigateOnSuccess: Boolean = false) {
         val code = _state.value.code

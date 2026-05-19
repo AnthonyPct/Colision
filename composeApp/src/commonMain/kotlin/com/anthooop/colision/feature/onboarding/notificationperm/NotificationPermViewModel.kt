@@ -17,8 +17,16 @@ class NotificationPermViewModel(
     private val permissionManager: NotificationPermissionManager,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(NotificationPermState())
     val state: StateFlow<NotificationPermState> = _state.asStateFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<NotificationPermEvent>(
         extraBufferCapacity = 1,
@@ -32,6 +40,10 @@ class NotificationPermViewModel(
             NotificationPermIntent.LaterTapped -> emit(NotificationPermEvent.NavigateToHome)
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun requestPermission() {
         if (_state.value.isRequesting) return

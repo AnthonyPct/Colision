@@ -23,8 +23,18 @@ class MemberCommissionsViewModel(
     private val commissionsRepository: CommissionsRepository,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(MemberCommissionsState())
     val state: StateFlow<MemberCommissionsState> = _state.asStateFlow()
+
+    private var memberId: String = ""
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<MemberCommissionsEvent>(
         extraBufferCapacity = 1,
@@ -32,7 +42,17 @@ class MemberCommissionsViewModel(
     )
     val events: SharedFlow<MemberCommissionsEvent> = _events.asSharedFlow()
 
-    private var memberId: String = ""
+    fun onIntent(intent: MemberCommissionsIntent) {
+        when (intent) {
+            MemberCommissionsIntent.BackTapped -> emit(MemberCommissionsEvent.NavigateBack)
+            is MemberCommissionsIntent.CommissionToggled -> toggle(intent.commissionId)
+            MemberCommissionsIntent.ErrorDismissed -> _state.update { it.copy(pendingError = null) }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
 
     fun load(memberId: String) {
         this.memberId = memberId
@@ -58,13 +78,9 @@ class MemberCommissionsViewModel(
         }
     }
 
-    fun onIntent(intent: MemberCommissionsIntent) {
-        when (intent) {
-            MemberCommissionsIntent.BackTapped -> emit(MemberCommissionsEvent.NavigateBack)
-            is MemberCommissionsIntent.CommissionToggled -> toggle(intent.commissionId)
-            MemberCommissionsIntent.ErrorDismissed -> _state.update { it.copy(pendingError = null) }
-        }
-    }
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun toggle(commissionId: String) {
         if (memberId.isEmpty()) return

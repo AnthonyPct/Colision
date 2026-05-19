@@ -2,9 +2,9 @@ package com.anthooop.colision.feature.projecthub.commissions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import com.anthooop.colision.feature.projecthub.data.ActiveProjectProvider
 import com.anthooop.colision.feature.projecthub.data.CommissionsRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,31 +24,22 @@ class CommissionsListViewModel(
     private val commissionsRepository: CommissionsRepository,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(CommissionsListState())
     val state: StateFlow<CommissionsListState> = _state.asStateFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<CommissionsListEvent>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val events: SharedFlow<CommissionsListEvent> = _events.asSharedFlow()
-
-    init {
-        viewModelScope.launch {
-            activeProject.observe()
-                .flatMapLatest { project ->
-                    if (project == null) flowOf(emptyList())
-                    else commissionsRepository.observeByProject(project.id)
-                }
-                .collectLatest { list ->
-                    _state.update { it.copy(commissions = list, isLoading = false) }
-                }
-        }
-        viewModelScope.launch {
-            val current = activeProject.current() ?: return@launch
-            commissionsRepository.refresh(current.id)
-        }
-    }
 
     fun onIntent(intent: CommissionsListIntent) {
         when (intent) {
@@ -75,6 +66,31 @@ class CommissionsListViewModel(
             CommissionsListIntent.ErrorDismissed -> _state.update { it.copy(pendingError = null) }
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INIT
+    ///////////////////////////////////////////////////////////////////////////
+
+    init {
+        viewModelScope.launch {
+            activeProject.observe()
+                .flatMapLatest { project ->
+                    if (project == null) flowOf(emptyList())
+                    else commissionsRepository.observeByProject(project.id)
+                }
+                .collectLatest { list ->
+                    _state.update { it.copy(commissions = list, isLoading = false) }
+                }
+        }
+        viewModelScope.launch {
+            val current = activeProject.current() ?: return@launch
+            commissionsRepository.refresh(current.id)
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun commitEditor() {
         val current = _state.value.editing ?: return

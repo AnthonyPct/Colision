@@ -32,14 +32,40 @@ class MembersListViewModel(
     private val memberCommissionDao: MemberCommissionDao,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(MembersListState())
     val state: StateFlow<MembersListState> = _state.asStateFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<MembersListEvent>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val events: SharedFlow<MembersListEvent> = _events.asSharedFlow()
+
+    fun onIntent(intent: MembersListIntent) {
+        when (intent) {
+            MembersListIntent.BackTapped -> emit(MembersListEvent.NavigateBack)
+            MembersListIntent.AddTapped -> _state.update { it.copy(addingMember = AddingMember()) }
+            is MembersListIntent.AddNameChanged -> _state.update { s ->
+                s.copy(addingMember = s.addingMember?.copy(name = intent.value))
+            }
+            MembersListIntent.AddCancelled -> _state.update { it.copy(addingMember = null) }
+            MembersListIntent.AddConfirmed -> commitAdd()
+            is MembersListIntent.MemberTapped -> emit(MembersListEvent.NavigateToCommissions(intent.memberId))
+            MembersListIntent.ErrorDismissed -> _state.update { it.copy(pendingError = null) }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INIT
+    ///////////////////////////////////////////////////////////////////////////
 
     init {
         viewModelScope.launch {
@@ -75,19 +101,9 @@ class MembersListViewModel(
         }
     }
 
-    fun onIntent(intent: MembersListIntent) {
-        when (intent) {
-            MembersListIntent.BackTapped -> emit(MembersListEvent.NavigateBack)
-            MembersListIntent.AddTapped -> _state.update { it.copy(addingMember = AddingMember()) }
-            is MembersListIntent.AddNameChanged -> _state.update { s ->
-                s.copy(addingMember = s.addingMember?.copy(name = intent.value))
-            }
-            MembersListIntent.AddCancelled -> _state.update { it.copy(addingMember = null) }
-            MembersListIntent.AddConfirmed -> commitAdd()
-            is MembersListIntent.MemberTapped -> emit(MembersListEvent.NavigateToCommissions(intent.memberId))
-            MembersListIntent.ErrorDismissed -> _state.update { it.copy(pendingError = null) }
-        }
-    }
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun commitAdd() {
         val adding = _state.value.addingMember ?: return

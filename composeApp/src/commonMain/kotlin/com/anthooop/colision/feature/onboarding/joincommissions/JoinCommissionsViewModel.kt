@@ -22,8 +22,20 @@ class JoinCommissionsViewModel(
     private val membersRepository: MembersRepository,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(JoinCommissionsState())
     val state: StateFlow<JoinCommissionsState> = _state.asStateFlow()
+
+    private var projectId: String = ""
+    private var memberId: String = ""
+    private var hasInitialised: Boolean = false
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<JoinCommissionsEvent>(
         extraBufferCapacity = 1,
@@ -31,9 +43,24 @@ class JoinCommissionsViewModel(
     )
     val events: SharedFlow<JoinCommissionsEvent> = _events.asSharedFlow()
 
-    private var projectId: String = ""
-    private var memberId: String = ""
-    private var hasInitialised: Boolean = false
+    fun onIntent(intent: JoinCommissionsIntent) {
+        when (intent) {
+            is JoinCommissionsIntent.CommissionToggled -> _state.update { s ->
+                val next = s.checkedIds.toMutableSet().apply {
+                    if (contains(intent.commissionId)) remove(intent.commissionId)
+                    else add(intent.commissionId)
+                }
+                s.copy(checkedIds = next)
+            }
+            JoinCommissionsIntent.ContinueTapped -> persistAndContinue()
+            JoinCommissionsIntent.BackTapped -> emit(JoinCommissionsEvent.NavigateBack)
+            JoinCommissionsIntent.ErrorDismissed -> _state.update { it.copy(pendingError = null) }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
 
     fun load(projectId: String, memberId: String) {
         this.projectId = projectId
@@ -60,20 +87,9 @@ class JoinCommissionsViewModel(
         }
     }
 
-    fun onIntent(intent: JoinCommissionsIntent) {
-        when (intent) {
-            is JoinCommissionsIntent.CommissionToggled -> _state.update { s ->
-                val next = s.checkedIds.toMutableSet().apply {
-                    if (contains(intent.commissionId)) remove(intent.commissionId)
-                    else add(intent.commissionId)
-                }
-                s.copy(checkedIds = next)
-            }
-            JoinCommissionsIntent.ContinueTapped -> persistAndContinue()
-            JoinCommissionsIntent.BackTapped -> emit(JoinCommissionsEvent.NavigateBack)
-            JoinCommissionsIntent.ErrorDismissed -> _state.update { it.copy(pendingError = null) }
-        }
-    }
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun persistAndContinue() {
         if (!_state.value.canSubmit) return

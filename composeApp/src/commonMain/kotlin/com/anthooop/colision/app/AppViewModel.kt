@@ -17,6 +17,10 @@ class AppViewModel(
     onboardingRepository: OnboardingRepository,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val sessionReady = MutableStateFlow(false)
 
     val startState: StateFlow<AppStartState> =
@@ -34,6 +38,10 @@ class AppViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = AppStartState.Loading,
         )
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INIT
+    ///////////////////////////////////////////////////////////////////////////
 
     init {
         // Sign in anonymously before exposing the app: every server call is
