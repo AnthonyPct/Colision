@@ -1,18 +1,16 @@
 package com.anthooop.colision.feature.projecthub.navigation
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.toRoute
 import com.anthooop.colision.core.navigation.RootGraph
 import com.anthooop.colision.feature.projecthub.commissions.CommissionsListRoute
+import com.anthooop.colision.feature.projecthub.members.MemberCommissionsRoute
+import com.anthooop.colision.feature.projecthub.members.MembersListRoute
 import com.anthooop.colision.feature.projecthub.settings.ProjectSettingsRoute
 
 fun NavGraphBuilder.projectHubGraph(
@@ -39,17 +37,21 @@ fun NavGraphBuilder.projectHubGraph(
             )
         }
         composable<ProjectHubDestination.Members> {
-            PlaceholderRoute("Membres")
+            MembersListRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCommissions = { memberId ->
+                    navController.navigate(ProjectHubDestination.MemberCommissions(memberId))
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
-        composable<ProjectHubDestination.MemberCommissions> {
-            PlaceholderRoute("Commissions du membre")
+        composable<ProjectHubDestination.MemberCommissions> { backStackEntry ->
+            val args = backStackEntry.toRoute<ProjectHubDestination.MemberCommissions>()
+            MemberCommissionsRoute(
+                memberId = args.memberId,
+                onNavigateBack = { navController.popBackStack() },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
-    }
-}
-
-@Composable
-private fun PlaceholderRoute(label: String) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = label, style = MaterialTheme.typography.titleLarge)
     }
 }

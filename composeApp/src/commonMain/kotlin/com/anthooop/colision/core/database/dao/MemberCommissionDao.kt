@@ -15,6 +15,13 @@ interface MemberCommissionDao {
     @Query("SELECT * FROM member_commission WHERE commissionId = :commissionId")
     fun observeByCommission(commissionId: String): Flow<List<MemberCommissionEntity>>
 
+    @Query(
+        "SELECT mc.* FROM member_commission mc " +
+            "INNER JOIN member m ON m.id = mc.memberId " +
+            "WHERE m.projectId = :projectId",
+    )
+    fun observeForProject(projectId: String): Flow<List<MemberCommissionEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(link: MemberCommissionEntity)
 
