@@ -82,8 +82,13 @@ class DefaultMembersRepository(
         assigned: Boolean,
     ): Result<Unit> = runCatching {
         if (assigned) {
+            // upsert (Prefer: resolution=merge-duplicates) instead of plain
+            // insert: the row's primary key is (member_id, commission_id) so
+            // a re-toggle or a sync race used to raise 23505. The semantic
+            // we want is "ensure the assignment exists" which is naturally
+            // idempotent.
             supabase.from("member_commission")
-                .insert(
+                .upsert(
                     MemberCommissionLinkDto(memberId = memberId, commissionId = commissionId),
                 )
             memberCommissionDao.upsert(

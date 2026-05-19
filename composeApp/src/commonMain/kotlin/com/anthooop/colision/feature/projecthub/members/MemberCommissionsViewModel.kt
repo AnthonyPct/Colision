@@ -58,6 +58,11 @@ class MemberCommissionsViewModel(
         this.memberId = memberId
         viewModelScope.launch {
             val project = activeProject.current() ?: return@launch
+            // Refresh from server first so the assignment toggle isn't built
+            // on a stale local view (otherwise re-toggling a pre-existing
+            // assignment used to raise 23505 because Room missed the row).
+            membersRepository.refresh(project.id)
+            commissionsRepository.refresh(project.id)
             combine(
                 commissionsRepository.observeByProject(project.id),
                 membersRepository.observeAssignments(memberId),
