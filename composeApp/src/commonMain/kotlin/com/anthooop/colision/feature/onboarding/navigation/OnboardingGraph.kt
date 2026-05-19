@@ -15,7 +15,9 @@ import androidx.navigation.toRoute
 import com.anthooop.colision.core.navigation.RootGraph
 import com.anthooop.colision.feature.onboarding.joincode.JoinCodeRoute
 import com.anthooop.colision.feature.onboarding.joinconfirm.JoinConfirmRoute
+import com.anthooop.colision.feature.onboarding.joincommissions.JoinCommissionsRoute
 import com.anthooop.colision.feature.onboarding.joinidentity.JoinIdentityRoute
+import com.anthooop.colision.feature.onboarding.notificationperm.NotificationPermRoute
 import com.anthooop.colision.feature.onboarding.projectcreate.CreateProjectRoute
 import com.anthooop.colision.feature.onboarding.projectsharecode.ProjectShareCodeRoute
 import com.anthooop.colision.feature.onboarding.welcome.WelcomeRoute
@@ -90,11 +92,29 @@ fun NavGraphBuilder.onboardingGraph(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
             )
         }
-        composable<OnboardingDestination.JoinCommissions> {
-            PlaceholderRoute(label = "Tes commissions")
+        composable<OnboardingDestination.JoinCommissions> { backStackEntry ->
+            val args = backStackEntry.toRoute<OnboardingDestination.JoinCommissions>()
+            JoinCommissionsRoute(
+                projectId = args.projectId,
+                memberId = args.memberId,
+                onNavigateToNotificationPermission = { projectId, memberId ->
+                    navController.navigate(
+                        OnboardingDestination.NotificationPermission(projectId, memberId),
+                    )
+                },
+                onNavigateBack = { navController.popBackStack() },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
         composable<OnboardingDestination.NotificationPermission> {
-            PlaceholderRoute(label = "Notifications")
+            NotificationPermRoute(
+                onNavigateToHome = {
+                    navController.navigate(RootGraph.Home) {
+                        popUpTo(RootGraph.Onboarding) { inclusive = true }
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 }
