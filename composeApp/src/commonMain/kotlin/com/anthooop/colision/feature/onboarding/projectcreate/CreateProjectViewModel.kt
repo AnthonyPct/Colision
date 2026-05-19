@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.anthooop.colision.core.common.AppError
 import com.anthooop.colision.core.common.AppErrorThrowable
 import com.anthooop.colision.feature.onboarding.data.ProjectsRepository
+import com.anthooop.colision.feature.projecthub.data.MembersRepository
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 
 class CreateProjectViewModel(
     private val projectsRepository: ProjectsRepository,
+    private val membersRepository: MembersRepository,
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -63,6 +65,13 @@ class CreateProjectViewModel(
             )
             result.fold(
                 onSuccess = { project ->
+                    // The server-side `create_project` RPC inserts the creator's
+                    // own member row in the same transaction (see migration
+                    // 20260519_008). Mirror that row into Room so the onboarding
+                    // gate (project ∧ own member) flips to "done" once the user
+                    // finishes the welcome flow — otherwise the start graph
+                    // would stay on Onboarding.
+                    membersRepository.refresh(project.id)
                     _state.update { it.copy(isSubmitting = false) }
                     emit(CreateProjectEvent.NavigateToShareCode(project.id))
                 },

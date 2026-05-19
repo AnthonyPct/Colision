@@ -6,16 +6,20 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 
 /**
  * Resolves the local member row that belongs to the current Supabase auth user
  * on this device. The MVP convention (cf. ActiveProjectProvider) is that a
  * device has one active project at a time, so a single member row matches
  * `member.deviceId = auth.user.id`.
+ *
+ * The device id is sourced from `supabase.auth.sessionStatus` so the flow
+ * re-emits when the anonymous sign-in completes after app start.
  */
 interface CurrentMemberProvider {
     fun observe(): Flow<MemberEntity?>
@@ -27,21 +31,18 @@ class DefaultCurrentMemberProvider(
     private val memberDao: MemberDao,
 ) : CurrentMemberProvider {
 
-    private val deviceId: MutableStateFlow<String?> = MutableStateFlow(
-        supabase.auth.currentUserOrNull()?.id,
-    )
+    private val deviceIdFlow: Flow<String?> = supabase.auth.sessionStatus
+        .map { supabase.auth.currentUserOrNull()?.id }
+        .distinctUntilChanged()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override fun observe(): Flow<MemberEntity?> {
-        val id = supabase.auth.currentUserOrNull()?.id
-        if (id != deviceId.value) deviceId.value = id
-        return deviceId.flatMapLatest { current ->
-            if (current == null) flowOf(null) else memberDao.observeOwnMember(current)
+    override fun observe(): Flow<MemberEntity?> =
+        deviceIdFlow.flatMapLatest { id ->
+            if (id == null) flowOf(null) else memberDao.observeOwnMember(id)
         }
-    }
 
     override suspend fun current(): MemberEntity? {
-        val id = supabase.auth.currentUserOrNull()?.id ?: return null
+        val id = deviceIdFlow.first() ?: return null
         return memberDao.observeOwnMember(id).first()
     }
 }
