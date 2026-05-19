@@ -13,6 +13,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
 import com.anthooop.colision.core.navigation.RootGraph
+import com.anthooop.colision.feature.onboarding.joincode.JoinCodeRoute
+import com.anthooop.colision.feature.onboarding.joinconfirm.JoinConfirmRoute
 import com.anthooop.colision.feature.onboarding.projectcreate.CreateProjectRoute
 import com.anthooop.colision.feature.onboarding.projectsharecode.ProjectShareCodeRoute
 import com.anthooop.colision.feature.onboarding.welcome.WelcomeRoute
@@ -55,10 +57,24 @@ fun NavGraphBuilder.onboardingGraph(navController: NavController) {
             )
         }
         composable<OnboardingDestination.JoinCode> {
-            PlaceholderRoute(label = "Rejoindre un projet")
+            JoinCodeRoute(
+                onNavigateToConfirm = { projectId ->
+                    navController.navigate(OnboardingDestination.JoinConfirm(projectId))
+                },
+                onNavigateBack = { navController.popBackStack() },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
-        composable<OnboardingDestination.JoinConfirm> {
-            PlaceholderRoute(label = "Confirmation du projet")
+        composable<OnboardingDestination.JoinConfirm> { backStackEntry ->
+            val args = backStackEntry.toRoute<OnboardingDestination.JoinConfirm>()
+            JoinConfirmRoute(
+                projectId = args.projectId,
+                onNavigateToIdentity = { projectId ->
+                    navController.navigate(OnboardingDestination.JoinIdentity(projectId))
+                },
+                onNavigateBack = { navController.popBackStack() },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
         composable<OnboardingDestination.JoinIdentity> {
             PlaceholderRoute(label = "Qui es-tu ?")
