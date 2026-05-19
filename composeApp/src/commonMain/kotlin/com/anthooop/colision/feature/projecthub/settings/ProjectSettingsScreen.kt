@@ -234,18 +234,19 @@ private fun ConfirmingDialog(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError,
                     ),
-                ) { Text("Supprimer") }
+                ) { Text(if (isProcessing) "Suppression…" else "Supprimer") }
             },
             dismissButton = {
-                TextButton(onClick = { onIntent(ProjectSettingsIntent.CancelCurrentAction) }) {
-                    Text("Annuler")
-                }
+                TextButton(
+                    onClick = { onIntent(ProjectSettingsIntent.CancelCurrentAction) },
+                    enabled = !isProcessing,
+                ) { Text("Annuler") }
             },
             title = { Text("Supprimer le projet ?") },
             text = {
                 Column {
                     Text(
-                        text = "Cette action supprime DÉFINITIVEMENT le projet et toutes ses données pour tous ses membres.",
+                        text = "Cette action supprime DÉFINITIVEMENT le projet et toutes ses données pour tous ses membres. Cette suppression se propage à tous les appareils.",
                     )
                     Spacer(Modifier.height(Spacing.SP3))
                     Text(
@@ -259,6 +260,16 @@ private fun ConfirmingDialog(
                             onIntent(ProjectSettingsIntent.DeleteConfirmTextChanged(it))
                         },
                         singleLine = true,
+                        isError = action.typed.isNotEmpty() && !action.canConfirm,
+                        supportingText = {
+                            if (action.typed.isNotEmpty() && !action.canConfirm) {
+                                Text(
+                                    text = "Le mot ne correspond pas.",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
