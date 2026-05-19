@@ -11,10 +11,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.anthooop.colision.core.navigation.RootGraph
 import com.anthooop.colision.feature.onboarding.navigation.onboardingGraph
+import com.anthooop.colision.feature.projecthub.navigation.projectHubGraph
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -53,18 +53,16 @@ private fun ColisionNavHost(startGraph: RootGraph) {
         modifier = Modifier.fillMaxSize(),
     ) {
         onboardingGraph(navController)
-        // Home graph is implemented by Epic 3.
-        composable<RootGraph.Home> {
-            androidx.compose.foundation.layout.Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                androidx.compose.material3.Text(
-                    text = "Agenda — Epic 3",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
+        projectHubGraph(
+            navController = navController,
+            onProjectReleased = {
+                // Pop back to the onboarding graph after the user leaves /
+                // deletes the active project. The AppViewModel's start-graph
+                // flow will catch up on the next emission.
+                navController.navigate(RootGraph.Onboarding) {
+                    popUpTo(RootGraph.Home) { inclusive = true }
+                }
+            },
+        )
     }
 }
