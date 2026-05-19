@@ -15,6 +15,7 @@ import androidx.navigation.toRoute
 import com.anthooop.colision.core.navigation.RootGraph
 import com.anthooop.colision.feature.onboarding.joincode.JoinCodeRoute
 import com.anthooop.colision.feature.onboarding.joinconfirm.JoinConfirmRoute
+import com.anthooop.colision.feature.onboarding.joinidentity.JoinIdentityRoute
 import com.anthooop.colision.feature.onboarding.projectcreate.CreateProjectRoute
 import com.anthooop.colision.feature.onboarding.projectsharecode.ProjectShareCodeRoute
 import com.anthooop.colision.feature.onboarding.welcome.WelcomeRoute
@@ -76,8 +77,18 @@ fun NavGraphBuilder.onboardingGraph(navController: NavController) {
                 modifier = Modifier.fillMaxSize(),
             )
         }
-        composable<OnboardingDestination.JoinIdentity> {
-            PlaceholderRoute(label = "Qui es-tu ?")
+        composable<OnboardingDestination.JoinIdentity> { backStackEntry ->
+            val args = backStackEntry.toRoute<OnboardingDestination.JoinIdentity>()
+            JoinIdentityRoute(
+                projectId = args.projectId,
+                onNavigateToCommissions = { projectId, memberId ->
+                    navController.navigate(
+                        OnboardingDestination.JoinCommissions(projectId, memberId),
+                    )
+                },
+                onNavigateBack = { navController.popBackStack() },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
         composable<OnboardingDestination.JoinCommissions> {
             PlaceholderRoute(label = "Tes commissions")
