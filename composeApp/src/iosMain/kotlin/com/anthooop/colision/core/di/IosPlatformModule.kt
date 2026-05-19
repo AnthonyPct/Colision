@@ -25,7 +25,7 @@ val iosPlatformModule: Module = module {
             name = iosDatabasePath(),
         )
             .setDriver(BundledSQLiteDriver())
-            .setQueryCoroutineContext(Dispatchers.IO)
+            .setQueryCoroutineContext(Dispatchers.Default)
             .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
