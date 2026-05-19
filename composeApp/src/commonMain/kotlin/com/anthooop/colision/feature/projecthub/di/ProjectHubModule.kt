@@ -29,7 +29,12 @@ val projectHubModule: Module = module {
         )
     }
     single<ProjectLifecycleRepository> {
-        DefaultProjectLifecycleRepository(supabase = get(), projectDao = get())
+        DefaultProjectLifecycleRepository(
+            supabase = get(),
+            projectDao = get(),
+            memberDao = get(),
+            memberCommissionDao = get(),
+        )
     }
 
     viewModelOf(::ProjectSettingsViewModel)
