@@ -12,6 +12,7 @@
     <string name="action_modify">Modifier</string>
     <string name="action_leave">Quitter</string>
     <string name="dialog_error_title">Erreur</string>
+    <string name="write_offline_message">Connexion requise pour cette action</string>
 
     <!-- WelcomeScreen -->
     <string name="welcome_title">Plus jamais deux\nréunions en même temps.</string>

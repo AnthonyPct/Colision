@@ -44,6 +44,8 @@ import colision.composeapp.generated.resources.agenda_create_meeting
 import com.anthooop.colision.core.database.entity.MeetingEntity
 import com.anthooop.colision.core.database.entity.MemberEntity
 import com.anthooop.colision.core.design.Spacing
+import com.anthooop.colision.core.design.rememberOfflineGate
+import colision.composeapp.generated.resources.write_offline_message
 import com.anthooop.colision.feature.agenda.agenda.durationMinutes
 import com.anthooop.colision.feature.agenda.agenda.extractTime
 import com.anthooop.colision.feature.agenda.agenda.parseIsoDate
@@ -121,9 +123,11 @@ fun CommissionDetailScreen(
         }
 
         if (state.currentMemberIsMember) {
+            val offlineGate = rememberOfflineGate(stringResource(Res.string.write_offline_message))
             ExtendedFloatingActionButton(
-                onClick = { onIntent(CommissionDetailIntent.CreateMeetingTapped) },
-                containerColor = MaterialTheme.colorScheme.primary,
+                onClick = { offlineGate.run { onIntent(CommissionDetailIntent.CreateMeetingTapped) } },
+                containerColor = if (offlineGate.isOnline) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 text = { Text(stringResource(Res.string.agenda_create_meeting)) },
                 icon = {

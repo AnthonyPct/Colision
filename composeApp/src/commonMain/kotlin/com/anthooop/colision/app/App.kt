@@ -9,9 +9,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -24,10 +29,15 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.anthooop.colision.core.common.ProjectSyncManager
+import com.anthooop.colision.core.design.LocalIsOnline
+import com.anthooop.colision.core.design.LocalSnackbar
+import com.anthooop.colision.core.design.LocalSnackbarScope
 import com.anthooop.colision.core.navigation.RootGraph
 import com.anthooop.colision.feature.agenda.navigation.AgendaDestination
 import com.anthooop.colision.feature.onboarding.navigation.onboardingGraph
 import com.anthooop.colision.feature.projecthub.navigation.ProjectHubDestination
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -83,31 +93,43 @@ private fun ColisionNavHost(startGraph: RootGraph) {
     val currentDestination = backStackEntry?.destination
     val showBottomBar = currentDestination.isTopLevelHomeTab()
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            if (showBottomBar) {
-                HomeBottomBar(navController = navController, current = currentDestination)
-            }
-        },
-    ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = startGraph,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = padding.calculateBottomPadding()),
-        ) {
-            onboardingGraph(navController)
-            homeGraph(
+    val syncManager: ProjectSyncManager = koinInject()
+    val isOnline by syncManager.isOnline.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarScope = rememberCoroutineScope()
+
+    CompositionLocalProvider(
+        LocalIsOnline provides isOnline,
+        LocalSnackbar provides snackbarHostState,
+        LocalSnackbarScope provides snackbarScope,
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = MaterialTheme.colorScheme.background,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            bottomBar = {
+                if (showBottomBar) {
+                    HomeBottomBar(navController = navController, current = currentDestination)
+                }
+            },
+        ) { padding ->
+            NavHost(
                 navController = navController,
-                onProjectReleased = {
-                    navController.navigate(RootGraph.Onboarding) {
-                        popUpTo(RootGraph.Home) { inclusive = true }
-                    }
-                },
-            )
+                startDestination = startGraph,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = padding.calculateBottomPadding()),
+            ) {
+                onboardingGraph(navController)
+                homeGraph(
+                    navController = navController,
+                    onProjectReleased = {
+                        navController.navigate(RootGraph.Onboarding) {
+                            popUpTo(RootGraph.Home) { inclusive = true }
+                        }
+                    },
+                )
+            }
         }
     }
 }

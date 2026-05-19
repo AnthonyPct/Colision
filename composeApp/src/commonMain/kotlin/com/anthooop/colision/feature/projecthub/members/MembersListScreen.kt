@@ -44,9 +44,11 @@ import colision.composeapp.generated.resources.members_list_empty
 import colision.composeapp.generated.resources.members_list_error_add
 import colision.composeapp.generated.resources.members_list_row_no_commission
 import colision.composeapp.generated.resources.members_list_title
+import colision.composeapp.generated.resources.write_offline_message
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.MemberEntity
 import com.anthooop.colision.core.design.Spacing
+import com.anthooop.colision.core.design.rememberOfflineGate
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -82,11 +84,13 @@ fun MembersListScreen(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.weight(1f))
-            TextButton(onClick = { onIntent(MembersListIntent.AddTapped) }) {
+            val offlineGate = rememberOfflineGate(stringResource(Res.string.write_offline_message))
+            TextButton(onClick = { offlineGate.run { onIntent(MembersListIntent.AddTapped) } }) {
                 Text(
                     text = stringResource(Res.string.members_list_action_add),
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = if (offlineGate.isOnline) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                 )
             }
         }

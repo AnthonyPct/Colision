@@ -42,7 +42,9 @@ import colision.composeapp.generated.resources.agenda_offline_banner
 import colision.composeapp.generated.resources.agenda_offline_banner_no_sync
 import colision.composeapp.generated.resources.agenda_toggle_month
 import colision.composeapp.generated.resources.agenda_toggle_week
+import colision.composeapp.generated.resources.write_offline_message
 import com.anthooop.colision.core.design.Spacing
+import com.anthooop.colision.core.design.rememberOfflineGate
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -81,9 +83,11 @@ fun AgendaScreen(
             }
         }
 
+        val offlineGate = rememberOfflineGate(stringResource(Res.string.write_offline_message))
         ExtendedFloatingActionButton(
-            onClick = { onIntent(AgendaIntent.CreateMeetingTapped) },
-            containerColor = MaterialTheme.colorScheme.primary,
+            onClick = { offlineGate.run { onIntent(AgendaIntent.CreateMeetingTapped) } },
+            containerColor = if (offlineGate.isOnline) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
             contentColor = MaterialTheme.colorScheme.onPrimary,
             text = { Text(stringResource(Res.string.agenda_create_meeting)) },
             icon = {
