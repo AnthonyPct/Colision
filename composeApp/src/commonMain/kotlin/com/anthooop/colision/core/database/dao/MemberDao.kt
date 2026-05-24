@@ -1,10 +1,9 @@
 package com.anthooop.colision.core.database.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.anthooop.colision.core.database.entity.MemberEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -22,10 +21,27 @@ interface MemberDao {
     @Query("SELECT * FROM member WHERE deviceId = :deviceId LIMIT 1")
     fun observeOwnMember(deviceId: String): Flow<MemberEntity?>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Query(
+        "SELECT DISTINCT m.* FROM member m " +
+            "INNER JOIN member_commission mc ON mc.memberId = m.id " +
+            "INNER JOIN meeting_commission mtc ON mtc.commissionId = mc.commissionId " +
+            "WHERE mtc.meetingId = :meetingId " +
+            "ORDER BY m.displayName ASC",
+    )
+    fun observeAttendingMeeting(meetingId: String): Flow<List<MemberEntity>>
+
+    @Query(
+        "SELECT m.* FROM member m " +
+            "INNER JOIN member_commission mc ON mc.memberId = m.id " +
+            "WHERE mc.commissionId = :commissionId " +
+            "ORDER BY m.displayName ASC",
+    )
+    fun observeByCommission(commissionId: String): Flow<List<MemberEntity>>
+
+    @Upsert
     suspend fun upsert(member: MemberEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsertAll(members: List<MemberEntity>)
 
     @Update

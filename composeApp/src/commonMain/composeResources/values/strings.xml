@@ -12,6 +12,7 @@
     <string name="action_modify">Modifier</string>
     <string name="action_leave">Quitter</string>
     <string name="dialog_error_title">Erreur</string>
+    <string name="write_offline_message">Connexion requise pour cette action</string>
 
     <!-- WelcomeScreen -->
     <string name="welcome_title">Plus jamais deux\nréunions en même temps.</string>
@@ -127,6 +128,7 @@
     <string name="members_list_dialog_title">Nouveau membre</string>
     <string name="members_list_dialog_placeholder">Prénom (et nom optionnel)</string>
     <string name="members_list_row_no_commission">Aucune commission</string>
+    <string name="members_list_row_you_badge">Toi</string>
     <string name="members_list_error_add">Impossible d\'ajouter — %1$s.</string>
 
     <!-- MemberCommissionsScreen -->
@@ -134,4 +136,42 @@
     <string name="member_commissions_subtitle">Coche les commissions auxquelles cette personne appartient.</string>
     <string name="member_commissions_empty">Pas encore de commission. Crée-en d\'abord.</string>
     <string name="member_commissions_error">Impossible — %1$s.</string>
+
+    <!-- Months (long form, lowercase) -->
+    <string name="month_january">janvier</string>
+    <string name="month_february">février</string>
+    <string name="month_march">mars</string>
+    <string name="month_april">avril</string>
+    <string name="month_may">mai</string>
+    <string name="month_june">juin</string>
+    <string name="month_july">juillet</string>
+    <string name="month_august">août</string>
+    <string name="month_september">septembre</string>
+    <string name="month_october">octobre</string>
+    <string name="month_november">novembre</string>
+    <string name="month_december">décembre</string>
+
+    <!-- AgendaScreen -->
+    <string name="agenda_greeting">Bonjour %1$s</string>
+    <string name="agenda_toggle_week">Semaine</string>
+    <string name="agenda_toggle_month">Mois</string>
+    <string name="agenda_empty">Aucune réunion à venir — bravo !</string>
+    <string name="agenda_create_meeting">Nouvelle réunion</string>
+    <string name="agenda_offline_banner">Mode hors-ligne — dernière synchro à %1$s</string>
+    <string name="agenda_offline_banner_no_sync">Mode hors-ligne — pas encore synchronisé</string>
+
+    <!-- CommissionDetailScreen -->
+    <string name="commission_detail_subtitle">%1$d membres · %2$d réunions</string>
+    <string name="commission_detail_upcoming_meetings">Réunions à venir</string>
+    <string name="commission_detail_no_meetings">Aucune réunion à venir.</string>
+    <string name="commission_detail_members">Membres (%1$d)</string>
+
+    <!-- MeetingDetailScreen -->
+    <string name="meeting_detail_loading">Chargement…</string>
+    <string name="meeting_detail_no_title_fallback">Réunion sans titre</string>
+    <string name="meeting_detail_duration_minutes">%1$s – %2$s · %3$d minutes</string>
+    <string name="meeting_detail_attendees">Convoqués (%1$d)</string>
+    <string name="meeting_detail_created_by">Créée par %1$s</string>
+    <string name="meeting_detail_deleted_title">Cette réunion a été supprimée</string>
+    <string name="meeting_detail_deleted_body">Quelqu\'un l\'a annulée pendant que tu étais hors ligne.</string>
 </resources>

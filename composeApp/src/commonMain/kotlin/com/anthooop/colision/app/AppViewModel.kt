@@ -6,52 +6,42 @@ import com.anthooop.colision.core.common.AnonymousAuthManager
 import com.anthooop.colision.core.navigation.RootGraph
 import com.anthooop.colision.feature.onboarding.data.OnboardingRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class AppViewModel(
     private val authManager: AnonymousAuthManager,
-    onboardingRepository: OnboardingRepository,
+    private val onboardingRepository: OnboardingRepository,
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
     // UI STATE
     ///////////////////////////////////////////////////////////////////////////
 
-    private val sessionReady = MutableStateFlow(false)
-
-    val startState: StateFlow<AppStartState> =
-        combine(
-            sessionReady,
-            onboardingRepository.observeHasJoinedProject(),
-        ) { ready, hasProject ->
-            if (!ready) {
-                AppStartState.Loading
-            } else {
-                AppStartState.Ready(if (hasProject) RootGraph.Home else RootGraph.Onboarding)
-            }
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = AppStartState.Loading,
-        )
+    private val _startState = MutableStateFlow<AppStartState>(AppStartState.Loading)
+    val startState: StateFlow<AppStartState> = _startState.asStateFlow()
 
     ///////////////////////////////////////////////////////////////////////////
     // INIT
     ///////////////////////////////////////////////////////////////////////////
 
     init {
-        // Sign in anonymously before exposing the app: every server call is
-        // RLS-gated and the `create_project` / `try_resolve_code` RPCs are
-        // GRANT EXECUTE … TO authenticated only, so without a session every
-        // call would 42501. ensureSession() is idempotent — it no-ops on
-        // an existing authenticated status.
+        // Resolve the start graph exactly once per app start, then freeze it.
+        // Subsequent transitions (end-of-onboarding → Home, project deletion
+        // → Onboarding) are driven by explicit navigation, not by re-evaluating
+        // the gate — otherwise the gate flipping mid-onboarding (e.g. as soon
+        // as the join code resolves and writes the project to Room) would
+        // yank the user out of the flow before they pick an identity.
         viewModelScope.launch {
+            // Anonymous sign-in must complete before we touch RLS-gated
+            // endpoints. ensureSession() is idempotent.
             authManager.ensureSession()
-            sessionReady.value = true
+            val hasProject = onboardingRepository.observeHasJoinedProject().first()
+            _startState.value = AppStartState.Ready(
+                if (hasProject) RootGraph.Home else RootGraph.Onboarding,
+            )
         }
     }
 }

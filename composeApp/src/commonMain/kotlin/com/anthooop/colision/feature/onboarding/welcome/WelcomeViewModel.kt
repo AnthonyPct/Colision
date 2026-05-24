@@ -13,8 +13,16 @@ import kotlinx.coroutines.launch
 
 class WelcomeViewModel : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(WelcomeState())
     val state: StateFlow<WelcomeState> = _state.asStateFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<WelcomeEvent>(
         extraBufferCapacity = 1,
@@ -22,12 +30,20 @@ class WelcomeViewModel : ViewModel() {
     )
     val events: SharedFlow<WelcomeEvent> = _events.asSharedFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
     fun onIntent(intent: WelcomeIntent) {
         when (intent) {
             WelcomeIntent.CreateProjectTapped -> emit(WelcomeEvent.NavigateToCreateProject)
             WelcomeIntent.JoinProjectTapped -> emit(WelcomeEvent.NavigateToJoinCode)
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun emit(event: WelcomeEvent) {
         viewModelScope.launch { _events.emit(event) }

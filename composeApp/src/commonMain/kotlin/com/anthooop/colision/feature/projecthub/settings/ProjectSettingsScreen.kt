@@ -64,8 +64,10 @@ import colision.composeapp.generated.resources.project_settings_section_manageme
 import colision.composeapp.generated.resources.project_settings_share_code_label
 import colision.composeapp.generated.resources.project_settings_share_code_placeholder
 import colision.composeapp.generated.resources.project_settings_title_fallback
+import colision.composeapp.generated.resources.write_offline_message
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.design.Spacing
+import com.anthooop.colision.core.design.rememberOfflineGate
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -123,18 +125,21 @@ fun ProjectSettingsScreen(
 
             SectionLabel(stringResource(Res.string.project_settings_section_danger))
             Spacer(Modifier.height(Spacing.SP3))
+            val offlineGate = rememberOfflineGate(stringResource(Res.string.write_offline_message))
             SettingsRow(
                 title = stringResource(Res.string.project_settings_row_leave),
                 subtitle = stringResource(Res.string.project_settings_row_leave_supporting),
-                onClick = { onIntent(ProjectSettingsIntent.LeaveTapped) },
+                onClick = { offlineGate.run { onIntent(ProjectSettingsIntent.LeaveTapped) } },
                 emphasised = false,
+                enabled = offlineGate.isOnline,
             )
             Spacer(Modifier.height(Spacing.SP2))
             SettingsRow(
                 title = stringResource(Res.string.project_settings_row_delete),
                 subtitle = stringResource(Res.string.project_settings_row_delete_supporting),
-                onClick = { onIntent(ProjectSettingsIntent.DeleteTapped) },
+                onClick = { offlineGate.run { onIntent(ProjectSettingsIntent.DeleteTapped) } },
                 emphasised = true,
+                enabled = offlineGate.isOnline,
             )
         }
 
@@ -219,6 +224,7 @@ private fun SettingsRow(
     subtitle: String,
     onClick: () -> Unit,
     emphasised: Boolean = false,
+    enabled: Boolean = true,
 ) {
     Row(
         modifier = Modifier
@@ -228,17 +234,20 @@ private fun SettingsRow(
             .padding(Spacing.SP4),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        val alpha = if (enabled) 1f else 0.45f
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                color = if (emphasised) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.onSurface,
+                color = (
+                    if (emphasised) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onSurface
+                ).copy(alpha = alpha),
             )
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha),
             )
         }
     }

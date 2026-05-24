@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,10 +45,13 @@ import colision.composeapp.generated.resources.members_list_dialog_title
 import colision.composeapp.generated.resources.members_list_empty
 import colision.composeapp.generated.resources.members_list_error_add
 import colision.composeapp.generated.resources.members_list_row_no_commission
+import colision.composeapp.generated.resources.members_list_row_you_badge
 import colision.composeapp.generated.resources.members_list_title
+import colision.composeapp.generated.resources.write_offline_message
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.MemberEntity
 import com.anthooop.colision.core.design.Spacing
+import com.anthooop.colision.core.design.rememberOfflineGate
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -82,11 +87,13 @@ fun MembersListScreen(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.weight(1f))
-            TextButton(onClick = { onIntent(MembersListIntent.AddTapped) }) {
+            val offlineGate = rememberOfflineGate(stringResource(Res.string.write_offline_message))
+            TextButton(onClick = { offlineGate.run { onIntent(MembersListIntent.AddTapped) } }) {
                 Text(
                     text = stringResource(Res.string.members_list_action_add),
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = if (offlineGate.isOnline) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                 )
             }
         }
@@ -177,11 +184,31 @@ private fun MemberRowItem(row: MemberRow, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = row.member.displayName,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = row.member.displayName,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                if (row.isCurrentUser) {
+                    Spacer(Modifier.size(Spacing.SP2))
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(percent = 50),
+                            )
+                            .padding(horizontal = Spacing.SP2, vertical = 2.dp),
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.members_list_row_you_badge),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
+            }
             Text(
                 text = if (row.commissionLabels.isEmpty()) {
                     stringResource(Res.string.members_list_row_no_commission)

@@ -41,9 +41,15 @@ class CommissionsListViewModel(
     )
     val events: SharedFlow<CommissionsListEvent> = _events.asSharedFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
     fun onIntent(intent: CommissionsListIntent) {
         when (intent) {
             CommissionsListIntent.BackTapped -> emit(CommissionsListEvent.NavigateBack)
+            is CommissionsListIntent.RowTapped ->
+                emit(CommissionsListEvent.NavigateToDetail(intent.id))
             CommissionsListIntent.AddTapped -> _state.update {
                 it.copy(editing = EditingState.Create())
             }

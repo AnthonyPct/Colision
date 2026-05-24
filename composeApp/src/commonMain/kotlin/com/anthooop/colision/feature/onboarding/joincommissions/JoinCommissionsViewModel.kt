@@ -2,6 +2,7 @@ package com.anthooop.colision.feature.onboarding.joincommissions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anthooop.colision.core.common.Logger
 import com.anthooop.colision.feature.projecthub.data.CommissionsRepository
 import com.anthooop.colision.feature.projecthub.data.MembersRepository
 import kotlinx.coroutines.channels.BufferOverflow
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 class JoinCommissionsViewModel(
     private val commissionsRepository: CommissionsRepository,
     private val membersRepository: MembersRepository,
+    private val logger: Logger,
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -100,23 +102,35 @@ class JoinCommissionsViewModel(
                 .map { it.commissionId }.toSet()
             val toAdd = currentChecked - existing
             val toRemove = existing - currentChecked
+            logger.info(
+                "JoinCommissions",
+                "persisting memberId=$memberId checked=$currentChecked " +
+                    "existing=$existing toAdd=$toAdd toRemove=$toRemove",
+            )
             val failures = mutableListOf<Throwable>()
             for (commissionId in toAdd) {
                 membersRepository.setAssignment(memberId, commissionId, assigned = true)
-                    .onFailure { failures.add(it) }
+                    .onFailure {
+                        logger.warn("JoinCommissions", "INSERT failed: ${it.message}", it)
+                        failures.add(it)
+                    }
             }
             for (commissionId in toRemove) {
                 membersRepository.setAssignment(memberId, commissionId, assigned = false)
-                    .onFailure { failures.add(it) }
+                    .onFailure {
+                        logger.warn("JoinCommissions", "DELETE failed: ${it.message}", it)
+                        failures.add(it)
+                    }
             }
             if (failures.isEmpty()) {
                 _state.update { it.copy(isSubmitting = false) }
                 emit(JoinCommissionsEvent.NavigateToNotificationPermission(projectId, memberId))
             } else {
+                val reason = failures.firstOrNull()?.message.orEmpty()
                 _state.update {
                     it.copy(
                         isSubmitting = false,
-                        pendingError = JoinCommissionsError.PartialSave,
+                        pendingError = JoinCommissionsError.PartialSave(reason),
                     )
                 }
             }

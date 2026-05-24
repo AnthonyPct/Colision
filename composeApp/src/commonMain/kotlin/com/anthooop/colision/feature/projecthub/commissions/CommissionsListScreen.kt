@@ -3,6 +3,7 @@ package com.anthooop.colision.feature.projecthub.commissions
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -52,9 +53,11 @@ import colision.composeapp.generated.resources.commissions_list_error
 import colision.composeapp.generated.resources.commissions_list_title
 import colision.composeapp.generated.resources.dialog_error_title
 import colision.composeapp.generated.resources.error_reason_fallback
+import colision.composeapp.generated.resources.write_offline_message
 import com.anthooop.colision.app.ColisionTheme
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.design.Spacing
+import com.anthooop.colision.core.design.rememberOfflineGate
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -72,11 +75,13 @@ fun CommissionsListScreen(
                 bottom = safe.calculateBottomPadding(),
             ),
     ) {
+        val offlineGate = rememberOfflineGate(stringResource(Res.string.write_offline_message))
         TopBar(
             title = stringResource(Res.string.commissions_list_title),
             onBack = { onIntent(CommissionsListIntent.BackTapped) },
             actionLabel = stringResource(Res.string.commissions_list_action_add),
-            onAction = { onIntent(CommissionsListIntent.AddTapped) },
+            onAction = { offlineGate.run { onIntent(CommissionsListIntent.AddTapped) } },
+            actionEnabled = offlineGate.isOnline,
         )
 
         if (state.commissions.isEmpty() && !state.isLoading) {
@@ -100,8 +105,18 @@ fun CommissionsListScreen(
                 items(state.commissions, key = { it.id }) { commission ->
                     CommissionRow(
                         commission = commission,
-                        onRename = { onIntent(CommissionsListIntent.RenameTapped(commission.id, commission.name)) },
-                        onDelete = { onIntent(CommissionsListIntent.DeleteTapped(commission.id, commission.name)) },
+                        writeEnabled = offlineGate.isOnline,
+                        onTap = { onIntent(CommissionsListIntent.RowTapped(commission.id)) },
+                        onRename = {
+                            offlineGate.run {
+                                onIntent(CommissionsListIntent.RenameTapped(commission.id, commission.name))
+                            }
+                        },
+                        onDelete = {
+                            offlineGate.run {
+                                onIntent(CommissionsListIntent.DeleteTapped(commission.id, commission.name))
+                            }
+                        },
                     )
                 }
             }
@@ -143,6 +158,7 @@ private fun TopBar(
     onBack: () -> Unit,
     actionLabel: String?,
     onAction: () -> Unit,
+    actionEnabled: Boolean = true,
 ) {
     Row(
         modifier = Modifier
@@ -169,7 +185,8 @@ private fun TopBar(
                 Text(
                     text = actionLabel,
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = if (actionEnabled) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                 )
             }
         } else {
@@ -182,6 +199,8 @@ private fun TopBar(
 @Composable
 private fun CommissionRow(
     commission: CommissionEntity,
+    writeEnabled: Boolean,
+    onTap: () -> Unit,
     onRename: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -196,19 +215,22 @@ private fun CommissionRow(
             text = commission.name,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).clickable(onClick = onTap),
         )
         TextButton(onClick = onRename) {
             Text(
                 text = stringResource(Res.string.action_modify),
                 style = MaterialTheme.typography.labelMedium,
+                color = if (writeEnabled) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
             )
         }
         TextButton(onClick = onDelete) {
             Text(
                 text = stringResource(Res.string.action_delete),
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.error,
+                color = if (writeEnabled) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.error.copy(alpha = 0.45f),
             )
         }
     }

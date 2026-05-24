@@ -10,6 +10,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun CommissionsListRoute(
     onNavigateBack: () -> Unit,
+    onNavigateToDetail: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CommissionsListViewModel = koinViewModel(),
 ) {
@@ -18,6 +19,7 @@ fun CommissionsListRoute(
         viewModel.events.collect { event ->
             when (event) {
                 CommissionsListEvent.NavigateBack -> onNavigateBack()
+                is CommissionsListEvent.NavigateToDetail -> onNavigateToDetail(event.commissionId)
             }
         }
     }

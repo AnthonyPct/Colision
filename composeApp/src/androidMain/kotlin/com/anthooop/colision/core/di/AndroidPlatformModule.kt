@@ -2,6 +2,8 @@ package com.anthooop.colision.core.di
 
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import com.anthooop.colision.core.common.AndroidConnectivityObserver
+import com.anthooop.colision.core.common.ConnectivityObserver
 import com.anthooop.colision.core.common.Logger
 import com.anthooop.colision.core.common.LoggerAndroid
 import com.anthooop.colision.core.common.NotificationPermissionManager
@@ -17,6 +19,9 @@ val androidPlatformModule: Module = module {
     single<Logger> { LoggerAndroid() }
     single<NotificationPermissionManager> {
         NotificationPermissionManagerAndroid(androidContext().applicationContext)
+    }
+    single<ConnectivityObserver> {
+        AndroidConnectivityObserver(androidContext().applicationContext)
     }
     single<ColisionDatabase> {
         val ctx = androidContext().applicationContext

@@ -1,9 +1,8 @@
 package com.anthooop.colision.core.database.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import com.anthooop.colision.core.database.entity.ProjectEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -18,7 +17,14 @@ interface ProjectDao {
     @Query("SELECT COUNT(*) FROM project")
     fun observeCount(): Flow<Int>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    // @Upsert (INSERT ... ON CONFLICT DO UPDATE) NOT @Insert(onConflict=REPLACE).
+    // The latter compiles to INSERT OR REPLACE which deletes-then-inserts on
+    // conflict — and ProjectEntity is the parent of CASCADE FK chains
+    // (commission, member, meeting, *_commission). Re-pulling the project
+    // from the server would wipe every child row via cascade before
+    // re-inserting the same project id. Same rule applies to every other
+    // entity DAO whose row is parent of an ON DELETE CASCADE FK below.
+    @Upsert
     suspend fun upsert(project: ProjectEntity)
 
     @Query("DELETE FROM project WHERE id = :id")

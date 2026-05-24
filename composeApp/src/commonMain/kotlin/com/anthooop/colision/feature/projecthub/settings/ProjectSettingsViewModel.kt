@@ -37,6 +37,10 @@ class ProjectSettingsViewModel(
     )
     val events: SharedFlow<ProjectSettingsEvent> = _events.asSharedFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
     fun onIntent(intent: ProjectSettingsIntent) {
         when (intent) {
             ProjectSettingsIntent.OpenCommissions -> emit(ProjectSettingsEvent.NavigateToCommissions)

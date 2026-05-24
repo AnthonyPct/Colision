@@ -17,7 +17,9 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val onboardingModule: Module = module {
-    single<OnboardingRepository> { DefaultOnboardingRepository(projectDao = get()) }
+    single<OnboardingRepository> {
+        DefaultOnboardingRepository(projectDao = get(), currentMemberProvider = get())
+    }
     single<ProjectsRepository> { DefaultProjectsRepository(supabase = get(), projectDao = get()) }
 
     viewModelOf(::WelcomeViewModel)
@@ -27,5 +29,6 @@ val onboardingModule: Module = module {
     viewModelOf(::JoinConfirmViewModel)
     viewModelOf(::JoinIdentityViewModel)
     viewModelOf(::JoinCommissionsViewModel)
+    // (logger is resolved automatically by the viewModelOf factory)
     viewModelOf(::NotificationPermViewModel)
 }

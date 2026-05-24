@@ -1,10 +1,10 @@
 package com.anthooop.colision.feature.projecthub.data
 
+import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.core.database.dao.MemberCommissionDao
 import com.anthooop.colision.core.database.dao.MemberDao
 import com.anthooop.colision.core.database.dao.ProjectDao
 import io.github.jan.supabase.SupabaseClient
-import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 
 class DefaultProjectLifecycleRepository(
@@ -12,6 +12,7 @@ class DefaultProjectLifecycleRepository(
     private val projectDao: ProjectDao,
     private val memberDao: MemberDao,
     private val memberCommissionDao: MemberCommissionDao,
+    private val currentMemberProvider: CurrentMemberProvider,
 ) : ProjectLifecycleRepository {
 
     /**
@@ -26,7 +27,10 @@ class DefaultProjectLifecycleRepository(
      * back to the Welcome screen.
      */
     override suspend fun leaveProject(projectId: String): Result<Unit> = runCatching {
-        val deviceId = supabase.auth.currentUserOrNull()?.id
+        // `member.device_id` is the `public.device.id` uuid (server-side
+        // `current_device_id()` returns it from the device table), NOT the
+        // auth user id. CurrentMemberProvider.deviceId() resolves it.
+        val deviceId = currentMemberProvider.deviceId()
             ?: error("No anonymous session — cannot leave project")
         val ownMember = memberDao.findOwnByProject(projectId, deviceId)
         if (ownMember != null) {
