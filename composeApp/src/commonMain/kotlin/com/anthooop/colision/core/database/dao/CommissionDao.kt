@@ -1,10 +1,9 @@
 package com.anthooop.colision.core.database.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -16,10 +15,10 @@ interface CommissionDao {
     @Query("SELECT * FROM commission WHERE id = :id LIMIT 1")
     suspend fun findById(id: String): CommissionEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsert(commission: CommissionEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsertAll(commissions: List<CommissionEntity>)
 
     @Update

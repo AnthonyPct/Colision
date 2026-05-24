@@ -1,10 +1,9 @@
 package com.anthooop.colision.core.database.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.anthooop.colision.core.database.entity.MemberEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -39,10 +38,10 @@ interface MemberDao {
     )
     fun observeByCommission(commissionId: String): Flow<List<MemberEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsert(member: MemberEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsertAll(members: List<MemberEntity>)
 
     @Update

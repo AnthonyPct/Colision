@@ -33,6 +33,7 @@ interface ProjectSyncManager {
 @OptIn(ExperimentalTime::class)
 class DefaultProjectSyncManager(
     private val connectivity: ConnectivityObserver,
+    private val authManager: AnonymousAuthManager,
     private val activeProjectProvider: ActiveProjectProvider,
     private val commissionsRepository: CommissionsRepository,
     private val membersRepository: MembersRepository,
@@ -62,8 +63,22 @@ class DefaultProjectSyncManager(
     }
 
     private suspend fun syncInternal() {
-        val projectId = activeProjectProvider.current()?.id ?: return
         if (!connectivity.isOnline.value) return
+        // Wait for the anonymous Supabase session to be established before
+        // any refresh. Without this gate, a refresh fired from
+        // `MainActivity.onResume` (or the iOS DidBecomeActive notification)
+        // before `AppViewModel.init` finished calling `ensureSession()`
+        // would hit PostgREST as unauthenticated, every membership-gated
+        // SELECT would return empty, and the (currently-correct) Room
+        // rows would survive only because no row would be touched. Any
+        // future logic that diffs server-vs-local would silently wipe the
+        // cache — keep this gate to avoid that whole class of race.
+        runCatching { authManager.ensureSession() }
+            .onFailure {
+                logger.warn("ProjectSyncManager", "auth not ready: ${it.message}")
+                return
+            }
+        val projectId = activeProjectProvider.current()?.id ?: return
         val results = listOf(
             commissionsRepository.refresh(projectId),
             membersRepository.refresh(projectId),

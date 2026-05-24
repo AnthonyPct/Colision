@@ -1,9 +1,8 @@
 package com.anthooop.colision.core.database.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 import com.anthooop.colision.core.database.entity.MemberCommissionEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -22,10 +21,10 @@ interface MemberCommissionDao {
     )
     fun observeForProject(projectId: String): Flow<List<MemberCommissionEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsert(link: MemberCommissionEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun upsertAll(links: List<MemberCommissionEntity>)
 
     @Query("DELETE FROM member_commission WHERE memberId = :memberId AND commissionId = :commissionId")

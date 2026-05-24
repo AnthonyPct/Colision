@@ -38,6 +38,7 @@ val coreModule: Module = module {
     single<ProjectSyncManager> {
         DefaultProjectSyncManager(
             connectivity = get<ConnectivityObserver>(),
+            authManager = get(),
             activeProjectProvider = get(),
             commissionsRepository = get(),
             membersRepository = get(),
