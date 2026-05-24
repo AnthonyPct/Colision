@@ -34,6 +34,10 @@ class NotificationPermViewModel(
     )
     val events: SharedFlow<NotificationPermEvent> = _events.asSharedFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
     fun onIntent(intent: NotificationPermIntent) {
         when (intent) {
             NotificationPermIntent.ActivateTapped -> requestPermission()

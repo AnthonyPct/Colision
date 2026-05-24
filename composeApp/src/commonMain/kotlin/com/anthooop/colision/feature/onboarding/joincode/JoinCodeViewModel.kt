@@ -36,6 +36,10 @@ class JoinCodeViewModel(
     )
     val events: SharedFlow<JoinCodeEvent> = _events.asSharedFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
     fun onIntent(intent: JoinCodeIntent) {
         when (intent) {
             is JoinCodeIntent.CodeChanged -> {

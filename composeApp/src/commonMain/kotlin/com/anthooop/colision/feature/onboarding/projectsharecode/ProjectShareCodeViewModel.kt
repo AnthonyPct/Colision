@@ -17,14 +17,26 @@ class ProjectShareCodeViewModel(
     private val projectsRepository: ProjectsRepository,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(ProjectShareCodeState())
     val state: StateFlow<ProjectShareCodeState> = _state.asStateFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
 
     private val _events = MutableSharedFlow<ProjectShareCodeEvent>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST,
     )
     val events: SharedFlow<ProjectShareCodeEvent> = _events.asSharedFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
 
     fun load(projectId: String) {
         viewModelScope.launch {
@@ -53,6 +65,10 @@ class ProjectShareCodeViewModel(
             ProjectShareCodeIntent.BackTapped -> emit(ProjectShareCodeEvent.NavigateBack)
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private fun emit(event: ProjectShareCodeEvent) {
         viewModelScope.launch { _events.emit(event) }

@@ -30,6 +30,10 @@ class CommissionDetailViewModel(
     private val currentMemberProvider: CurrentMemberProvider,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val commissionId: String = savedStateHandle
         .toRoute<AgendaDestination.CommissionDetail>()
         .commissionId
@@ -37,12 +41,38 @@ class CommissionDetailViewModel(
     private val _state = MutableStateFlow(CommissionDetailState())
     val state: StateFlow<CommissionDetailState> = _state.asStateFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _events = MutableSharedFlow<CommissionDetailEvent>(extraBufferCapacity = 1)
     val events: SharedFlow<CommissionDetailEvent> = _events.asSharedFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
+    fun onIntent(intent: CommissionDetailIntent) {
+        when (intent) {
+            CommissionDetailIntent.BackTapped -> emit(CommissionDetailEvent.NavigateBack)
+            is CommissionDetailIntent.MeetingTapped ->
+                emit(CommissionDetailEvent.NavigateToMeetingDetail(intent.meetingId))
+            CommissionDetailIntent.CreateMeetingTapped ->
+                emit(CommissionDetailEvent.NavigateToCreateMeeting)
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INIT
+    ///////////////////////////////////////////////////////////////////////////
 
     init {
         viewModelScope.launch { observe() }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     private suspend fun observe() {
         val commissionFlow = flow { emit(commissionDao.findById(commissionId)) }
@@ -63,16 +93,6 @@ class CommissionDetailViewModel(
             )
         }.collect { snapshot ->
             _state.update { snapshot }
-        }
-    }
-
-    fun onIntent(intent: CommissionDetailIntent) {
-        when (intent) {
-            CommissionDetailIntent.BackTapped -> emit(CommissionDetailEvent.NavigateBack)
-            is CommissionDetailIntent.MeetingTapped ->
-                emit(CommissionDetailEvent.NavigateToMeetingDetail(intent.meetingId))
-            CommissionDetailIntent.CreateMeetingTapped ->
-                emit(CommissionDetailEvent.NavigateToCreateMeeting)
         }
     }
 

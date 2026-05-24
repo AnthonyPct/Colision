@@ -30,6 +30,10 @@ class MeetingDetailViewModel(
     private val currentMemberProvider: CurrentMemberProvider,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val meetingId: String = savedStateHandle
         .toRoute<AgendaDestination.MeetingDetail>()
         .meetingId
@@ -37,12 +41,39 @@ class MeetingDetailViewModel(
     private val _state = MutableStateFlow(MeetingDetailState())
     val state: StateFlow<MeetingDetailState> = _state.asStateFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _events = MutableSharedFlow<MeetingDetailEvent>(extraBufferCapacity = 1)
     val events: SharedFlow<MeetingDetailEvent> = _events.asSharedFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
+    fun onIntent(intent: MeetingDetailIntent) {
+        when (intent) {
+            MeetingDetailIntent.BackTapped -> {
+                viewModelScope.launch { _events.emit(MeetingDetailEvent.NavigateBack) }
+            }
+            MeetingDetailIntent.EditTapped, MeetingDetailIntent.DeleteTapped -> {
+                // Epic 4 — wired up later.
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INIT
+    ///////////////////////////////////////////////////////////////////////////
 
     init {
         viewModelScope.launch { observe() }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun observe() {
@@ -74,16 +105,5 @@ class MeetingDetailViewModel(
             .collect { snapshot ->
                 _state.update { snapshot }
             }
-    }
-
-    fun onIntent(intent: MeetingDetailIntent) {
-        when (intent) {
-            MeetingDetailIntent.BackTapped -> {
-                viewModelScope.launch { _events.emit(MeetingDetailEvent.NavigateBack) }
-            }
-            MeetingDetailIntent.EditTapped, MeetingDetailIntent.DeleteTapped -> {
-                // Epic 4 — wired up later.
-            }
-        }
     }
 }

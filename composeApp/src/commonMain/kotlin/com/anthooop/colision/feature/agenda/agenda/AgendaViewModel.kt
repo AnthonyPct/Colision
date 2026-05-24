@@ -36,17 +36,49 @@ class AgendaViewModel(
     private val syncManager: ProjectSyncManager,
 ) : ViewModel() {
 
+    ///////////////////////////////////////////////////////////////////////////
+    // UI STATE
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _state = MutableStateFlow(AgendaState())
     val state: StateFlow<AgendaState> = _state.asStateFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // EVENT
+    ///////////////////////////////////////////////////////////////////////////
+
     private val _events = MutableSharedFlow<AgendaEvent>(extraBufferCapacity = 1)
     val events: SharedFlow<AgendaEvent> = _events.asSharedFlow()
+
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
+    fun onIntent(intent: AgendaIntent) {
+        when (intent) {
+            is AgendaIntent.ViewSelected -> _state.update { it.copy(view = intent.view) }
+            is AgendaIntent.MeetingTapped -> {
+                viewModelScope.launch { _events.emit(AgendaEvent.NavigateToMeetingDetail(intent.meetingId)) }
+            }
+            AgendaIntent.CreateMeetingTapped -> {
+                viewModelScope.launch { _events.emit(AgendaEvent.NavigateToCreateMeeting) }
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // INIT
+    ///////////////////////////////////////////////////////////////////////////
 
     init {
         viewModelScope.launch { observeData() }
         viewModelScope.launch { observeSync() }
         syncManager.refreshNow()
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // HELPER
+    ///////////////////////////////////////////////////////////////////////////
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun observeData() {
@@ -130,17 +162,5 @@ class AgendaViewModel(
         val hh = ldt.hour.toString().padStart(2, '0')
         val mm = ldt.minute.toString().padStart(2, '0')
         return "${hh}h${mm}"
-    }
-
-    fun onIntent(intent: AgendaIntent) {
-        when (intent) {
-            is AgendaIntent.ViewSelected -> _state.update { it.copy(view = intent.view) }
-            is AgendaIntent.MeetingTapped -> {
-                viewModelScope.launch { _events.emit(AgendaEvent.NavigateToMeetingDetail(intent.meetingId)) }
-            }
-            AgendaIntent.CreateMeetingTapped -> {
-                viewModelScope.launch { _events.emit(AgendaEvent.NavigateToCreateMeeting) }
-            }
-        }
     }
 }

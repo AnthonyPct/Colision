@@ -42,6 +42,18 @@ import colision.composeapp.generated.resources.agenda_offline_banner
 import colision.composeapp.generated.resources.agenda_offline_banner_no_sync
 import colision.composeapp.generated.resources.agenda_toggle_month
 import colision.composeapp.generated.resources.agenda_toggle_week
+import colision.composeapp.generated.resources.month_april
+import colision.composeapp.generated.resources.month_august
+import colision.composeapp.generated.resources.month_december
+import colision.composeapp.generated.resources.month_february
+import colision.composeapp.generated.resources.month_january
+import colision.composeapp.generated.resources.month_july
+import colision.composeapp.generated.resources.month_june
+import colision.composeapp.generated.resources.month_march
+import colision.composeapp.generated.resources.month_may
+import colision.composeapp.generated.resources.month_november
+import colision.composeapp.generated.resources.month_october
+import colision.composeapp.generated.resources.month_september
 import colision.composeapp.generated.resources.write_offline_message
 import com.anthooop.colision.core.design.Spacing
 import com.anthooop.colision.core.design.rememberOfflineGate
@@ -220,7 +232,7 @@ private fun WeekView(
 
 @Composable
 private fun DayHeader(date: String) {
-    val parsed = parseIsoDate(date)
+    val parsed = parseIsoDate(date, rememberMonthNames())
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = parsed.uppercase(),
@@ -331,6 +343,7 @@ private fun MonthView(
 ) {
     val byDay = meetings.groupBy { it.meeting.startsAt.substring(0, 10) }
     val days = byDay.keys.sorted()
+    val months = rememberMonthNames()
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(
@@ -353,7 +366,7 @@ private fun MonthView(
                 verticalArrangement = Arrangement.spacedBy(Spacing.SP1),
             ) {
                 Text(
-                    text = parseIsoDate(date).uppercase(),
+                    text = parseIsoDate(date, months).uppercase(),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -399,20 +412,32 @@ internal fun extractTime(isoDate: String): String {
     return isoDate.substring(tIdx + 1, minOf(tIdx + 6, isoDate.length))
 }
 
-internal fun parseIsoDate(isoDateOrDate: String): String {
+internal fun parseIsoDate(isoDateOrDate: String, months: List<String>): String {
     val tIdx = isoDateOrDate.indexOf('T')
     val datePart = if (tIdx >= 0) isoDateOrDate.substring(0, tIdx) else isoDateOrDate
     val parts = datePart.split('-')
     if (parts.size != 3) return datePart
     val day = parts[2].trimStart('0').ifBlank { "0" }
-    val months = listOf(
-        "janvier", "février", "mars", "avril", "mai", "juin",
-        "juillet", "août", "septembre", "octobre", "novembre", "décembre",
-    )
     val monthIdx = parts[1].toIntOrNull()?.let { it - 1 } ?: 0
     val month = months.getOrNull(monthIdx) ?: parts[1]
     return "$day $month"
 }
+
+@Composable
+internal fun rememberMonthNames(): List<String> = listOf(
+    stringResource(Res.string.month_january),
+    stringResource(Res.string.month_february),
+    stringResource(Res.string.month_march),
+    stringResource(Res.string.month_april),
+    stringResource(Res.string.month_may),
+    stringResource(Res.string.month_june),
+    stringResource(Res.string.month_july),
+    stringResource(Res.string.month_august),
+    stringResource(Res.string.month_september),
+    stringResource(Res.string.month_october),
+    stringResource(Res.string.month_november),
+    stringResource(Res.string.month_december),
+)
 
 internal fun durationMinutes(start: String, end: String): Int {
     fun toMin(s: String): Int {

@@ -50,6 +50,7 @@ import com.anthooop.colision.core.design.Spacing
 import com.anthooop.colision.feature.agenda.agenda.durationMinutes
 import com.anthooop.colision.feature.agenda.agenda.extractTime
 import com.anthooop.colision.feature.agenda.agenda.parseIsoDate
+import com.anthooop.colision.feature.agenda.agenda.rememberMonthNames
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -133,6 +134,7 @@ private fun DeletedState() {
 @Composable
 private fun MeetingBody(state: MeetingDetailState, onIntent: (MeetingDetailIntent) -> Unit) {
     val meeting = state.meeting ?: return
+    val months = rememberMonthNames()
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = Spacing.SP5, vertical = Spacing.SP4),
@@ -181,7 +183,7 @@ private fun MeetingBody(state: MeetingDetailState, onIntent: (MeetingDetailInten
             ) {
                 Column {
                     Text(
-                        text = parseIsoDate(meeting.startsAt).replaceFirstChar { it.uppercase() },
+                        text = parseIsoDate(meeting.startsAt, months).replaceFirstChar { it.uppercase() },
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,

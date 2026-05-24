@@ -41,6 +41,10 @@ class CommissionsListViewModel(
     )
     val events: SharedFlow<CommissionsListEvent> = _events.asSharedFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
     fun onIntent(intent: CommissionsListIntent) {
         when (intent) {
             CommissionsListIntent.BackTapped -> emit(CommissionsListEvent.NavigateBack)

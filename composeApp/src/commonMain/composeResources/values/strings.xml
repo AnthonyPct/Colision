@@ -137,6 +137,20 @@
     <string name="member_commissions_empty">Pas encore de commission. Crée-en d\'abord.</string>
     <string name="member_commissions_error">Impossible — %1$s.</string>
 
+    <!-- Months (long form, lowercase) -->
+    <string name="month_january">janvier</string>
+    <string name="month_february">février</string>
+    <string name="month_march">mars</string>
+    <string name="month_april">avril</string>
+    <string name="month_may">mai</string>
+    <string name="month_june">juin</string>
+    <string name="month_july">juillet</string>
+    <string name="month_august">août</string>
+    <string name="month_september">septembre</string>
+    <string name="month_october">octobre</string>
+    <string name="month_november">novembre</string>
+    <string name="month_december">décembre</string>
+
     <!-- AgendaScreen -->
     <string name="agenda_greeting">Bonjour %1$s</string>
     <string name="agenda_toggle_week">Semaine</string>

@@ -49,6 +49,7 @@ import colision.composeapp.generated.resources.write_offline_message
 import com.anthooop.colision.feature.agenda.agenda.durationMinutes
 import com.anthooop.colision.feature.agenda.agenda.extractTime
 import com.anthooop.colision.feature.agenda.agenda.parseIsoDate
+import com.anthooop.colision.feature.agenda.agenda.rememberMonthNames
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -185,7 +186,8 @@ private fun Header(state: CommissionDetailState) {
 
 @Composable
 private fun MeetingRow(meeting: MeetingEntity, onTap: () -> Unit) {
-    val title = meeting.title?.takeIf { it.isNotBlank() } ?: parseIsoDate(meeting.startsAt)
+    val months = rememberMonthNames()
+    val title = meeting.title?.takeIf { it.isNotBlank() } ?: parseIsoDate(meeting.startsAt, months)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -218,7 +220,7 @@ private fun MeetingRow(meeting: MeetingEntity, onTap: () -> Unit) {
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = parseIsoDate(meeting.startsAt),
+                text = parseIsoDate(meeting.startsAt, months),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

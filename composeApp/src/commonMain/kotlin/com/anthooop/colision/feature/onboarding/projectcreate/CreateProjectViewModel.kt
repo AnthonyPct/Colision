@@ -38,6 +38,10 @@ class CreateProjectViewModel(
     )
     val events: SharedFlow<CreateProjectEvent> = _events.asSharedFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
     fun onIntent(intent: CreateProjectIntent) {
         when (intent) {
             is CreateProjectIntent.NameChanged -> _state.update { it.copy(name = intent.value, error = null) }

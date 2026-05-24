@@ -51,6 +51,10 @@ class MembersListViewModel(
     )
     val events: SharedFlow<MembersListEvent> = _events.asSharedFlow()
 
+    ///////////////////////////////////////////////////////////////////////////
+    // PUBLIC API
+    ///////////////////////////////////////////////////////////////////////////
+
     fun onIntent(intent: MembersListIntent) {
         when (intent) {
             MembersListIntent.BackTapped -> emit(MembersListEvent.NavigateBack)
