@@ -174,4 +174,19 @@
     <string name="meeting_detail_created_by">Créée par %1$s</string>
     <string name="meeting_detail_deleted_title">Cette réunion a été supprimée</string>
     <string name="meeting_detail_deleted_body">Quelqu\'un l\'a annulée pendant que tu étais hors ligne.</string>
+
+    <!-- CreateMeetingScreen -->
+    <string name="create_meeting_title">Nouvelle réunion</string>
+    <string name="create_meeting_title_label">Titre (optionnel)</string>
+    <string name="create_meeting_title_placeholder">Ex. : Préparation du budget</string>
+    <string name="create_meeting_date_label">Date</string>
+    <string name="create_meeting_start_label">Début</string>
+    <string name="create_meeting_time_placeholder">HH:mm</string>
+    <string name="create_meeting_duration_label">Durée</string>
+    <string name="create_meeting_duration_min">%1$d min</string>
+    <string name="create_meeting_commissions_label">Commission(s) concernée(s)</string>
+    <string name="create_meeting_no_conflict_banner">Aucun conflit détecté sur ce créneau.</string>
+    <string name="create_meeting_submit">Vérifier les conflits</string>
+    <string name="create_meeting_offline_message">Connexion requise</string>
+    <string name="create_meeting_error_generic">La réunion n\'a pas pu être créée. Réessaie dans un instant.</string>
 </resources>

@@ -23,6 +23,15 @@ data class MeetingCommissionLinkDto(
     @SerialName("commission_id") val commissionId: String,
 )
 
+@Serializable
+data class MeetingInsertDto(
+    @SerialName("project_id") val projectId: String,
+    val title: String?,
+    @SerialName("starts_at") val startsAt: String,
+    @SerialName("ends_at") val endsAt: String,
+    @SerialName("created_by_member_id") val createdByMemberId: String?,
+)
+
 fun MeetingDto.toEntity(): MeetingEntity = MeetingEntity(
     id = id,
     projectId = projectId,

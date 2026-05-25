@@ -6,6 +6,7 @@ import androidx.navigation.compose.navigation
 import com.anthooop.colision.core.navigation.RootGraph
 import com.anthooop.colision.feature.agenda.navigation.AgendaDestination
 import com.anthooop.colision.feature.agenda.navigation.agendaDestinations
+import com.anthooop.colision.feature.meeting.navigation.meetingDestinations
 import com.anthooop.colision.feature.projecthub.navigation.projectHubDestinations
 
 fun NavGraphBuilder.homeGraph(
@@ -14,6 +15,7 @@ fun NavGraphBuilder.homeGraph(
 ) {
     navigation<RootGraph.Home>(startDestination = AgendaDestination.Agenda) {
         agendaDestinations(navController)
+        meetingDestinations(navController, onMeetingCreated = { navController.popBackStack() })
         projectHubDestinations(navController, onProjectReleased)
     }
 }
