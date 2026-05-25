@@ -5,8 +5,15 @@ import com.anthooop.colision.core.database.entity.MeetingCommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingEntity
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 data class CreateMeetingInput(
     val projectId: String,
@@ -72,21 +79,28 @@ class DefaultMeetingsRepository(
 
     override suspend fun create(input: CreateMeetingInput): Result<MeetingEntity> = runCatching {
         require(input.commissionIds.isNotEmpty()) { "commissionIds must not be empty" }
-        val dto = supabase.from("meeting")
-            .insert(
-                MeetingInsertDto(
-                    projectId = input.projectId,
-                    title = input.title?.takeIf { it.isNotBlank() },
-                    startsAt = input.startsAt,
-                    endsAt = input.endsAt,
-                    createdByMemberId = input.createdByMemberId,
-                ),
-            ) { select() }
-            .decodeSingle<MeetingDto>()
+        // Atomic RPC : the meeting row + its meeting_commission link rows are
+        // inserted in a single transaction. This lets the deferred trigger
+        // `trg_dispatch_meeting_push` see the full link set at COMMIT time
+        // (cf. migration 012) so the dispatch routes between
+        // dispatch_meeting_push and dispatch_conflict_push correctly.
+        val params = buildJsonObject {
+            put("p_project_id", input.projectId)
+            put("p_title", input.title.orEmpty())
+            put("p_starts_at", input.startsAt)
+            put("p_ends_at", input.endsAt)
+            put("p_commission_ids", buildJsonArray { input.commissionIds.forEach { add(it) } })
+            put(
+                "p_created_by_member_id",
+                input.createdByMemberId?.let(::JsonPrimitive) ?: JsonNull,
+            )
+        }
+        val dto = supabase.postgrest
+            .rpc(function = "create_meeting_with_commissions", parameters = params)
+            .decodeAs<MeetingDto>()
         val links = input.commissionIds.map { commissionId ->
             MeetingCommissionLinkDto(meetingId = dto.id, commissionId = commissionId)
         }
-        supabase.from("meeting_commission").insert(links)
         val meeting = dto.toEntity()
         meetingDao.upsertAll(listOf(meeting))
         meetingDao.upsertLinks(links.map { it.toEntity() })
