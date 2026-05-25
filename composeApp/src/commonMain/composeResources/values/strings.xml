@@ -195,6 +195,9 @@
     <string name="create_meeting_commissions_label">Commission(s) concernée(s)</string>
     <string name="create_meeting_no_conflict_banner">Aucun conflit détecté sur ce créneau.</string>
     <string name="create_meeting_submit">Vérifier les conflits</string>
+    <string name="create_meeting_submit_create">Créer la réunion</string>
+    <string name="create_meeting_other_date">Autre</string>
+    <string name="create_meeting_date_picker_title">Choisir une date</string>
     <string name="create_meeting_offline_message">Connexion requise</string>
     <string name="create_meeting_error_generic">La réunion n\'a pas pu être créée. Réessaie dans un instant.</string>
 

@@ -1,4 +1,8 @@
-@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@file:OptIn(
+    androidx.compose.foundation.layout.ExperimentalLayoutApi::class,
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+    kotlin.time.ExperimentalTime::class,
+)
 
 package com.anthooop.colision.feature.meeting.createmeeting
 
@@ -27,11 +31,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,8 +57,16 @@ import colision.composeapp.generated.resources.create_meeting_commissions_label
 import colision.composeapp.generated.resources.create_meeting_date_label
 import colision.composeapp.generated.resources.create_meeting_duration_label
 import colision.composeapp.generated.resources.create_meeting_duration_min
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toLocalDateTime
+import colision.composeapp.generated.resources.action_cancel
+import colision.composeapp.generated.resources.action_ok
+import colision.composeapp.generated.resources.create_meeting_date_picker_title
 import colision.composeapp.generated.resources.create_meeting_no_conflict_banner
+import colision.composeapp.generated.resources.create_meeting_other_date
 import colision.composeapp.generated.resources.create_meeting_potential_conflicts
+import colision.composeapp.generated.resources.create_meeting_submit_check_potential
+import colision.composeapp.generated.resources.create_meeting_submit_create
 import colision.composeapp.generated.resources.create_meeting_offline_message
 import colision.composeapp.generated.resources.create_meeting_start_label
 import colision.composeapp.generated.resources.create_meeting_submit
@@ -124,6 +143,7 @@ fun CreateMeetingScreen(
             canSubmit = state.canSubmit,
             isSubmitting = state.isSubmitting,
             isOnline = state.isOnline,
+            potentialConflictCount = state.potentialConflictCount,
             onSubmit = { onIntent(CreateMeetingIntent.SubmitTapped) },
         )
     }
@@ -191,6 +211,7 @@ private fun DateField(dates: List<String>, selected: String, onSelect: (String) 
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.SP2)) {
         SectionLabel(stringResource(Res.string.create_meeting_date_label))
         val months = rememberMonthAbbrev()
+        var showPicker by remember { mutableStateOf(false) }
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(Spacing.SP2),
             contentPadding = PaddingValues(vertical = 2.dp),
@@ -198,7 +219,78 @@ private fun DateField(dates: List<String>, selected: String, onSelect: (String) 
             items(dates, key = { it }) { iso ->
                 DateCard(iso = iso, monthAbbrev = months, selected = iso == selected, onTap = { onSelect(iso) })
             }
+            item(key = "__other_date__") {
+                OtherDateCard(onTap = { showPicker = true })
+            }
         }
+        if (showPicker) {
+            val pickerState = rememberDatePickerState(
+                initialSelectedDateMillis = isoToMillis(selected),
+            )
+            DatePickerDialog(
+                onDismissRequest = { showPicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val millis = pickerState.selectedDateMillis
+                            if (millis != null) {
+                                onSelect(millisToIso(millis))
+                            }
+                            showPicker = false
+                        },
+                    ) { Text(stringResource(Res.string.action_ok)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showPicker = false }) {
+                        Text(stringResource(Res.string.action_cancel))
+                    }
+                },
+            ) {
+                DatePicker(
+                    state = pickerState,
+                    title = {
+                        Text(
+                            text = stringResource(Res.string.create_meeting_date_picker_title),
+                            modifier = Modifier.padding(start = 24.dp, top = 16.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun OtherDateCard(onTap: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .size(width = 56.dp, height = 72.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(
+                width = 1.5.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(14.dp),
+            )
+            .clickable(onClick = onTap)
+            .padding(vertical = Spacing.SP2),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = "+",
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = stringResource(Res.string.create_meeting_other_date),
+            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.5.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.SemiBold,
+        )
     }
 }
 
@@ -411,6 +503,7 @@ private fun BottomBar(
     canSubmit: Boolean,
     isSubmitting: Boolean,
     isOnline: Boolean,
+    potentialConflictCount: Int,
     onSubmit: () -> Unit,
 ) {
     Column(
@@ -429,6 +522,15 @@ private fun BottomBar(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+        val label = if (potentialConflictCount > 0) {
+            org.jetbrains.compose.resources.pluralStringResource(
+                Res.plurals.create_meeting_submit_check_potential,
+                potentialConflictCount,
+                potentialConflictCount,
+            )
+        } else {
+            stringResource(Res.string.create_meeting_submit_create)
+        }
         Button(
             onClick = onSubmit,
             enabled = canSubmit,
@@ -438,13 +540,36 @@ private fun BottomBar(
             shape = RoundedCornerShape(16.dp),
         ) {
             Text(
-                text = stringResource(Res.string.create_meeting_submit),
+                text = label,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
         }
     }
 }
+
+/** Convert an ISO yyyy-MM-dd string to epoch millis at UTC midnight. */
+internal fun isoToMillis(iso: String): Long? {
+    val parts = iso.split('-')
+    if (parts.size != 3) return null
+    val year = parts[0].toIntOrNull() ?: return null
+    val month = parts[1].toIntOrNull() ?: return null
+    val day = parts[2].toIntOrNull() ?: return null
+    return try {
+        kotlinx.datetime.LocalDate(year, month, day)
+            .atStartOfDayIn(kotlinx.datetime.TimeZone.UTC)
+            .toEpochMilliseconds()
+    } catch (_: IllegalArgumentException) {
+        null
+    }
+}
+
+/** Convert epoch millis (UTC midnight from M3 DatePicker) to ISO yyyy-MM-dd. */
+internal fun millisToIso(millis: Long): String =
+    kotlin.time.Instant.fromEpochMilliseconds(millis)
+        .toLocalDateTime(kotlinx.datetime.TimeZone.UTC)
+        .date
+        .toString()
 
 internal data class ParsedDate(val day: String, val dayOfWeekShort: String)
 

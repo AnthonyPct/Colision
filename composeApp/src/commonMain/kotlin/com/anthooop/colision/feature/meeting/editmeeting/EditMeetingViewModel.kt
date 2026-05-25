@@ -76,7 +76,14 @@ class EditMeetingViewModel(
     fun onIntent(intent: CreateMeetingIntent) {
         when (intent) {
             is CreateMeetingIntent.TitleChanged -> _state.update { it.copy(title = intent.value, error = null) }
-            is CreateMeetingIntent.DateSelected -> _state.update { it.copy(date = intent.iso, error = null) }
+            is CreateMeetingIntent.DateSelected -> _state.update { current ->
+                val nextAvailable = if (intent.iso in current.availableDates) {
+                    current.availableDates
+                } else {
+                    listOf(intent.iso) + current.availableDates
+                }
+                current.copy(date = intent.iso, availableDates = nextAvailable, error = null)
+            }
             is CreateMeetingIntent.TimeChanged -> _state.update { it.copy(time = intent.value, error = null) }
             is CreateMeetingIntent.DurationSelected -> _state.update { it.copy(duration = intent.option, error = null) }
             is CreateMeetingIntent.CommissionToggled -> _state.update { current ->
