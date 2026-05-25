@@ -31,9 +31,13 @@ as $$
 declare
   v_step      interval := interval '30 minutes';
   v_dur       interval := (p_duration_min || ' minutes')::interval;
-  v_lower     timestamptz := p_anchor - (p_window_days || ' days')::interval;
+  -- Clamp the lower bound to now() so we never propose a slot in the past
+  -- when the anchor is close to (or behind) the current time. v_cur is then
+  -- rounded *up* to the next 30 min for a clean grid.
+  v_lower     timestamptz := greatest(p_anchor - (p_window_days || ' days')::interval, now());
   v_upper     timestamptz := p_anchor + (p_window_days || ' days')::interval;
-  v_cur       timestamptz := v_lower;
+  v_cur       timestamptz := date_trunc('hour', v_lower)
+                             + (ceil(extract(minute from v_lower) / 30.0)::int * interval '30 minutes');
   v_count     int := 0;
   v_local     time;
 begin

@@ -382,7 +382,7 @@ private fun DurationChip(
     val fg = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
     Box(
         modifier = modifier
-            .height(48.dp)
+            .height(52.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(bg)
             .border(
@@ -390,7 +390,8 @@ private fun DurationChip(
                 color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(12.dp),
             )
-            .clickable(onClick = onTap),
+            .clickable(onClick = onTap)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -398,6 +399,8 @@ private fun DurationChip(
             style = MaterialTheme.typography.labelLarge,
             color = fg,
             fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
         )
     }
 }
