@@ -15,8 +15,10 @@ import com.anthooop.colision.core.common.SentryAnalytics
 import com.anthooop.colision.core.common.SentryCrashReporter
 import com.anthooop.colision.core.common.SupabaseAnonymousAuthManager
 import com.anthooop.colision.core.database.ColisionDatabase
+import com.anthooop.colision.core.network.DataStoreSessionManager
 import com.anthooop.colision.core.network.SupabaseClientProvider
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.SessionManager
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -24,7 +26,8 @@ val coreModule: Module = module {
     single<DispatcherProvider> { DefaultDispatcherProvider() }
     single<CrashReporter> { SentryCrashReporter() }
     single<Analytics> { SentryAnalytics() }
-    single<SupabaseClient> { SupabaseClientProvider.create() }
+    single<SessionManager> { DataStoreSessionManager(store = get()) }
+    single<SupabaseClient> { SupabaseClientProvider.create(sessionManager = get()) }
     single<AnonymousAuthManager> {
         SupabaseAnonymousAuthManager(
             client = get(),

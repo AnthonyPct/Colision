@@ -1,5 +1,7 @@
 package com.anthooop.colision.core.di
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.anthooop.colision.core.common.AndroidConnectivityObserver
@@ -10,6 +12,7 @@ import com.anthooop.colision.core.common.NotificationPermissionManager
 import com.anthooop.colision.core.common.NotificationPermissionManagerAndroid
 import com.anthooop.colision.core.database.COLISION_DB_FILE
 import com.anthooop.colision.core.database.ColisionDatabase
+import com.anthooop.colision.core.network.createSessionDataStore
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
@@ -34,5 +37,8 @@ val androidPlatformModule: Module = module {
             .setQueryCoroutineContext(Dispatchers.IO)
             .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
+    }
+    single<DataStore<Preferences>> {
+        createSessionDataStore(directory = androidContext().applicationContext.filesDir.absolutePath)
     }
 }

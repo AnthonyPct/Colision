@@ -20,6 +20,7 @@ ktor = "3.5.0"
 supabase = "3.6.0"
 room = "2.8.4"
 sqlite = "2.6.2"
+datastore = "1.1.7"
 kotlinxSerialization = "1.9.0"
 kotlinxDatetime = "0.7.0"
 kotlinxCoroutines = "1.10.2"
@@ -73,6 +74,10 @@ supabase-functions = { module = "io.github.jan-tennert.supabase:functions-kt" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+
+# DataStore (KMP-ready since 1.1.0). Used to persist the Supabase anonymous
+# session across cold starts so member.device_id remains stable.
+androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 
 # kotlinx
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
