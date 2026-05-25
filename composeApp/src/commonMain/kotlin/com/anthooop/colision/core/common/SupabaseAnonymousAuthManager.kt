@@ -11,6 +11,12 @@ class SupabaseAnonymousAuthManager(
 ) : AnonymousAuthManager {
 
     override suspend fun ensureSession(): Result<Unit> = runCatching {
+        // Wait until Auth has finished loading the persisted session from
+        // DataStore. Without this gate, `sessionStatus.value` is still
+        // `Initializing` and we fall through to signInAnonymously(),
+        // creating a fresh auth.users + device on every cold start — which
+        // detaches the previously claimed member.device_id.
+        client.auth.awaitInitialization()
         when (client.auth.sessionStatus.value) {
             is SessionStatus.Authenticated -> Unit
             else -> client.auth.signInAnonymously()
@@ -26,6 +32,7 @@ class SupabaseAnonymousAuthManager(
     // a dedicated expiry-tracking codepath that would drift with supabase-kt
     // API changes.
     override suspend fun refreshIfNeeded(): Result<Unit> = runCatching {
+        client.auth.awaitInitialization()
         val status = client.auth.sessionStatus.value
         if (status !is SessionStatus.Authenticated) {
             client.auth.signInAnonymously()

@@ -174,4 +174,52 @@
     <string name="meeting_detail_created_by">Créée par %1$s</string>
     <string name="meeting_detail_deleted_title">Cette réunion a été supprimée</string>
     <string name="meeting_detail_deleted_body">Quelqu\'un l\'a annulée pendant que tu étais hors ligne.</string>
+    <string name="meeting_detail_delete_confirm_title">Supprimer la réunion %1$s ?</string>
+    <string name="meeting_detail_delete_confirm_body">Tous les membres concernés recevront une notification d\'annulation.</string>
+    <string name="meeting_detail_delete_confirm_action">Supprimer</string>
+    <string name="meeting_detail_conflicts_section">Statut des conflictés</string>
+    <string name="meeting_detail_status_attends">Vient</string>
+    <string name="meeting_detail_status_pending">En attente</string>
+    <string name="meeting_detail_status_skips">Vient pas — va à %1$s</string>
+    <string name="meeting_detail_status_skips_unknown">Vient pas</string>
+
+    <!-- CreateMeetingScreen -->
+    <string name="create_meeting_title">Nouvelle réunion</string>
+    <string name="create_meeting_title_label">Titre (optionnel)</string>
+    <string name="create_meeting_title_placeholder">Ex. : Préparation du budget</string>
+    <string name="create_meeting_date_label">Date</string>
+    <string name="create_meeting_start_label">Début</string>
+    <string name="create_meeting_time_placeholder">HH:mm</string>
+    <string name="create_meeting_duration_label">Durée</string>
+    <string name="create_meeting_duration_min">%1$d min</string>
+    <string name="create_meeting_commissions_label">Commission(s) concernée(s)</string>
+    <string name="create_meeting_no_conflict_banner">Aucun conflit détecté sur ce créneau.</string>
+    <string name="create_meeting_submit">Vérifier les conflits</string>
+    <string name="create_meeting_submit_create">Créer la réunion</string>
+    <string name="create_meeting_other_date">Autre</string>
+    <string name="create_meeting_date_picker_title">Choisir une date</string>
+    <string name="create_meeting_offline_message">Connexion requise</string>
+    <string name="create_meeting_error_generic">La réunion n\'a pas pu être créée. Réessaie dans un instant.</string>
+
+    <!-- ConflictsScreen -->
+    <string name="conflicts_title">Conflits détectés</string>
+    <string name="conflicts_count">%1$d conflits</string>
+    <string name="conflicts_subtitle">Ces membres ont déjà un engagement chevauchant ce créneau.</string>
+    <string name="conflicts_section_label">Qui est en conflit</string>
+    <string name="conflicts_time_format">%1$s · %2$s – %3$s</string>
+    <string name="conflicts_actions_label">Que veux-tu faire ?</string>
+    <string name="conflicts_action_suggestions_title">Voir d\'autres horaires libres</string>
+    <string name="conflicts_action_suggestions_sub">On te suggère 3 créneaux où personne n\'est pris.</string>
+    <string name="conflicts_action_postpone_title">Décaler la réunion</string>
+    <string name="conflicts_action_postpone_sub">Reviens à l\'étape précédente pour modifier.</string>
+    <string name="conflicts_action_create_anyway_title">Créer quand même</string>
+    <string name="conflicts_action_create_anyway_sub">Les conflictés recevront une notification pour trancher.</string>
+
+    <!-- SuggestionsScreen -->
+    <string name="suggestions_title">Créneaux libres</string>
+    <string name="suggestions_subtitle">Tous les membres concernés sont libres sur ces horaires.</string>
+    <string name="suggestions_slot_everyone_free">Tout le monde est libre</string>
+    <string name="suggestions_submit">Créer la réunion</string>
+    <string name="suggestions_loading">Recherche de créneaux libres…</string>
+    <string name="suggestions_empty">Aucun créneau libre dans la fenêtre — essaie une autre date.</string>
 </resources>

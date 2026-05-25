@@ -61,6 +61,27 @@ interface MeetingDao {
     @Query("SELECT id FROM meeting WHERE projectId = :projectId")
     suspend fun idsForProject(projectId: String): List<String>
 
+    @Query(
+        "SELECT DISTINCT mb.id FROM member mb " +
+            "INNER JOIN member_commission mbc ON mbc.memberId = mb.id " +
+            "INNER JOIN commission c ON c.id = mbc.commissionId " +
+            "INNER JOIN meeting_commission mtc ON mtc.commissionId = c.id " +
+            "INNER JOIN meeting m ON m.id = mtc.meetingId " +
+            "WHERE m.projectId = :projectId " +
+            "AND m.startsAt < :endIso " +
+            "AND m.endsAt > :startIso " +
+            "AND mb.id IN (" +
+            "  SELECT mbc2.memberId FROM member_commission mbc2 " +
+            "  WHERE mbc2.commissionId IN (:commissionIds)" +
+            ")",
+    )
+    suspend fun findLocalConflictMemberIds(
+        projectId: String,
+        commissionIds: List<String>,
+        startIso: String,
+        endIso: String,
+    ): List<String>
+
     @Transaction
     suspend fun replaceForProject(
         projectId: String,

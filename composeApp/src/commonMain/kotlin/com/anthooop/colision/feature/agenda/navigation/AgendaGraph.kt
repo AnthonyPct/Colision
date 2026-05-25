@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.anthooop.colision.feature.agenda.agenda.AgendaRoute
 import com.anthooop.colision.feature.agenda.commissiondetail.CommissionDetailRoute
 import com.anthooop.colision.feature.agenda.meetingdetail.MeetingDetailRoute
+import com.anthooop.colision.feature.meeting.navigation.MeetingDestination
 
 fun NavGraphBuilder.agendaDestinations(navController: NavController) {
     composable<AgendaDestination.Agenda> {
@@ -16,7 +17,7 @@ fun NavGraphBuilder.agendaDestinations(navController: NavController) {
                 navController.navigate(AgendaDestination.MeetingDetail(meetingId))
             },
             onNavigateToCreateMeeting = {
-                // Epic 4 — placeholder until "Nouvelle réunion" flow ships.
+                navController.navigate(MeetingDestination.CreateMeeting)
             },
             modifier = Modifier.fillMaxSize(),
         )
@@ -24,6 +25,9 @@ fun NavGraphBuilder.agendaDestinations(navController: NavController) {
     composable<AgendaDestination.MeetingDetail> {
         MeetingDetailRoute(
             onNavigateBack = { navController.popBackStack() },
+            onNavigateToEdit = { meetingId ->
+                navController.navigate(MeetingDestination.EditMeeting(meetingId))
+            },
             modifier = Modifier.fillMaxSize(),
         )
     }
@@ -34,7 +38,7 @@ fun NavGraphBuilder.agendaDestinations(navController: NavController) {
                 navController.navigate(AgendaDestination.MeetingDetail(meetingId))
             },
             onNavigateToCreateMeeting = {
-                // Epic 4 — placeholder until "Nouvelle réunion" flow ships.
+                navController.navigate(MeetingDestination.CreateMeeting)
             },
             modifier = Modifier.fillMaxSize(),
         )

@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -36,10 +37,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import colision.composeapp.generated.resources.Res
 import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.action_cancel
 import colision.composeapp.generated.resources.action_delete
 import colision.composeapp.generated.resources.action_modify
 import colision.composeapp.generated.resources.meeting_detail_attendees
+import colision.composeapp.generated.resources.meeting_detail_conflicts_section
 import colision.composeapp.generated.resources.meeting_detail_created_by
+import colision.composeapp.generated.resources.meeting_detail_status_attends
+import colision.composeapp.generated.resources.meeting_detail_status_pending
+import colision.composeapp.generated.resources.meeting_detail_status_skips
+import colision.composeapp.generated.resources.meeting_detail_status_skips_unknown
+import colision.composeapp.generated.resources.meeting_detail_delete_confirm_action
+import colision.composeapp.generated.resources.meeting_detail_delete_confirm_body
+import colision.composeapp.generated.resources.meeting_detail_delete_confirm_title
 import colision.composeapp.generated.resources.meeting_detail_deleted_body
 import colision.composeapp.generated.resources.meeting_detail_deleted_title
 import colision.composeapp.generated.resources.meeting_detail_duration_minutes
@@ -73,6 +83,41 @@ fun MeetingDetailScreen(
             state.isDeleted -> DeletedState()
             state.meeting != null -> MeetingBody(state = state, onIntent = onIntent)
         }
+    }
+
+    if (state.showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { onIntent(MeetingDetailIntent.DeleteDismissed) },
+            title = {
+                Text(
+                    text = stringResource(
+                        Res.string.meeting_detail_delete_confirm_title,
+                        state.meeting?.title?.takeIf { it.isNotBlank() }
+                            ?: stringResource(Res.string.meeting_detail_no_title_fallback),
+                    ),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(Res.string.meeting_detail_delete_confirm_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { onIntent(MeetingDetailIntent.DeleteConfirmed) }) {
+                    Text(
+                        text = stringResource(Res.string.meeting_detail_delete_confirm_action),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onIntent(MeetingDetailIntent.DeleteDismissed) }) {
+                    Text(stringResource(Res.string.action_cancel))
+                }
+            },
+        )
     }
 }
 
@@ -231,6 +276,21 @@ private fun MeetingBody(state: MeetingDetailState, onIntent: (MeetingDetailInten
             AttendeeRow(member = member)
         }
 
+        if (state.isCreator && state.conflictedAttendees.isNotEmpty()) {
+            item {
+                Spacer(Modifier.height(Spacing.SP3))
+                Text(
+                    text = stringResource(Res.string.meeting_detail_conflicts_section),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            items(state.conflictedAttendees, key = { it.memberId }) { row ->
+                ConflictedRow(row = row)
+            }
+        }
+
         item {
             state.creator?.let { creator ->
                 Spacer(Modifier.height(Spacing.SP3))
@@ -244,6 +304,45 @@ private fun MeetingBody(state: MeetingDetailState, onIntent: (MeetingDetailInten
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ConflictedRow(row: ConflictedAttendeeUi) {
+    val (label, color) = when (row.status) {
+        ConflictedArbitrationStatus.Attends ->
+            stringResource(Res.string.meeting_detail_status_attends) to MaterialTheme.colorScheme.primary
+        ConflictedArbitrationStatus.Skips ->
+            (row.otherCommissionName?.let { stringResource(Res.string.meeting_detail_status_skips, it) }
+                ?: stringResource(Res.string.meeting_detail_status_skips_unknown)) to MaterialTheme.colorScheme.error
+        ConflictedArbitrationStatus.Pending ->
+            stringResource(Res.string.meeting_detail_status_pending) to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
+            .padding(horizontal = Spacing.SP3, vertical = Spacing.SP3),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Avatar(name = row.memberName)
+        Spacer(Modifier.width(Spacing.SP3))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = row.memberName,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = color,
+            )
         }
     }
 }

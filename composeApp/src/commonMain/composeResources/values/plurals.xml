@@ -11,4 +11,22 @@
         <item quantity="one">Continuer (%1$d cochée)</item>
         <item quantity="other">Continuer (%1$d cochées)</item>
     </plurals>
+
+    <!-- CreateMeetingScreen: "1 conflit potentiel" / "N conflits potentiels" -->
+    <plurals name="create_meeting_potential_conflicts">
+        <item quantity="one">⚠️ %1$d conflit potentiel</item>
+        <item quantity="other">⚠️ %1$d conflits potentiels</item>
+    </plurals>
+
+    <!-- CreateMeetingScreen: bottom button when conflicts pending -->
+    <plurals name="create_meeting_submit_check_potential">
+        <item quantity="one">Voir le %1$d conflit</item>
+        <item quantity="other">Voir les %1$d conflits</item>
+    </plurals>
+
+    <!-- ConflictsScreen: "1 membre déjà mobilisé" / "N membres déjà mobilisés" -->
+    <plurals name="conflicts_member_count">
+        <item quantity="one">%1$d membre déjà mobilisé</item>
+        <item quantity="other">%1$d membres déjà mobilisés</item>
+    </plurals>
 </resources>

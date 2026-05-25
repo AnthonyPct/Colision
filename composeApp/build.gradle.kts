@@ -96,6 +96,9 @@ kotlin {
 
             // Navigation Compose
             implementation(libs.androidx.navigation.compose)
+
+            // DataStore (KMP) for persisting the Supabase session.
+            implementation(libs.androidx.datastore.preferences.core)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
