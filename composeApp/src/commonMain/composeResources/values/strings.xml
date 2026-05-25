@@ -159,6 +159,7 @@
     <string name="agenda_create_meeting">Nouvelle réunion</string>
     <string name="agenda_offline_banner">Mode hors-ligne — dernière synchro à %1$s</string>
     <string name="agenda_offline_banner_no_sync">Mode hors-ligne — pas encore synchronisé</string>
+    <string name="agenda_conflict_badge">À ARBITRER</string>
 
     <!-- CommissionDetailScreen -->
     <string name="commission_detail_subtitle">%1$d membres · %2$d réunions</string>

@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.agenda_conflict_badge
 import colision.composeapp.generated.resources.agenda_create_meeting
 import colision.composeapp.generated.resources.agenda_empty
 import colision.composeapp.generated.resources.agenda_greeting
@@ -308,6 +309,10 @@ private fun MeetingCard(item: AgendaMeeting, onTap: () -> Unit) {
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onSurface,
             )
+            if (item.conflicted) {
+                Spacer(Modifier.height(Spacing.SP2))
+                ConflictBadge()
+            }
             if (item.commissions.isNotEmpty()) {
                 Spacer(Modifier.height(Spacing.SP2))
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -317,6 +322,22 @@ private fun MeetingCard(item: AgendaMeeting, onTap: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ConflictBadge() {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(MaterialTheme.colorScheme.errorContainer)
+            .padding(horizontal = 8.dp, vertical = 2.dp),
+    ) {
+        Text(
+            text = stringResource(Res.string.agenda_conflict_badge),
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onErrorContainer,
+        )
     }
 }
 

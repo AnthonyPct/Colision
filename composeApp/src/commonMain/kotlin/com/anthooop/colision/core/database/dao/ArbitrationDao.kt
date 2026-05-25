@@ -16,6 +16,11 @@ interface ArbitrationDao {
     @Query("SELECT * FROM arbitration WHERE conflictingMeetingId = :meetingId")
     fun observeChoosingMeeting(meetingId: String): Flow<List<ArbitrationEntity>>
 
+    /** All arbitration rows for [memberId], used by the agenda to hide pairs the
+     *  current member has already resolved. */
+    @Query("SELECT * FROM arbitration WHERE memberId = :memberId")
+    fun observeForMember(memberId: String): Flow<List<ArbitrationEntity>>
+
     @Upsert
     suspend fun upsertAll(items: List<ArbitrationEntity>)
 

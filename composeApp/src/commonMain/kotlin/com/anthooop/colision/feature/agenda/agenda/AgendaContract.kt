@@ -9,6 +9,10 @@ data class AgendaMeeting(
     val meeting: MeetingEntity,
     val commissions: List<CommissionEntity>,
     val conflicted: Boolean,
+    // Peer meeting in the unresolved (this, other) overlap pair. Set when
+    // `conflicted = true`; tap routes to the arbitration screen seeded with
+    // this id rather than to the meeting detail.
+    val conflictWithMeetingId: String? = null,
 )
 
 data class AgendaState(
@@ -28,5 +32,6 @@ sealed interface AgendaIntent {
 
 sealed interface AgendaEvent {
     data class NavigateToMeetingDetail(val meetingId: String) : AgendaEvent
+    data class NavigateToArbitration(val conflictMeetingId: String) : AgendaEvent
     data object NavigateToCreateMeeting : AgendaEvent
 }

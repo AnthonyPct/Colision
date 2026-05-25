@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.anthooop.colision.feature.agenda.agenda.AgendaRoute
 import com.anthooop.colision.feature.agenda.commissiondetail.CommissionDetailRoute
 import com.anthooop.colision.feature.agenda.meetingdetail.MeetingDetailRoute
+import com.anthooop.colision.feature.arbitrage.navigation.ArbitrageDestination
 import com.anthooop.colision.feature.meeting.navigation.MeetingDestination
 
 fun NavGraphBuilder.agendaDestinations(navController: NavController) {
@@ -18,6 +19,9 @@ fun NavGraphBuilder.agendaDestinations(navController: NavController) {
             },
             onNavigateToCreateMeeting = {
                 navController.navigate(MeetingDestination.CreateMeeting)
+            },
+            onNavigateToArbitration = { conflictMeetingId ->
+                navController.navigate(ArbitrageDestination.Arbitration(conflictMeetingId))
             },
             modifier = Modifier.fillMaxSize(),
         )

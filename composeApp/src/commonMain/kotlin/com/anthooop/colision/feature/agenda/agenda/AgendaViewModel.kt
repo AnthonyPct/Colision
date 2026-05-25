@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.core.common.ProjectSyncManager
+import com.anthooop.colision.core.database.dao.ArbitrationDao
+import com.anthooop.colision.core.database.entity.ArbitrationEntity
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingCommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingEntity
@@ -33,6 +35,7 @@ class AgendaViewModel(
     private val currentMemberProvider: CurrentMemberProvider,
     private val meetingsRepository: MeetingsRepository,
     private val commissionsRepository: CommissionsRepository,
+    private val arbitrationDao: ArbitrationDao,
     private val syncManager: ProjectSyncManager,
 ) : ViewModel() {
 
@@ -58,7 +61,19 @@ class AgendaViewModel(
         when (intent) {
             is AgendaIntent.ViewSelected -> _state.update { it.copy(view = intent.view) }
             is AgendaIntent.MeetingTapped -> {
-                viewModelScope.launch { _events.emit(AgendaEvent.NavigateToMeetingDetail(intent.meetingId)) }
+                // A tap on a meeting with an unresolved overlap shortcuts to
+                // the arbitration screen rather than the detail — without
+                // this, the conflicted member has no UI path to arbitrate
+                // until the FCM/APNs deep-link is wired in Epic 6.
+                val tapped = _state.value.meetings.firstOrNull { it.meeting.id == intent.meetingId }
+                val peer = tapped?.conflictWithMeetingId
+                viewModelScope.launch {
+                    if (peer != null) {
+                        _events.emit(AgendaEvent.NavigateToArbitration(peer))
+                    } else {
+                        _events.emit(AgendaEvent.NavigateToMeetingDetail(intent.meetingId))
+                    }
+                }
             }
             AgendaIntent.CreateMeetingTapped -> {
                 viewModelScope.launch { _events.emit(AgendaEvent.NavigateToCreateMeeting) }
@@ -124,29 +139,44 @@ class AgendaViewModel(
             } else {
                 meetingsRepository.observeForMember(memberId)
             }
+            val arbitrationsFlow: Flow<List<ArbitrationEntity>> = if (memberId == null) {
+                flowOf(emptyList())
+            } else {
+                arbitrationDao.observeForMember(memberId)
+            }
             combine(
                 meetingsFlow,
                 commissionsRepository.observeByProject(projectId),
                 meetingsRepository.observeLinksForProject(projectId),
-            ) { meetings, commissions, links ->
-                buildState(name, meetings, commissions, links)
+                arbitrationsFlow,
+            ) { meetings, commissions, links, arbitrations ->
+                buildState(name, memberId, meetings, commissions, links, arbitrations)
             }
         }
     }
 
     private fun buildState(
         firstName: String,
+        memberId: String?,
         meetings: List<MeetingEntity>,
         commissions: List<CommissionEntity>,
         links: List<MeetingCommissionEntity>,
+        arbitrations: List<ArbitrationEntity>,
     ): AgendaState {
         val byId = commissions.associateBy { it.id }
         val linksByMeeting = links.groupBy { it.meetingId }
+        val conflictPeers = if (memberId == null) {
+            emptyMap()
+        } else {
+            computeConflictPeers(memberId, meetings, arbitrations)
+        }
         val items = meetings.map { m ->
+            val peer = conflictPeers[m.id]
             AgendaMeeting(
                 meeting = m,
                 commissions = linksByMeeting[m.id].orEmpty().mapNotNull { byId[it.commissionId] },
-                conflicted = false,
+                conflicted = peer != null,
+                conflictWithMeetingId = peer,
             )
         }
         return AgendaState(
@@ -155,6 +185,47 @@ class AgendaViewModel(
             meetings = items,
         )
     }
+
+    /**
+     * Returns `meetingId → peerMeetingId` for every meeting of the current
+     * member that overlaps another of the member's meetings *and* has not
+     * yet been arbitrated. Resolved pairs (any arbitration row for the
+     * member on the (A, B) pair, in either ordering) are filtered out so
+     * the badge disappears the moment the user commits a choice.
+     */
+    private fun computeConflictPeers(
+        memberId: String,
+        meetings: List<MeetingEntity>,
+        arbitrations: List<ArbitrationEntity>,
+    ): Map<String, String> {
+        if (meetings.size < 2) return emptyMap()
+        val resolved: Set<Pair<String, String>> = arbitrations
+            .asSequence()
+            .filter { it.memberId == memberId }
+            .map { unorderedPair(it.meetingId, it.conflictingMeetingId) }
+            .toSet()
+        val peers = mutableMapOf<String, String>()
+        val sorted = meetings.sortedBy { it.startsAt }
+        for (i in sorted.indices) {
+            val a = sorted[i]
+            for (j in i + 1 until sorted.size) {
+                val b = sorted[j]
+                if (b.startsAt >= a.endsAt) break // sorted: no further overlap possible
+                if (a.id == b.id) continue
+                if (unorderedPair(a.id, b.id) in resolved) continue
+                // Keep the *first* peer found for each side; one banner is
+                // enough to drive the user into the arbitration screen, and
+                // the arbitration screen itself re-resolves the pair from
+                // the current member's overlapping engagements.
+                peers.putIfAbsent(a.id, b.id)
+                peers.putIfAbsent(b.id, a.id)
+            }
+        }
+        return peers
+    }
+
+    private fun unorderedPair(a: String, b: String): Pair<String, String> =
+        if (a <= b) a to b else b to a
 
     @OptIn(ExperimentalTime::class)
     private fun formatLocalTime(instant: Instant): String {

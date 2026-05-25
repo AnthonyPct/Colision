@@ -11,6 +11,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun AgendaRoute(
     onNavigateToMeetingDetail: (String) -> Unit,
     onNavigateToCreateMeeting: () -> Unit,
+    onNavigateToArbitration: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AgendaViewModel = koinViewModel(),
 ) {
@@ -19,6 +20,7 @@ fun AgendaRoute(
         viewModel.events.collect { event ->
             when (event) {
                 is AgendaEvent.NavigateToMeetingDetail -> onNavigateToMeetingDetail(event.meetingId)
+                is AgendaEvent.NavigateToArbitration -> onNavigateToArbitration(event.conflictMeetingId)
                 AgendaEvent.NavigateToCreateMeeting -> onNavigateToCreateMeeting()
             }
         }
