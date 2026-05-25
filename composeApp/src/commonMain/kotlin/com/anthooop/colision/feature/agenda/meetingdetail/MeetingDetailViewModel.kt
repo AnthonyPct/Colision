@@ -7,15 +7,14 @@ import androidx.navigation.toRoute
 import com.anthooop.colision.core.common.AppError
 import com.anthooop.colision.core.common.AppErrorThrowable
 import com.anthooop.colision.core.common.CurrentMemberProvider
-import com.anthooop.colision.core.database.dao.ArbitrationDao
-import com.anthooop.colision.core.database.dao.MeetingDao
-import com.anthooop.colision.core.database.dao.MemberDao
 import com.anthooop.colision.core.database.entity.ArbitrationEntity
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingEntity
 import com.anthooop.colision.feature.agenda.data.MeetingsRepository
 import com.anthooop.colision.feature.agenda.navigation.AgendaDestination
+import com.anthooop.colision.feature.meeting.data.ArbitrationsRepository
 import com.anthooop.colision.feature.projecthub.data.CommissionsRepository
+import com.anthooop.colision.feature.projecthub.data.MembersRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,9 +32,8 @@ import kotlinx.coroutines.launch
 class MeetingDetailViewModel(
     savedStateHandle: SavedStateHandle,
     private val meetingsRepository: MeetingsRepository,
-    private val memberDao: MemberDao,
-    private val meetingDao: MeetingDao,
-    private val arbitrationDao: ArbitrationDao,
+    private val membersRepository: MembersRepository,
+    private val arbitrationsRepository: ArbitrationsRepository,
     private val commissionsRepository: CommissionsRepository,
     private val currentMemberProvider: CurrentMemberProvider,
 ) : ViewModel() {
@@ -117,12 +115,12 @@ class MeetingDetailViewModel(
                     combine(
                         meetingsRepository.observeCommissionIds(meetingId),
                         commissionsRepository.observeByProject(meeting.projectId),
-                        memberDao.observeAttendingMeeting(meetingId),
+                        membersRepository.observeAttendingMeeting(meetingId),
                         currentMemberProvider.observe(),
                         arbitrationsForMeetingFlow(),
                     ) { commissionIds, allCommissions, attendees, currentMember, arbitrations ->
                         val commissions = allCommissions.filter { it.id in commissionIds }
-                        val creator = meeting.createdByMemberId?.let { memberDao.findById(it) }
+                        val creator = meeting.createdByMemberId?.let { membersRepository.findById(it) }
                         val isCreator = creator != null && creator.id == currentMember?.id
                         MeetingDetailState(
                             isLoading = false,
@@ -153,8 +151,8 @@ class MeetingDetailViewModel(
 
     private fun arbitrationsForMeetingFlow() =
         combine(
-            arbitrationDao.observeSkippingMeeting(meetingId),
-            arbitrationDao.observeChoosingMeeting(meetingId),
+            arbitrationsRepository.observeSkippingMeeting(meetingId),
+            arbitrationsRepository.observeChoosingMeeting(meetingId),
         ) { skipping, choosing -> skipping + choosing }
 
     private suspend fun buildConflictedAttendees(
@@ -164,14 +162,14 @@ class MeetingDetailViewModel(
         arbitrations: List<ArbitrationEntity>,
     ): List<ConflictedAttendeeUi> {
         if (meetingCommissionIds.isEmpty()) return emptyList()
-        val conflictedMemberIds = meetingDao.findLocalConflictMemberIds(
+        val conflictedMemberIds = meetingsRepository.findConflictMemberIds(
             projectId = meeting.projectId,
             commissionIds = meetingCommissionIds,
-            startIso = meeting.startsAt,
-            endIso = meeting.endsAt,
+            startsAt = meeting.startsAt,
+            endsAt = meeting.endsAt,
         )
         if (conflictedMemberIds.isEmpty()) return emptyList()
-        val members = conflictedMemberIds.mapNotNull { memberDao.findById(it) }
+        val members = conflictedMemberIds.mapNotNull { membersRepository.findById(it) }
         val commissionsById = allCommissions.associateBy { it.id }
         return members.map { member ->
             val arbitration = arbitrations.firstOrNull { it.memberId == member.id }
@@ -187,8 +185,8 @@ class MeetingDetailViewModel(
                     status = ConflictedArbitrationStatus.Attends,
                 )
                 else -> {
-                    val otherCommissionIds = meetingDao
-                        .observeCommissionIdsFor(arbitration.conflictingMeetingId)
+                    val otherCommissionIds = meetingsRepository
+                        .observeCommissionIds(arbitration.conflictingMeetingId)
                         .first()
                     val otherName = otherCommissionIds.firstNotNullOfOrNull { commissionsById[it] }?.name
                     ConflictedAttendeeUi(

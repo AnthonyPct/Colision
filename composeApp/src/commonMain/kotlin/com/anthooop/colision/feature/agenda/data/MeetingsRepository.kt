@@ -38,6 +38,12 @@ interface MeetingsRepository {
     fun observeById(meetingId: String): Flow<MeetingEntity?>
     fun observeCommissionIds(meetingId: String): Flow<List<String>>
     fun observeLinksForProject(projectId: String): Flow<List<MeetingCommissionEntity>>
+    suspend fun findConflictMemberIds(
+        projectId: String,
+        commissionIds: List<String>,
+        startsAt: String,
+        endsAt: String,
+    ): List<String>
     suspend fun refresh(projectId: String): Result<Unit>
     suspend fun create(input: CreateMeetingInput): Result<MeetingEntity>
     suspend fun update(input: UpdateMeetingInput): Result<MeetingEntity>
@@ -63,6 +69,18 @@ class DefaultMeetingsRepository(
 
     override fun observeLinksForProject(projectId: String): Flow<List<MeetingCommissionEntity>> =
         meetingDao.observeLinksForProject(projectId)
+
+    override suspend fun findConflictMemberIds(
+        projectId: String,
+        commissionIds: List<String>,
+        startsAt: String,
+        endsAt: String,
+    ): List<String> = meetingDao.findLocalConflictMemberIds(
+        projectId = projectId,
+        commissionIds = commissionIds,
+        startIso = startsAt,
+        endIso = endsAt,
+    )
 
     override suspend fun refresh(projectId: String): Result<Unit> = runCatching {
         val meetings = supabase.from("meeting")

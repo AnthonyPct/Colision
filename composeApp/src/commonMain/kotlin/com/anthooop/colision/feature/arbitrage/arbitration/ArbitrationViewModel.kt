@@ -8,13 +8,12 @@ import com.anthooop.colision.core.common.AppError
 import com.anthooop.colision.core.common.AppErrorThrowable
 import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.core.common.ProjectSyncManager
-import com.anthooop.colision.core.database.dao.ArbitrationDao
-import com.anthooop.colision.core.database.dao.CommissionDao
-import com.anthooop.colision.core.database.dao.MeetingDao
-import com.anthooop.colision.core.database.dao.MemberDao
 import com.anthooop.colision.core.database.entity.MeetingEntity
+import com.anthooop.colision.feature.agenda.data.MeetingsRepository
 import com.anthooop.colision.feature.arbitrage.navigation.ArbitrageDestination
 import com.anthooop.colision.feature.meeting.data.ArbitrationsRepository
+import com.anthooop.colision.feature.projecthub.data.CommissionsRepository
+import com.anthooop.colision.feature.projecthub.data.MembersRepository
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,10 +28,9 @@ import kotlinx.coroutines.launch
 
 class ArbitrationViewModel(
     savedStateHandle: SavedStateHandle,
-    private val meetingDao: MeetingDao,
-    private val memberDao: MemberDao,
-    private val commissionDao: CommissionDao,
-    private val arbitrationDao: ArbitrationDao,
+    private val meetingsRepository: MeetingsRepository,
+    private val membersRepository: MembersRepository,
+    private val commissionsRepository: CommissionsRepository,
     private val arbitrationsRepository: ArbitrationsRepository,
     private val currentMemberProvider: CurrentMemberProvider,
     private val syncManager: ProjectSyncManager,
@@ -94,7 +92,7 @@ class ArbitrationViewModel(
     private suspend fun observe() {
         combine(
             currentMemberProvider.observe(),
-            meetingDao.observeById(conflictMeetingId),
+            meetingsRepository.observeById(conflictMeetingId),
         ) { member, meetingB -> member to meetingB }
             .collect { (member, meetingB) ->
                 // The arbitration target is the meeting from the push payload.
@@ -147,7 +145,7 @@ class ArbitrationViewModel(
         memberId: String,
         meetingB: MeetingEntity,
     ): MeetingEntity? {
-        val mine = meetingDao.observeForMember(memberId).first()
+        val mine = meetingsRepository.observeForMember(memberId).first()
         return mine.firstOrNull { other ->
             other.id != meetingB.id &&
                 other.projectId == meetingB.projectId &&
@@ -167,8 +165,8 @@ class ArbitrationViewModel(
         meetingAId: String,
         meetingBId: String,
     ): ArbitrationChoice? {
-        val candidates = arbitrationDao.observeSkippingMeeting(meetingAId).first() +
-            arbitrationDao.observeSkippingMeeting(meetingBId).first()
+        val candidates = arbitrationsRepository.observeSkippingMeeting(meetingAId).first() +
+            arbitrationsRepository.observeSkippingMeeting(meetingBId).first()
         val row = candidates.firstOrNull {
             it.memberId == memberId &&
                 ((it.meetingId == meetingAId && it.conflictingMeetingId == meetingBId) ||
@@ -179,12 +177,12 @@ class ArbitrationViewModel(
     }
 
     private suspend fun toUi(meeting: MeetingEntity): ArbitrationMeetingUi {
-        val commissionIds = meetingDao.observeCommissionIdsFor(meeting.id).first()
+        val commissionIds = meetingsRepository.observeCommissionIds(meeting.id).first()
         val commissionName = commissionIds
-            .firstNotNullOfOrNull { commissionDao.findById(it)?.name }
+            .firstNotNullOfOrNull { commissionsRepository.findById(it)?.name }
             .orEmpty()
-        val invited = memberDao.observeAttendingMeeting(meeting.id).first().size
-        val organizer = meeting.createdByMemberId?.let { memberDao.findById(it)?.displayName }
+        val invited = membersRepository.observeAttendingMeeting(meeting.id).first().size
+        val organizer = meeting.createdByMemberId?.let { membersRepository.findById(it)?.displayName }
         val titleFallback = meeting.title?.takeIf { it.isNotBlank() } ?: commissionName
         return ArbitrationMeetingUi(
             meetingId = meeting.id,
