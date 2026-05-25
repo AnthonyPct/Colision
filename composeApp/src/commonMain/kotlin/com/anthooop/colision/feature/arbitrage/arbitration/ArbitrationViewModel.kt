@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.anthooop.colision.core.common.AppError
+import com.anthooop.colision.core.common.AppErrorThrowable
 import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.core.common.ProjectSyncManager
 import com.anthooop.colision.core.database.dao.ArbitrationDao
@@ -12,6 +14,7 @@ import com.anthooop.colision.core.database.dao.MeetingDao
 import com.anthooop.colision.core.database.dao.MemberDao
 import com.anthooop.colision.core.database.entity.MeetingEntity
 import com.anthooop.colision.feature.arbitrage.navigation.ArbitrageDestination
+import com.anthooop.colision.feature.meeting.data.ArbitrationsRepository
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +33,7 @@ class ArbitrationViewModel(
     private val memberDao: MemberDao,
     private val commissionDao: CommissionDao,
     private val arbitrationDao: ArbitrationDao,
+    private val arbitrationsRepository: ArbitrationsRepository,
     private val currentMemberProvider: CurrentMemberProvider,
     private val syncManager: ProjectSyncManager,
 ) : ViewModel() {
@@ -64,8 +68,8 @@ class ArbitrationViewModel(
             ArbitrationIntent.BackTapped ->
                 emit(ArbitrationEvent.NavigateBack)
             is ArbitrationIntent.ChoiceTapped ->
-                _state.update { it.copy(currentChoice = intent.choice) }
-            ArbitrationIntent.SubmitTapped -> Unit // wired in story 5.2
+                _state.update { it.copy(currentChoice = intent.choice, error = null) }
+            ArbitrationIntent.SubmitTapped -> submitChoice()
             ArbitrationIntent.ErrorDismissed ->
                 _state.update { it.copy(error = null) }
         }
@@ -191,6 +195,51 @@ class ArbitrationViewModel(
             invitedCount = invited,
             organizerName = organizer,
         )
+    }
+
+    private fun submitChoice() {
+        val snapshot = _state.value
+        val choice = snapshot.currentChoice ?: return
+        val a = snapshot.meetingA ?: return
+        val b = snapshot.meetingB ?: return
+        if (snapshot.isSubmitting) return
+        _state.update { it.copy(isSubmitting = true, error = null) }
+        viewModelScope.launch {
+            val memberId = currentMemberProvider.current()?.id
+            if (memberId == null) {
+                _state.update {
+                    it.copy(isSubmitting = false, error = AppError.AnonymousSessionExpired)
+                }
+                return@launch
+            }
+            val outcome = when (choice) {
+                ArbitrationChoice.GoingToA -> arbitrationsRepository.choose(
+                    memberId = memberId,
+                    skippedMeetingId = b.meetingId,
+                    chosenMeetingId = a.meetingId,
+                )
+                ArbitrationChoice.GoingToB -> arbitrationsRepository.choose(
+                    memberId = memberId,
+                    skippedMeetingId = a.meetingId,
+                    chosenMeetingId = b.meetingId,
+                )
+                ArbitrationChoice.Later -> arbitrationsRepository.postpone(
+                    memberId = memberId,
+                    meetingAId = a.meetingId,
+                    meetingBId = b.meetingId,
+                )
+            }
+            outcome.fold(
+                onSuccess = {
+                    _state.update { it.copy(isSubmitting = false) }
+                    _events.emit(ArbitrationEvent.Submitted)
+                },
+                onFailure = { t ->
+                    val appError = (t as? AppErrorThrowable)?.error ?: AppError.Unknown(t)
+                    _state.update { it.copy(isSubmitting = false, error = appError) }
+                },
+            )
+        }
     }
 
     private fun emit(event: ArbitrationEvent) {

@@ -19,6 +19,16 @@ interface ArbitrationDao {
     @Upsert
     suspend fun upsertAll(items: List<ArbitrationEntity>)
 
+    @Upsert
+    suspend fun upsert(item: ArbitrationEntity)
+
+    @Query(
+        "DELETE FROM arbitration WHERE memberId = :memberId " +
+            "AND ((meetingId = :meetingA AND conflictingMeetingId = :meetingB) " +
+            "  OR (meetingId = :meetingB AND conflictingMeetingId = :meetingA))",
+    )
+    suspend fun deletePair(memberId: String, meetingA: String, meetingB: String)
+
     @Query("DELETE FROM arbitration WHERE id NOT IN (:keepIds)")
     suspend fun deleteOthers(keepIds: List<String>)
 

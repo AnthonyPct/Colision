@@ -52,7 +52,10 @@ import colision.composeapp.generated.resources.arbitration_resolved_title
 import colision.composeapp.generated.resources.arbitration_separator_or
 import colision.composeapp.generated.resources.arbitration_time_range
 import colision.composeapp.generated.resources.arbitration_title
+import colision.composeapp.generated.resources.arbitration_submit_error
+import colision.composeapp.generated.resources.write_offline_message
 import com.anthooop.colision.core.design.Spacing
+import com.anthooop.colision.core.design.rememberOfflineGate
 import com.anthooop.colision.feature.agenda.agenda.extractTime
 import com.anthooop.colision.feature.agenda.agenda.parseIsoDate
 import com.anthooop.colision.feature.agenda.agenda.rememberMonthNames
@@ -380,6 +383,7 @@ private fun SubmitBar(
         ArbitrationChoice.Later -> stringResource(Res.string.arbitration_choice_later_button)
         null -> stringResource(Res.string.arbitration_choice_default)
     }
+    val offlineGate = rememberOfflineGate(stringResource(Res.string.write_offline_message))
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -388,10 +392,11 @@ private fun SubmitBar(
     ) {
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = onSubmit,
+            onClick = { offlineGate.run(onSubmit) },
             enabled = currentChoice != null && !isSubmitting,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
+                containerColor = if (offlineGate.isOnline) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.primary.copy(alpha = 0.45f),
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             ),
         ) {
