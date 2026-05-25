@@ -152,6 +152,26 @@ State/intent/event types live next to the ViewModel: `FooState.kt`, `FooIntent.k
 
 Rule of thumb: if a Composable needs to call the ViewModel, it should be in the `Route`, not the `Screen`.
 
+### Section block comments inside ViewModels
+
+Every ViewModel body is split into labelled section blocks so the file structure is scannable. Use this exact comment format (three lines of 75 forward slashes wrapping an upper-case label):
+
+```kotlin
+///////////////////////////////////////////////////////////////////////////
+// UI STATE
+///////////////////////////////////////////////////////////////////////////
+```
+
+Canonical sections, in this order (omit a section only if it has no content):
+
+1. `UI STATE` — `_state` / `state` declarations.
+2. `EVENT` — `_events` / `events` declarations (one-shot side effects).
+3. `PUBLIC API` — `onIntent` and any other public entry points.
+4. `INIT` — `init { ... }` block wiring observers / kicking off sync.
+5. `HELPER` — private functions (state builders, flow plumbing, formatters).
+
+Apply the same convention to other coordinator classes (e.g. `AppViewModel`) — keep the same labels and order, drop sections that don't apply. Don't invent new section names; if something doesn't fit, it usually belongs in `HELPER` or in a separate class.
+
 ## Dependency injection — Koin (mandatory)
 
 **Every** non-trivial class is injected via Koin. No manual instantiation of ViewModels, repositories, or clients in production code.
@@ -187,6 +207,19 @@ The visual reference is in `docs/design/` (HTML/JSX prototypes — pixel-accurat
 **Before implementing any UI**: read the relevant `screens-*.jsx` and check the tokens. Every feature implementation must match the design — colors, spacing, typography, copy, layout. Theme: warm + civic, off-white `#FAF7F2`, forest green `#0E7C66` primary, coral `#C8553D` for conflicts. Light + dark modes.
 
 Don't render the HTML in a browser — everything (dimensions, layout, copy) is spelled out in the source.
+
+## Internationalization (i18n) — mandatory
+
+Every user-visible string must be declared in `composeApp/src/commonMain/composeResources/values/strings.xml` (plurals in `plurals.xml`) and consumed via Compose Multiplatform Resources — `stringResource(Res.string.xxx)` — never as a raw Kotlin literal in a `Screen`, `Route`, `ViewModel`, or any composable that ends up on screen. The `Res` symbol is `colision.composeapp.generated.resources.Res`.
+
+Conventions:
+
+- Group keys by screen with an XML comment header (e.g. `<!-- WelcomeScreen -->`) and prefix keys with the screen slug: `welcome_title`, `create_project_name_label`, `agenda_empty_state`, etc. Shared/cross-screen wording goes under `<!-- Common -->` with an `action_` / `dialog_` / etc. prefix.
+- Escape apostrophes (`\'`) and use `\n` for explicit line breaks — see existing entries.
+- Use `pluralStringResource` + `plurals.xml` for any count-dependent copy; don't fake plurals with string concatenation.
+- Errors, snackbars, and content descriptions count as user-visible — they must be in `strings.xml` too. `ViewModel`s should emit a string **key/id** (or a typed event), and the `Screen` resolves it with `stringResource`. Don't hardcode French copy in the ViewModel.
+
+**Exception — `@Preview` composables only**: hardcoded sample strings used purely to seed a `*Preview` function are allowed (they never ship to users). Anything outside a `@Preview` block must go through `strings.xml`.
 
 ## BMAD planning artifacts
 
