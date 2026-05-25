@@ -2,6 +2,7 @@ package com.anthooop.colision.feature.meeting.conflicts
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +34,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import colision.composeapp.generated.resources.Res
 import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.conflicts_action_create_anyway_sub
+import colision.composeapp.generated.resources.conflicts_action_create_anyway_title
+import colision.composeapp.generated.resources.conflicts_action_postpone_sub
+import colision.composeapp.generated.resources.conflicts_action_postpone_title
+import colision.composeapp.generated.resources.conflicts_action_suggestions_sub
+import colision.composeapp.generated.resources.conflicts_action_suggestions_title
+import colision.composeapp.generated.resources.conflicts_actions_label
 import colision.composeapp.generated.resources.conflicts_count
 import colision.composeapp.generated.resources.conflicts_member_count
 import colision.composeapp.generated.resources.conflicts_section_label
@@ -84,7 +92,81 @@ fun ConflictsScreen(
             items(state.conflicts, key = { it.memberId + ":" + it.meetingId }) { row ->
                 ConflictRowItem(row = row)
             }
+            item {
+                Spacer(Modifier.height(Spacing.SP3))
+                Text(
+                    text = stringResource(Res.string.conflicts_actions_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(Spacing.SP2))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ActionRow(
+                        title = stringResource(Res.string.conflicts_action_suggestions_title),
+                        sub = stringResource(Res.string.conflicts_action_suggestions_sub),
+                        emphasis = ActionEmphasis.Primary,
+                        onClick = { onIntent(ConflictsIntent.SuggestionsTapped) },
+                    )
+                    ActionRow(
+                        title = stringResource(Res.string.conflicts_action_postpone_title),
+                        sub = stringResource(Res.string.conflicts_action_postpone_sub),
+                        emphasis = ActionEmphasis.Neutral,
+                        onClick = { onIntent(ConflictsIntent.PostponeTapped) },
+                    )
+                    ActionRow(
+                        title = stringResource(Res.string.conflicts_action_create_anyway_title),
+                        sub = stringResource(Res.string.conflicts_action_create_anyway_sub),
+                        emphasis = ActionEmphasis.Danger,
+                        enabled = !state.isCreatingAnyway,
+                        onClick = { onIntent(ConflictsIntent.CreateAnywayTapped) },
+                    )
+                }
+            }
         }
+    }
+}
+
+private enum class ActionEmphasis { Primary, Neutral, Danger }
+
+@Composable
+private fun ActionRow(
+    title: String,
+    sub: String,
+    emphasis: ActionEmphasis,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+) {
+    val borderColor = when (emphasis) {
+        ActionEmphasis.Primary -> MaterialTheme.colorScheme.primary
+        ActionEmphasis.Neutral -> MaterialTheme.colorScheme.outline
+        ActionEmphasis.Danger -> MaterialTheme.colorScheme.outline
+    }
+    val titleColor = when (emphasis) {
+        ActionEmphasis.Danger -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.5.dp, borderColor, RoundedCornerShape(14.dp))
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = Spacing.SP4, vertical = Spacing.SP3),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = titleColor,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            text = sub,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

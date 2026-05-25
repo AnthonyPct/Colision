@@ -196,4 +196,19 @@
     <string name="conflicts_subtitle">Ces membres ont déjà un engagement chevauchant ce créneau.</string>
     <string name="conflicts_section_label">Qui est en conflit</string>
     <string name="conflicts_time_format">%1$s · %2$s – %3$s</string>
+    <string name="conflicts_actions_label">Que veux-tu faire ?</string>
+    <string name="conflicts_action_suggestions_title">Voir d\'autres horaires libres</string>
+    <string name="conflicts_action_suggestions_sub">On te suggère 3 créneaux où personne n\'est pris.</string>
+    <string name="conflicts_action_postpone_title">Décaler la réunion</string>
+    <string name="conflicts_action_postpone_sub">Reviens à l\'étape précédente pour modifier.</string>
+    <string name="conflicts_action_create_anyway_title">Créer quand même</string>
+    <string name="conflicts_action_create_anyway_sub">Les conflictés recevront une notification pour trancher.</string>
+
+    <!-- SuggestionsScreen -->
+    <string name="suggestions_title">Créneaux libres</string>
+    <string name="suggestions_subtitle">Tous les membres concernés sont libres sur ces horaires.</string>
+    <string name="suggestions_slot_everyone_free">Tout le monde est libre</string>
+    <string name="suggestions_submit">Créer la réunion</string>
+    <string name="suggestions_loading">Recherche de créneaux libres…</string>
+    <string name="suggestions_empty">Aucun créneau libre dans la fenêtre — essaie une autre date.</string>
 </resources>

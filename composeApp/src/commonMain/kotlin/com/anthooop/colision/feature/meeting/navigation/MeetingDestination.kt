@@ -9,4 +9,7 @@ sealed interface MeetingDestination {
 
     @Serializable
     data object Conflicts : MeetingDestination
+
+    @Serializable
+    data object Suggestions : MeetingDestination
 }
