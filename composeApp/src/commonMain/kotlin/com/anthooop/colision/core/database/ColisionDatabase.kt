@@ -4,11 +4,13 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
+import com.anthooop.colision.core.database.dao.ArbitrationDao
 import com.anthooop.colision.core.database.dao.CommissionDao
 import com.anthooop.colision.core.database.dao.MeetingDao
 import com.anthooop.colision.core.database.dao.MemberCommissionDao
 import com.anthooop.colision.core.database.dao.MemberDao
 import com.anthooop.colision.core.database.dao.ProjectDao
+import com.anthooop.colision.core.database.entity.ArbitrationEntity
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingCommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingEntity
@@ -24,8 +26,9 @@ import com.anthooop.colision.core.database.entity.ProjectEntity
         MemberCommissionEntity::class,
         MeetingEntity::class,
         MeetingCommissionEntity::class,
+        ArbitrationEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 @ConstructedBy(ColisionDatabaseConstructor::class)
@@ -35,6 +38,7 @@ abstract class ColisionDatabase : RoomDatabase() {
     abstract fun memberDao(): MemberDao
     abstract fun memberCommissionDao(): MemberCommissionDao
     abstract fun meetingDao(): MeetingDao
+    abstract fun arbitrationDao(): ArbitrationDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")

@@ -5,6 +5,15 @@ import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingEntity
 import com.anthooop.colision.core.database.entity.MemberEntity
 
+enum class ConflictedArbitrationStatus { Attends, Skips, Pending }
+
+data class ConflictedAttendeeUi(
+    val memberId: String,
+    val memberName: String,
+    val status: ConflictedArbitrationStatus,
+    val otherCommissionName: String? = null,
+)
+
 data class MeetingDetailState(
     val isLoading: Boolean = true,
     val isDeleted: Boolean = false,
@@ -13,6 +22,7 @@ data class MeetingDetailState(
     val commissions: List<CommissionEntity> = emptyList(),
     val attendees: List<MemberEntity> = emptyList(),
     val creator: MemberEntity? = null,
+    val conflictedAttendees: List<ConflictedAttendeeUi> = emptyList(),
     val isDeleting: Boolean = false,
     val showDeleteConfirm: Boolean = false,
     val error: AppError? = null,

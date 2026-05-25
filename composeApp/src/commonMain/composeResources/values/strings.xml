@@ -177,6 +177,11 @@
     <string name="meeting_detail_delete_confirm_title">Supprimer la réunion %1$s ?</string>
     <string name="meeting_detail_delete_confirm_body">Tous les membres concernés recevront une notification d\'annulation.</string>
     <string name="meeting_detail_delete_confirm_action">Supprimer</string>
+    <string name="meeting_detail_conflicts_section">Statut des conflictés</string>
+    <string name="meeting_detail_status_attends">Vient</string>
+    <string name="meeting_detail_status_pending">En attente</string>
+    <string name="meeting_detail_status_skips">Vient pas — va à %1$s</string>
+    <string name="meeting_detail_status_skips_unknown">Vient pas</string>
 
     <!-- CreateMeetingScreen -->
     <string name="create_meeting_title">Nouvelle réunion</string>
