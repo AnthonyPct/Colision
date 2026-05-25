@@ -8,9 +8,15 @@ import com.anthooop.colision.core.common.ConnectivityObserver
 import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.feature.agenda.data.CreateMeetingInput
 import com.anthooop.colision.feature.agenda.data.MeetingsRepository
+import com.anthooop.colision.feature.meeting.data.ConflictsRepository
+import com.anthooop.colision.feature.meeting.data.DetectConflictsArgs
+import com.anthooop.colision.feature.meeting.data.DetectConflictsLocallyUseCase
+import com.anthooop.colision.feature.meeting.data.PendingMeetingDraft
 import com.anthooop.colision.feature.projecthub.data.ActiveProjectProvider
 import com.anthooop.colision.feature.projecthub.data.CommissionsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,8 +24,11 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
@@ -41,6 +50,9 @@ class CreateMeetingViewModel(
     private val meetingsRepository: MeetingsRepository,
     private val currentMemberProvider: CurrentMemberProvider,
     private val connectivity: ConnectivityObserver,
+    private val conflictsRepository: ConflictsRepository,
+    private val detectLocally: DetectConflictsLocallyUseCase,
+    private val pendingDraft: PendingMeetingDraft,
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -93,6 +105,7 @@ class CreateMeetingViewModel(
     init {
         viewModelScope.launch { observeCommissions() }
         viewModelScope.launch { observeConnectivity() }
+        viewModelScope.launch { observeLocalConflicts() }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -116,6 +129,31 @@ class CreateMeetingViewModel(
         }
     }
 
+    @OptIn(FlowPreview::class)
+    private suspend fun observeLocalConflicts() {
+        // Live, debounced pre-check against the Room cache. Discreet badge
+        // only — the server response on tap is authoritative (story 4.2 AC4).
+        _state
+            .map { LocalPreCheckKey(it.date, it.time, it.duration.minutes, it.selectedCommissionIds) }
+            .distinctUntilChanged()
+            .debounce(LOCAL_PRECHECK_DEBOUNCE_MS)
+            .collect { key ->
+                val projectId = activeProjectProvider.current()?.id
+                val count = if (projectId != null && key.commissionIds.isNotEmpty() && isValidTime(key.time)) {
+                    val (start, end) = isoRange(key.date, key.time, key.durationMin)
+                    runCatching {
+                        detectLocally(
+                            projectId = projectId,
+                            commissionIds = key.commissionIds.toList(),
+                            startIso = start,
+                            endIso = end,
+                        )
+                    }.getOrDefault(0)
+                } else 0
+                _state.update { it.copy(potentialConflictCount = count) }
+            }
+    }
+
     private fun submit() {
         val current = _state.value
         if (!current.canSubmit) return
@@ -130,18 +168,36 @@ class CreateMeetingViewModel(
             }
             val (startsAt, endsAt) = isoRange(current.date, current.time, current.duration.minutes)
             val memberId = currentMemberProvider.current()?.id
-            val result = meetingsRepository.create(
-                CreateMeetingInput(
+            val input = CreateMeetingInput(
+                projectId = projectId,
+                title = current.title.trim().takeIf { it.isNotBlank() },
+                startsAt = startsAt,
+                endsAt = endsAt,
+                commissionIds = current.selectedCommissionIds.toList(),
+                createdByMemberId = memberId,
+            )
+
+            // Authoritative server-side conflict check (FR20, NFR-P2 < 200ms).
+            val detection = conflictsRepository.detect(
+                DetectConflictsArgs(
                     projectId = projectId,
-                    title = current.title.trim().takeIf { it.isNotBlank() },
-                    startsAt = startsAt,
-                    endsAt = endsAt,
-                    commissionIds = current.selectedCommissionIds.toList(),
-                    createdByMemberId = memberId,
+                    commissionIds = input.commissionIds,
+                    start = startsAt,
+                    end = endsAt,
                 ),
             )
+            val conflicts = detection.getOrNull().orEmpty()
+            if (conflicts.isNotEmpty()) {
+                pendingDraft.update(input = input, conflicts = conflicts)
+                _state.update { it.copy(isSubmitting = false) }
+                emit(CreateMeetingEvent.NavigateToConflicts)
+                return@launch
+            }
+            // No conflicts → proceed straight to creation.
+            val result = meetingsRepository.create(input)
             result.fold(
                 onSuccess = { meeting ->
+                    pendingDraft.clear()
                     _state.update { it.copy(isSubmitting = false) }
                     emit(CreateMeetingEvent.MeetingCreated(meeting.id))
                 },
@@ -175,5 +231,16 @@ class CreateMeetingViewModel(
         val startInstant = startLocal.toInstant(tz)
         val endInstant = startInstant + durationMinutes.minutes
         return startInstant.toString() to endInstant.toString()
+    }
+
+    private data class LocalPreCheckKey(
+        val date: String,
+        val time: String,
+        val durationMin: Int,
+        val commissionIds: Set<String>,
+    )
+
+    companion object {
+        private const val LOCAL_PRECHECK_DEBOUNCE_MS = 300L
     }
 }

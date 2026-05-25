@@ -21,6 +21,7 @@ data class CreateMeetingState(
     val commissions: List<CommissionEntity> = emptyList(),
     val availableDates: List<String> = emptyList(),
     val isOnline: Boolean = true,
+    val potentialConflictCount: Int = 0,
     val error: AppError? = null,
 ) {
     val canSubmit: Boolean
@@ -53,4 +54,5 @@ sealed interface CreateMeetingIntent {
 sealed interface CreateMeetingEvent {
     data object NavigateBack : CreateMeetingEvent
     data class MeetingCreated(val meetingId: String) : CreateMeetingEvent
+    data object NavigateToConflicts : CreateMeetingEvent
 }

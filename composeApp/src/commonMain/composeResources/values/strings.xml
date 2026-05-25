@@ -189,4 +189,11 @@
     <string name="create_meeting_submit">Vérifier les conflits</string>
     <string name="create_meeting_offline_message">Connexion requise</string>
     <string name="create_meeting_error_generic">La réunion n\'a pas pu être créée. Réessaie dans un instant.</string>
+
+    <!-- ConflictsScreen -->
+    <string name="conflicts_title">Conflits détectés</string>
+    <string name="conflicts_count">%1$d conflits</string>
+    <string name="conflicts_subtitle">Ces membres ont déjà un engagement chevauchant ce créneau.</string>
+    <string name="conflicts_section_label">Qui est en conflit</string>
+    <string name="conflicts_time_format">%1$s · %2$s – %3$s</string>
 </resources>

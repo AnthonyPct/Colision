@@ -47,6 +47,7 @@ import colision.composeapp.generated.resources.create_meeting_date_label
 import colision.composeapp.generated.resources.create_meeting_duration_label
 import colision.composeapp.generated.resources.create_meeting_duration_min
 import colision.composeapp.generated.resources.create_meeting_no_conflict_banner
+import colision.composeapp.generated.resources.create_meeting_potential_conflicts
 import colision.composeapp.generated.resources.create_meeting_offline_message
 import colision.composeapp.generated.resources.create_meeting_start_label
 import colision.composeapp.generated.resources.create_meeting_submit
@@ -112,7 +113,11 @@ fun CreateMeetingScreen(
                 selectedIds = state.selectedCommissionIds,
                 onToggle = { onIntent(CreateMeetingIntent.CommissionToggled(it)) },
             )
-            NoConflictBanner()
+            if (state.potentialConflictCount > 0) {
+                PotentialConflictBadge(count = state.potentialConflictCount)
+            } else if (state.selectedCommissionIds.isNotEmpty()) {
+                NoConflictBanner()
+            }
         }
 
         BottomBar(
@@ -373,6 +378,29 @@ private fun NoConflictBanner() {
             text = stringResource(Res.string.create_meeting_no_conflict_banner),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+
+@Composable
+private fun PotentialConflictBadge(count: Int) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.errorContainer)
+            .padding(horizontal = Spacing.SP4, vertical = Spacing.SP3),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = org.jetbrains.compose.resources.pluralStringResource(
+                Res.plurals.create_meeting_potential_conflicts,
+                count,
+                count,
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onErrorContainer,
             fontWeight = FontWeight.SemiBold,
         )
     }

@@ -1,4 +1,4 @@
-package com.anthooop.colision.feature.meeting.createmeeting
+package com.anthooop.colision.feature.meeting.conflicts
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -8,22 +8,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun CreateMeetingRoute(
+fun ConflictsRoute(
     onNavigateBack: () -> Unit,
-    onNavigateToConflicts: () -> Unit,
-    onMeetingCreated: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: CreateMeetingViewModel = koinViewModel(),
+    viewModel: ConflictsViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                CreateMeetingEvent.NavigateBack -> onNavigateBack()
-                is CreateMeetingEvent.MeetingCreated -> onMeetingCreated()
-                CreateMeetingEvent.NavigateToConflicts -> onNavigateToConflicts()
+                ConflictsEvent.NavigateBack -> onNavigateBack()
             }
         }
     }
-    CreateMeetingScreen(state = state, onIntent = viewModel::onIntent, modifier = modifier)
+    ConflictsScreen(state = state, onIntent = viewModel::onIntent, modifier = modifier)
 }

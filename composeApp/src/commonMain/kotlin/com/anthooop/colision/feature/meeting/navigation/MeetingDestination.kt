@@ -6,4 +6,7 @@ import kotlinx.serialization.Serializable
 sealed interface MeetingDestination {
     @Serializable
     data object CreateMeeting : MeetingDestination
+
+    @Serializable
+    data object Conflicts : MeetingDestination
 }
