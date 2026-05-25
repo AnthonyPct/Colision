@@ -36,6 +36,7 @@ private fun ArbitrationDto.toEntity() = ArbitrationEntity(
 interface ArbitrationsRepository {
     fun observeSkippingMeeting(meetingId: String): Flow<List<ArbitrationEntity>>
     fun observeChoosingMeeting(meetingId: String): Flow<List<ArbitrationEntity>>
+    fun observeForMember(memberId: String): Flow<List<ArbitrationEntity>>
     suspend fun refresh(projectId: String): Result<Unit>
 
     /**
@@ -68,6 +69,9 @@ class DefaultArbitrationsRepository(
 
     override fun observeChoosingMeeting(meetingId: String): Flow<List<ArbitrationEntity>> =
         arbitrationDao.observeChoosingMeeting(meetingId)
+
+    override fun observeForMember(memberId: String): Flow<List<ArbitrationEntity>> =
+        arbitrationDao.observeForMember(memberId)
 
     override suspend fun refresh(projectId: String): Result<Unit> = runCatching {
         // arbitration rows are scoped per (member, meeting) — we fetch the

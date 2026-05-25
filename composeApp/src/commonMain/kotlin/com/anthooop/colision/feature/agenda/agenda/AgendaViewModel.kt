@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.core.common.ProjectSyncManager
-import com.anthooop.colision.core.database.dao.ArbitrationDao
 import com.anthooop.colision.core.database.entity.ArbitrationEntity
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingCommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingEntity
 import com.anthooop.colision.feature.agenda.data.MeetingsRepository
+import com.anthooop.colision.feature.meeting.data.ArbitrationsRepository
 import com.anthooop.colision.feature.projecthub.data.ActiveProjectProvider
 import com.anthooop.colision.feature.projecthub.data.CommissionsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,7 +35,7 @@ class AgendaViewModel(
     private val currentMemberProvider: CurrentMemberProvider,
     private val meetingsRepository: MeetingsRepository,
     private val commissionsRepository: CommissionsRepository,
-    private val arbitrationDao: ArbitrationDao,
+    private val arbitrationsRepository: ArbitrationsRepository,
     private val syncManager: ProjectSyncManager,
 ) : ViewModel() {
 
@@ -142,7 +142,7 @@ class AgendaViewModel(
             val arbitrationsFlow: Flow<List<ArbitrationEntity>> = if (memberId == null) {
                 flowOf(emptyList())
             } else {
-                arbitrationDao.observeForMember(memberId)
+                arbitrationsRepository.observeForMember(memberId)
             }
             combine(
                 meetingsFlow,
