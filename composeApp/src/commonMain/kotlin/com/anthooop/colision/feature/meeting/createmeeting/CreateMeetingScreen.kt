@@ -56,7 +56,9 @@ import colision.composeapp.generated.resources.action_back
 import colision.composeapp.generated.resources.create_meeting_commissions_label
 import colision.composeapp.generated.resources.create_meeting_date_label
 import colision.composeapp.generated.resources.create_meeting_duration_label
-import colision.composeapp.generated.resources.create_meeting_duration_min
+import colision.composeapp.generated.resources.create_meeting_duration_short_hours
+import colision.composeapp.generated.resources.create_meeting_duration_short_hours_minutes
+import colision.composeapp.generated.resources.create_meeting_duration_short_minutes
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import colision.composeapp.generated.resources.action_cancel
@@ -395,7 +397,7 @@ private fun DurationChip(
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = stringResource(Res.string.create_meeting_duration_min, option.minutes),
+            text = formatDurationLabel(option.minutes),
             style = MaterialTheme.typography.labelLarge,
             color = fg,
             fontWeight = FontWeight.SemiBold,
@@ -403,6 +405,23 @@ private fun DurationChip(
             textAlign = TextAlign.Center,
         )
     }
+}
+
+/**
+ * Compact duration label matching `screens-meeting.jsx`: sub-hour stays in
+ * minutes ("30min"), whole hours collapse to "1h" / "2h", and partial hours
+ * read as "1h30". Without this the previous "%1$d min" label overflows the
+ * 4-up Row at 360dp and only the first digit survives.
+ */
+@Composable
+private fun formatDurationLabel(minutes: Int): String = when {
+    minutes < 60 -> stringResource(Res.string.create_meeting_duration_short_minutes, minutes)
+    minutes % 60 == 0 -> stringResource(Res.string.create_meeting_duration_short_hours, minutes / 60)
+    else -> stringResource(
+        Res.string.create_meeting_duration_short_hours_minutes,
+        minutes / 60,
+        minutes % 60,
+    )
 }
 
 @Composable
