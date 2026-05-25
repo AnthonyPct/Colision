@@ -16,13 +16,13 @@
 
     <!-- WelcomeScreen -->
     <string name="welcome_title">Plus jamais deux\nréunions en même temps.</string>
-    <string name="welcome_subtitle">Colision détecte les conflits d\'agenda entre vos commissions, en temps réel. Sans compte, sans inscription.</string>
+    <string name="welcome_subtitle">Colision détecte les conflits d'agenda entre vos commissions, en temps réel. Sans compte, sans inscription.</string>
     <string name="welcome_action_create">Créer un projet</string>
     <string name="welcome_action_join">Rejoindre un projet</string>
 
     <!-- CreateProjectScreen -->
     <string name="create_project_title">Crée ton projet</string>
-    <string name="create_project_subtitle">Donne-lui un nom pour que tes collègues le reconnaissent au premier coup d\'œil.</string>
+    <string name="create_project_subtitle">Donne-lui un nom pour que tes collègues le reconnaissent au premier coup d'œil.</string>
     <string name="create_project_name_label">Nom du projet</string>
     <string name="create_project_name_placeholder">Ex. Conseil municipal de Saint-Machin</string>
     <string name="create_project_display_name_label">Ton prénom</string>
@@ -33,7 +33,7 @@
 
     <!-- ProjectShareCodeScreen -->
     <string name="share_code_title">Voici ton code\nde partage</string>
-    <string name="share_code_subtitle">Partage ce code aux autres membres de ton conseil pour qu\'ils rejoignent %1$s.</string>
+    <string name="share_code_subtitle">Partage ce code aux autres membres de ton conseil pour qu'ils rejoignent %1$s.</string>
     <string name="share_code_subtitle_project_fallback">le projet</string>
     <string name="share_code_copied_snackbar">Code copié</string>
 
@@ -41,7 +41,7 @@
     <string name="join_code_title">Saisis le code\nde ton projet</string>
     <string name="join_code_subtitle">Six lettres ou chiffres, partagés par la personne qui a créé le projet.</string>
     <string name="join_code_banner_resolved">Code reconnu : %1$s</string>
-    <string name="join_code_error_invalid">Code introuvable. Vérifie auprès de la personne qui te l\'a partagé.</string>
+    <string name="join_code_error_invalid">Code introuvable. Vérifie auprès de la personne qui te l'a partagé.</string>
     <string name="join_code_error_offline">Pas de connexion. Vérifie ton réseau et réessaie.</string>
     <string name="join_code_error_generic">Impossible de vérifier le code — réessaie.</string>
 
@@ -51,37 +51,37 @@
     <string name="join_confirm_section_commissions">Les commissions</string>
     <string name="join_confirm_section_commissions_empty">Aucune commission pour le moment.</string>
     <string name="join_confirm_section_members">Quelques membres déjà inscrits</string>
-    <string name="join_confirm_section_members_supporting">Tu pourras choisir ton identité à l\'étape suivante.</string>
-    <string name="join_confirm_action_confirm">C\'est bien mon projet</string>
-    <string name="join_confirm_action_wrong">Ce n\'est pas le bon projet</string>
+    <string name="join_confirm_section_members_supporting">Tu pourras choisir ton identité à l'étape suivante.</string>
+    <string name="join_confirm_action_confirm">C'est bien mon projet</string>
+    <string name="join_confirm_action_wrong">Ce n'est pas le bon projet</string>
 
     <!-- JoinIdentityScreen -->
     <string name="join_identity_title">Qui es-tu ?</string>
-    <string name="join_identity_subtitle">Choisis ton nom dans la liste. Tu n\'y es pas ? Ajoute-toi en bas.</string>
+    <string name="join_identity_subtitle">Choisis ton nom dans la liste. Tu n'y es pas ? Ajoute-toi en bas.</string>
     <string name="join_identity_search_placeholder">Rechercher ton nom</string>
-    <string name="join_identity_action_add_self">+ Je m\'ajoute moi-même</string>
-    <string name="join_identity_action_confirm">C\'est moi</string>
+    <string name="join_identity_action_add_self">+ Je m'ajoute moi-même</string>
+    <string name="join_identity_action_confirm">C'est moi</string>
     <string name="join_identity_dialog_title">Ton nom</string>
     <string name="join_identity_dialog_placeholder">Prénom (et nom optionnel)</string>
     <string name="join_identity_avatar_fallback">?</string>
-    <string name="join_identity_error_session_missing">Session manquante — relance l\'application.</string>
+    <string name="join_identity_error_session_missing">Session manquante — relance l'application.</string>
     <string name="join_identity_error_claim">Impossible — %1$s.</string>
-    <string name="join_identity_error_add">Impossible d\'ajouter — %1$s.</string>
+    <string name="join_identity_error_add">Impossible d'ajouter — %1$s.</string>
     <string name="error_reason_fallback">erreur réseau</string>
 
     <!-- JoinCommissionsScreen -->
     <string name="join_commissions_title">Tes commissions</string>
     <string name="join_commissions_subtitle">Coche celles dont tu es membre. Tu pourras les modifier plus tard.</string>
     <string name="join_commissions_banner">Tu peux ajuster cette sélection à tout moment depuis les réglages.</string>
-    <string name="join_commissions_error_partial">Impossible d\'enregistrer toutes les commissions — réessaie.</string>
+    <string name="join_commissions_error_partial">Impossible d'enregistrer toutes les commissions — réessaie.</string>
 
     <!-- NotificationPermScreen -->
     <string name="notif_perm_title">Ne rate plus\nune coordination.</string>
-    <string name="notif_perm_subtitle">Colision t\'envoie une notification quand une réunion crée un conflit avec ton agenda — pour que tu puisses trancher sans débat WhatsApp.</string>
+    <string name="notif_perm_subtitle">Colision t'envoie une notification quand une réunion crée un conflit avec ton agenda — pour que tu puisses trancher sans débat WhatsApp.</string>
     <string name="notif_perm_card_conflict_title">Conflit détecté</string>
-    <string name="notif_perm_card_conflict_supporting">Quand quelqu\'un programme une réunion qui chevauche la tienne.</string>
+    <string name="notif_perm_card_conflict_supporting">Quand quelqu'un programme une réunion qui chevauche la tienne.</string>
     <string name="notif_perm_card_meeting_title">Nouvelle réunion</string>
-    <string name="notif_perm_card_meeting_supporting">Pour chaque réunion d\'une commission dont tu es membre.</string>
+    <string name="notif_perm_card_meeting_supporting">Pour chaque réunion d'une commission dont tu es membre.</string>
     <string name="notif_perm_card_arbitration_title">Arbitrages</string>
     <string name="notif_perm_card_arbitration_supporting">Quand un autre membre choisit où il va.</string>
     <string name="notif_perm_action_activate">Activer les notifications</string>
@@ -102,7 +102,7 @@
     <string name="project_settings_row_delete">Supprimer le projet</string>
     <string name="project_settings_row_delete_supporting">Action définitive pour tous les membres</string>
     <string name="project_settings_leave_dialog_title">Quitter le projet ?</string>
-    <string name="project_settings_leave_dialog_body">Tu vas quitter ce projet. Ton historique d\'arbitrage sera effacé. Continuer ?</string>
+    <string name="project_settings_leave_dialog_body">Tu vas quitter ce projet. Ton historique d'arbitrage sera effacé. Continuer ?</string>
     <string name="project_settings_delete_dialog_title">Supprimer le projet ?</string>
     <string name="project_settings_delete_dialog_body">Cette action supprime DÉFINITIVEMENT le projet et toutes ses données pour tous ses membres. Cette suppression se propage à tous les appareils.</string>
     <string name="project_settings_delete_dialog_typed_hint">Pour confirmer, tape « supprimer ».</string>
@@ -113,7 +113,7 @@
     <!-- CommissionsListScreen -->
     <string name="commissions_list_title">Commissions</string>
     <string name="commissions_list_action_add">+ Ajouter</string>
-    <string name="commissions_list_empty">Aucune commission pour l\'instant.\nAjoute-en une avec + Ajouter.</string>
+    <string name="commissions_list_empty">Aucune commission pour l'instant.\nAjoute-en une avec + Ajouter.</string>
     <string name="commissions_list_dialog_create_title">Nouvelle commission</string>
     <string name="commissions_list_dialog_rename_title">Renommer la commission</string>
     <string name="commissions_list_dialog_placeholder">Ex. Jeunesse</string>
@@ -124,17 +124,17 @@
     <!-- MembersListScreen -->
     <string name="members_list_title">Membres</string>
     <string name="members_list_action_add">+ Ajouter</string>
-    <string name="members_list_empty">Aucun membre pour l\'instant.\nAjoute-en avec + Ajouter.</string>
+    <string name="members_list_empty">Aucun membre pour l'instant.\nAjoute-en avec + Ajouter.</string>
     <string name="members_list_dialog_title">Nouveau membre</string>
     <string name="members_list_dialog_placeholder">Prénom (et nom optionnel)</string>
     <string name="members_list_row_no_commission">Aucune commission</string>
     <string name="members_list_row_you_badge">Toi</string>
-    <string name="members_list_error_add">Impossible d\'ajouter — %1$s.</string>
+    <string name="members_list_error_add">Impossible d'ajouter — %1$s.</string>
 
     <!-- MemberCommissionsScreen -->
     <string name="member_commissions_title_fallback">Membre</string>
     <string name="member_commissions_subtitle">Coche les commissions auxquelles cette personne appartient.</string>
-    <string name="member_commissions_empty">Pas encore de commission. Crée-en d\'abord.</string>
+    <string name="member_commissions_empty">Pas encore de commission. Crée-en d'abord.</string>
     <string name="member_commissions_error">Impossible — %1$s.</string>
 
     <!-- Months (long form, lowercase) -->
@@ -174,9 +174,9 @@
     <string name="meeting_detail_attendees">Convoqués (%1$d)</string>
     <string name="meeting_detail_created_by">Créée par %1$s</string>
     <string name="meeting_detail_deleted_title">Cette réunion a été supprimée</string>
-    <string name="meeting_detail_deleted_body">Quelqu\'un l\'a annulée pendant que tu étais hors ligne.</string>
+    <string name="meeting_detail_deleted_body">Quelqu'un l'a annulée pendant que tu étais hors ligne.</string>
     <string name="meeting_detail_delete_confirm_title">Supprimer la réunion %1$s ?</string>
-    <string name="meeting_detail_delete_confirm_body">Tous les membres concernés recevront une notification d\'annulation.</string>
+    <string name="meeting_detail_delete_confirm_body">Tous les membres concernés recevront une notification d'annulation.</string>
     <string name="meeting_detail_delete_confirm_action">Supprimer</string>
     <string name="meeting_detail_conflicts_section">Statut des conflictés</string>
     <string name="meeting_detail_status_attends">Vient</string>
@@ -202,7 +202,7 @@
     <string name="create_meeting_other_date">Autre</string>
     <string name="create_meeting_date_picker_title">Choisir une date</string>
     <string name="create_meeting_offline_message">Connexion requise</string>
-    <string name="create_meeting_error_generic">La réunion n\'a pas pu être créée. Réessaie dans un instant.</string>
+    <string name="create_meeting_error_generic">La réunion n'a pas pu être créée. Réessaie dans un instant.</string>
 
     <!-- ConflictsScreen -->
     <string name="conflicts_title">Conflits détectés</string>
@@ -211,10 +211,10 @@
     <string name="conflicts_section_label">Qui est en conflit</string>
     <string name="conflicts_time_format">%1$s · %2$s – %3$s</string>
     <string name="conflicts_actions_label">Que veux-tu faire ?</string>
-    <string name="conflicts_action_suggestions_title">Voir d\'autres horaires libres</string>
-    <string name="conflicts_action_suggestions_sub">On te suggère 3 créneaux où personne n\'est pris.</string>
+    <string name="conflicts_action_suggestions_title">Voir d'autres horaires libres</string>
+    <string name="conflicts_action_suggestions_sub">On te suggère 3 créneaux où personne n'est pris.</string>
     <string name="conflicts_action_postpone_title">Décaler la réunion</string>
-    <string name="conflicts_action_postpone_sub">Reviens à l\'étape précédente pour modifier.</string>
+    <string name="conflicts_action_postpone_sub">Reviens à l'étape précédente pour modifier.</string>
     <string name="conflicts_action_create_anyway_title">Créer quand même</string>
     <string name="conflicts_action_create_anyway_sub">Les conflictés recevront une notification pour trancher.</string>
 
@@ -240,6 +240,6 @@
     <string name="arbitration_choice_later_button">Reporter ma décision</string>
     <string name="arbitration_resolved_title">Plus de conflit à arbitrer</string>
     <string name="arbitration_resolved_body">Cette réunion a été annulée ou ton conflit a déjà été résolu.</string>
-    <string name="arbitration_resolved_action_back">Retour à l\'agenda</string>
-    <string name="arbitration_submit_error">Impossible d\'enregistrer ton choix — réessaie.</string>
+    <string name="arbitration_resolved_action_back">Retour à l'agenda</string>
+    <string name="arbitration_submit_error">Impossible d'enregistrer ton choix — réessaie.</string>
 </resources>
