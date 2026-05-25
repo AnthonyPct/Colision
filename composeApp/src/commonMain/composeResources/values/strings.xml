@@ -222,4 +222,21 @@
     <string name="suggestions_submit">Créer la réunion</string>
     <string name="suggestions_loading">Recherche de créneaux libres…</string>
     <string name="suggestions_empty">Aucun créneau libre dans la fenêtre — essaie une autre date.</string>
+
+    <!-- ArbitrationScreen -->
+    <string name="arbitration_eyebrow">CONFLIT · %1$s à %2$s</string>
+    <string name="arbitration_title">Tu ne peux pas être\naux deux. Où vas-tu ?</string>
+    <string name="arbitration_note">Choisis maintenant — les organisateurs des deux réunions seront prévenus.</string>
+    <string name="arbitration_separator_or">OU</string>
+    <string name="arbitration_time_range">%1$s – %2$s</string>
+    <string name="arbitration_card_organizer">Organisé par %1$s</string>
+    <string name="arbitration_choice_later_label">Je trancherai plus tard</string>
+    <string name="arbitration_choice_default">Choisis une option</string>
+    <string name="arbitration_choice_a_label">Je vais à %1$s</string>
+    <string name="arbitration_choice_b_label">Je vais à %1$s</string>
+    <string name="arbitration_choice_later_button">Reporter ma décision</string>
+    <string name="arbitration_resolved_title">Plus de conflit à arbitrer</string>
+    <string name="arbitration_resolved_body">Cette réunion a été annulée ou ton conflit a déjà été résolu.</string>
+    <string name="arbitration_resolved_action_back">Retour à l\'agenda</string>
+    <string name="arbitration_submit_error">Impossible d\'enregistrer ton choix — réessaie.</string>
 </resources>

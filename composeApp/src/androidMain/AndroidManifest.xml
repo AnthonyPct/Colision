@@ -20,6 +20,19 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!--
+              Deep-link target for the push pipeline (FR32). The
+              `dispatch_conflict_push` Edge Function emits payloads carrying
+              `colision://arbitration/{conflictMeetingId}` — tapping the push
+              hands the URI to NavController which routes it to
+              ArbitrageDestination.Arbitration.
+            -->
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="colision" />
+            </intent-filter>
         </activity>
     </application>
 
