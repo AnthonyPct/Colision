@@ -216,9 +216,11 @@ class AgendaViewModel(
                 // Keep the *first* peer found for each side; one banner is
                 // enough to drive the user into the arbitration screen, and
                 // the arbitration screen itself re-resolves the pair from
-                // the current member's overlapping engagements.
-                peers.putIfAbsent(a.id, b.id)
-                peers.putIfAbsent(b.id, a.id)
+                // the current member's overlapping engagements. `putIfAbsent`
+                // is JVM-only — use an explicit guard so this stays callable
+                // from Kotlin/Native (iOS).
+                if (a.id !in peers) peers[a.id] = b.id
+                if (b.id !in peers) peers[b.id] = a.id
             }
         }
         return peers
