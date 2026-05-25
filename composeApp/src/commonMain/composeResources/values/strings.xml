@@ -194,7 +194,7 @@
     <string name="create_meeting_duration_label">Durée</string>
     <string name="create_meeting_duration_short_minutes">%1$dmin</string>
     <string name="create_meeting_duration_short_hours">%1$dh</string>
-    <string name="create_meeting_duration_short_hours_minutes">%1$dh%2$02d</string>
+    <string name="create_meeting_duration_short_hours_minutes">%1$dh%2$d</string>
     <string name="create_meeting_commissions_label">Commission(s) concernée(s)</string>
     <string name="create_meeting_no_conflict_banner">Aucun conflit détecté sur ce créneau.</string>
     <string name="create_meeting_submit">Vérifier les conflits</string>
