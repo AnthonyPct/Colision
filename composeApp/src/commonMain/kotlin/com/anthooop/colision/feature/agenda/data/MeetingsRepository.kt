@@ -24,6 +24,14 @@ data class CreateMeetingInput(
     val createdByMemberId: String?,
 )
 
+data class UpdateMeetingInput(
+    val meetingId: String,
+    val title: String?,
+    val startsAt: String,
+    val endsAt: String,
+    val commissionIds: List<String>,
+)
+
 interface MeetingsRepository {
     fun observeForMember(memberId: String): Flow<List<MeetingEntity>>
     fun observeByCommission(commissionId: String): Flow<List<MeetingEntity>>
@@ -32,6 +40,8 @@ interface MeetingsRepository {
     fun observeLinksForProject(projectId: String): Flow<List<MeetingCommissionEntity>>
     suspend fun refresh(projectId: String): Result<Unit>
     suspend fun create(input: CreateMeetingInput): Result<MeetingEntity>
+    suspend fun update(input: UpdateMeetingInput): Result<MeetingEntity>
+    suspend fun delete(meetingId: String): Result<Unit>
 }
 
 class DefaultMeetingsRepository(
@@ -105,5 +115,36 @@ class DefaultMeetingsRepository(
         meetingDao.upsertAll(listOf(meeting))
         meetingDao.upsertLinks(links.map { it.toEntity() })
         meeting
+    }
+
+    override suspend fun update(input: UpdateMeetingInput): Result<MeetingEntity> = runCatching {
+        require(input.commissionIds.isNotEmpty()) { "commissionIds must not be empty" }
+        val params = buildJsonObject {
+            put("p_meeting_id", input.meetingId)
+            put("p_title", input.title.orEmpty())
+            put("p_starts_at", input.startsAt)
+            put("p_ends_at", input.endsAt)
+            put("p_commission_ids", buildJsonArray { input.commissionIds.forEach { add(it) } })
+        }
+        val dto = supabase.postgrest
+            .rpc(function = "update_meeting_with_commissions", parameters = params)
+            .decodeAs<MeetingDto>()
+        val meeting = dto.toEntity()
+        meetingDao.upsertAll(listOf(meeting))
+        // Replace link set in Room to match server.
+        meetingDao.deleteLinksFor(listOf(input.meetingId))
+        meetingDao.upsertLinks(
+            input.commissionIds.map { MeetingCommissionEntity(input.meetingId, it) },
+        )
+        meeting
+    }
+
+    override suspend fun delete(meetingId: String): Result<Unit> = runCatching {
+        val params = buildJsonObject {
+            put("p_meeting_id", meetingId)
+        }
+        supabase.postgrest.rpc(function = "delete_meeting_with_dispatch", parameters = params)
+        meetingDao.deleteLinksFor(listOf(meetingId))
+        meetingDao.deleteByIds(listOf(meetingId))
     }
 }

@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.anthooop.colision.core.common.AppError
+import com.anthooop.colision.core.common.AppErrorThrowable
 import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.core.database.dao.MemberDao
 import com.anthooop.colision.feature.agenda.data.MeetingsRepository
@@ -54,12 +56,34 @@ class MeetingDetailViewModel(
 
     fun onIntent(intent: MeetingDetailIntent) {
         when (intent) {
-            MeetingDetailIntent.BackTapped -> {
+            MeetingDetailIntent.BackTapped ->
                 viewModelScope.launch { _events.emit(MeetingDetailEvent.NavigateBack) }
-            }
-            MeetingDetailIntent.EditTapped, MeetingDetailIntent.DeleteTapped -> {
-                // Epic 4 — wired up later.
-            }
+            MeetingDetailIntent.EditTapped ->
+                viewModelScope.launch { _events.emit(MeetingDetailEvent.NavigateToEdit(meetingId)) }
+            MeetingDetailIntent.DeleteTapped ->
+                _state.update { it.copy(showDeleteConfirm = true) }
+            MeetingDetailIntent.DeleteDismissed ->
+                _state.update { it.copy(showDeleteConfirm = false) }
+            MeetingDetailIntent.DeleteConfirmed -> performDelete()
+            MeetingDetailIntent.ErrorDismissed ->
+                _state.update { it.copy(error = null) }
+        }
+    }
+
+    private fun performDelete() {
+        if (_state.value.isDeleting) return
+        _state.update { it.copy(isDeleting = true, showDeleteConfirm = false, error = null) }
+        viewModelScope.launch {
+            meetingsRepository.delete(meetingId).fold(
+                onSuccess = {
+                    _state.update { it.copy(isDeleting = false, isDeleted = true) }
+                    _events.emit(MeetingDetailEvent.NavigateBack)
+                },
+                onFailure = { t ->
+                    val appError = (t as? AppErrorThrowable)?.error ?: AppError.Unknown(t)
+                    _state.update { it.copy(isDeleting = false, error = appError) }
+                },
+            )
         }
     }
 

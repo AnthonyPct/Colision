@@ -25,6 +25,9 @@ fun NavGraphBuilder.agendaDestinations(navController: NavController) {
     composable<AgendaDestination.MeetingDetail> {
         MeetingDetailRoute(
             onNavigateBack = { navController.popBackStack() },
+            onNavigateToEdit = { meetingId ->
+                navController.navigate(MeetingDestination.EditMeeting(meetingId))
+            },
             modifier = Modifier.fillMaxSize(),
         )
     }

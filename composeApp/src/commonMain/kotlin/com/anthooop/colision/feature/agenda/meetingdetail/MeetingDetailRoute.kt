@@ -10,6 +10,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun MeetingDetailRoute(
     onNavigateBack: () -> Unit,
+    onNavigateToEdit: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MeetingDetailViewModel = koinViewModel(),
 ) {
@@ -18,6 +19,7 @@ fun MeetingDetailRoute(
         viewModel.events.collect { event ->
             when (event) {
                 MeetingDetailEvent.NavigateBack -> onNavigateBack()
+                is MeetingDetailEvent.NavigateToEdit -> onNavigateToEdit(event.meetingId)
             }
         }
     }

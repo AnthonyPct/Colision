@@ -7,6 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.anthooop.colision.feature.meeting.conflicts.ConflictsRoute
 import com.anthooop.colision.feature.meeting.createmeeting.CreateMeetingRoute
+import com.anthooop.colision.feature.meeting.editmeeting.EditMeetingRoute
 import com.anthooop.colision.feature.meeting.suggestions.SuggestionsRoute
 
 fun NavGraphBuilder.meetingDestinations(
@@ -18,6 +19,13 @@ fun NavGraphBuilder.meetingDestinations(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToConflicts = { navController.navigate(MeetingDestination.Conflicts) },
             onMeetingCreated = onMeetingCreated,
+            modifier = Modifier.fillMaxSize(),
+        )
+    }
+    composable<MeetingDestination.EditMeeting> {
+        EditMeetingRoute(
+            onNavigateBack = { navController.popBackStack() },
+            onMeetingUpdated = { navController.popBackStack() },
             modifier = Modifier.fillMaxSize(),
         )
     }

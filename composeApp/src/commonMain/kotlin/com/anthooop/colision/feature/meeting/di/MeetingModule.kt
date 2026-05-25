@@ -2,6 +2,7 @@ package com.anthooop.colision.feature.meeting.di
 
 import com.anthooop.colision.feature.meeting.conflicts.ConflictsViewModel
 import com.anthooop.colision.feature.meeting.createmeeting.CreateMeetingViewModel
+import com.anthooop.colision.feature.meeting.editmeeting.EditMeetingViewModel
 import com.anthooop.colision.feature.meeting.data.ConflictsRepository
 import com.anthooop.colision.feature.meeting.data.DefaultConflictsRepository
 import com.anthooop.colision.feature.meeting.data.DefaultSuggestionsRepository
@@ -20,6 +21,7 @@ val meetingModule: Module = module {
     single { PendingMeetingDraft() }
 
     viewModelOf(::CreateMeetingViewModel)
+    viewModelOf(::EditMeetingViewModel)
     viewModelOf(::ConflictsViewModel)
     viewModelOf(::SuggestionsViewModel)
 }

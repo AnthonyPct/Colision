@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -36,10 +37,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import colision.composeapp.generated.resources.Res
 import colision.composeapp.generated.resources.action_back
+import colision.composeapp.generated.resources.action_cancel
 import colision.composeapp.generated.resources.action_delete
 import colision.composeapp.generated.resources.action_modify
 import colision.composeapp.generated.resources.meeting_detail_attendees
 import colision.composeapp.generated.resources.meeting_detail_created_by
+import colision.composeapp.generated.resources.meeting_detail_delete_confirm_action
+import colision.composeapp.generated.resources.meeting_detail_delete_confirm_body
+import colision.composeapp.generated.resources.meeting_detail_delete_confirm_title
 import colision.composeapp.generated.resources.meeting_detail_deleted_body
 import colision.composeapp.generated.resources.meeting_detail_deleted_title
 import colision.composeapp.generated.resources.meeting_detail_duration_minutes
@@ -73,6 +78,41 @@ fun MeetingDetailScreen(
             state.isDeleted -> DeletedState()
             state.meeting != null -> MeetingBody(state = state, onIntent = onIntent)
         }
+    }
+
+    if (state.showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { onIntent(MeetingDetailIntent.DeleteDismissed) },
+            title = {
+                Text(
+                    text = stringResource(
+                        Res.string.meeting_detail_delete_confirm_title,
+                        state.meeting?.title?.takeIf { it.isNotBlank() }
+                            ?: stringResource(Res.string.meeting_detail_no_title_fallback),
+                    ),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(Res.string.meeting_detail_delete_confirm_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { onIntent(MeetingDetailIntent.DeleteConfirmed) }) {
+                    Text(
+                        text = stringResource(Res.string.meeting_detail_delete_confirm_action),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onIntent(MeetingDetailIntent.DeleteDismissed) }) {
+                    Text(stringResource(Res.string.action_cancel))
+                }
+            },
+        )
     }
 }
 

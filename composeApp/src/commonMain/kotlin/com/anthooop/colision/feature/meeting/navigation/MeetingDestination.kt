@@ -8,6 +8,9 @@ sealed interface MeetingDestination {
     data object CreateMeeting : MeetingDestination
 
     @Serializable
+    data class EditMeeting(val meetingId: String) : MeetingDestination
+
+    @Serializable
     data object Conflicts : MeetingDestination
 
     @Serializable
