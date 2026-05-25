@@ -4,7 +4,6 @@ import com.anthooop.colision.core.common.AppError
 import com.anthooop.colision.core.database.entity.CommissionEntity
 
 enum class DurationOption(val minutes: Int) {
-    Min30(30),
     Min60(60),
     Min90(90),
     Min120(120),

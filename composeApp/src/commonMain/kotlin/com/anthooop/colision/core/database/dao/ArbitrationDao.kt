@@ -16,8 +16,23 @@ interface ArbitrationDao {
     @Query("SELECT * FROM arbitration WHERE conflictingMeetingId = :meetingId")
     fun observeChoosingMeeting(meetingId: String): Flow<List<ArbitrationEntity>>
 
+    /** All arbitration rows for [memberId], used by the agenda to hide pairs the
+     *  current member has already resolved. */
+    @Query("SELECT * FROM arbitration WHERE memberId = :memberId")
+    fun observeForMember(memberId: String): Flow<List<ArbitrationEntity>>
+
     @Upsert
     suspend fun upsertAll(items: List<ArbitrationEntity>)
+
+    @Upsert
+    suspend fun upsert(item: ArbitrationEntity)
+
+    @Query(
+        "DELETE FROM arbitration WHERE memberId = :memberId " +
+            "AND ((meetingId = :meetingA AND conflictingMeetingId = :meetingB) " +
+            "  OR (meetingId = :meetingB AND conflictingMeetingId = :meetingA))",
+    )
+    suspend fun deletePair(memberId: String, meetingA: String, meetingB: String)
 
     @Query("DELETE FROM arbitration WHERE id NOT IN (:keepIds)")
     suspend fun deleteOthers(keepIds: List<String>)

@@ -272,7 +272,10 @@ private fun MeetingBody(state: MeetingDetailState, onIntent: (MeetingDetailInten
                 fontWeight = FontWeight.SemiBold,
             )
         }
-        items(state.attendees, key = { it.id }) { member ->
+        // Keys are scoped per LazyColumn — a conflicted attendee appears in
+        // both `attendees` (via commission membership) and
+        // `conflictedAttendees`, so we must namespace each section's key.
+        items(state.attendees, key = { "attendee:" + it.id }) { member ->
             AttendeeRow(member = member)
         }
 
@@ -286,7 +289,7 @@ private fun MeetingBody(state: MeetingDetailState, onIntent: (MeetingDetailInten
                     fontWeight = FontWeight.SemiBold,
                 )
             }
-            items(state.conflictedAttendees, key = { it.memberId }) { row ->
+            items(state.conflictedAttendees, key = { "conflicted:" + it.memberId }) { row ->
                 ConflictedRow(row = row)
             }
         }

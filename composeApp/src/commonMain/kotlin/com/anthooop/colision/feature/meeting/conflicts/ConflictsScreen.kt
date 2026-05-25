@@ -89,7 +89,14 @@ fun ConflictsScreen(
                     fontWeight = FontWeight.SemiBold,
                 )
             }
-            items(state.conflicts, key = { it.memberId + ":" + it.meetingId }) { row ->
+            items(
+                state.conflicts,
+                // A single (member, meeting) pair can produce multiple rows
+                // when the member belongs to several commissions that all
+                // overlap the new meeting — include the commission id so
+                // the LazyColumn key stays unique.
+                key = { it.memberId + ":" + it.meetingId + ":" + it.commissionId },
+            ) { row ->
                 ConflictRowItem(row = row)
             }
             item {

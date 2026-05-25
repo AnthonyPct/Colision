@@ -2,6 +2,7 @@ package com.anthooop.colision.core.di
 
 import com.anthooop.colision.app.AppViewModel
 import com.anthooop.colision.feature.agenda.di.agendaModule
+import com.anthooop.colision.feature.arbitrage.di.arbitrageModule
 import com.anthooop.colision.feature.meeting.di.meetingModule
 import com.anthooop.colision.feature.onboarding.di.onboardingModule
 import com.anthooop.colision.feature.projecthub.di.projectHubModule
@@ -18,4 +19,5 @@ val featureModules: List<Module> = listOf(
     projectHubModule,
     agendaModule,
     meetingModule,
+    arbitrageModule,
 )

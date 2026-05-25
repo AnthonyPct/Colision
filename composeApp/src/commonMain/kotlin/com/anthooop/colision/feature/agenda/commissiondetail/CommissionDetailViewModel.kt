@@ -5,11 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.anthooop.colision.core.common.CurrentMemberProvider
-import com.anthooop.colision.core.database.dao.CommissionDao
-import com.anthooop.colision.core.database.dao.MemberCommissionDao
-import com.anthooop.colision.core.database.dao.MemberDao
 import com.anthooop.colision.feature.agenda.data.MeetingsRepository
 import com.anthooop.colision.feature.agenda.navigation.AgendaDestination
+import com.anthooop.colision.feature.projecthub.data.CommissionsRepository
+import com.anthooop.colision.feature.projecthub.data.MembersRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -23,9 +22,8 @@ import kotlinx.coroutines.launch
 
 class CommissionDetailViewModel(
     savedStateHandle: SavedStateHandle,
-    private val commissionDao: CommissionDao,
-    private val memberDao: MemberDao,
-    private val memberCommissionDao: MemberCommissionDao,
+    private val commissionsRepository: CommissionsRepository,
+    private val membersRepository: MembersRepository,
     private val meetingsRepository: MeetingsRepository,
     private val currentMemberProvider: CurrentMemberProvider,
 ) : ViewModel() {
@@ -75,12 +73,12 @@ class CommissionDetailViewModel(
     ///////////////////////////////////////////////////////////////////////////
 
     private suspend fun observe() {
-        val commissionFlow = flow { emit(commissionDao.findById(commissionId)) }
+        val commissionFlow = flow { emit(commissionsRepository.findById(commissionId)) }
         combine(
             commissionFlow,
-            memberDao.observeByCommission(commissionId),
+            membersRepository.observeByCommission(commissionId),
             meetingsRepository.observeByCommission(commissionId),
-            memberCommissionDao.observeByCommission(commissionId),
+            membersRepository.observeAssignmentsByCommission(commissionId),
             currentMemberProvider.observe(),
         ) { commission, members, meetings, links, currentMember ->
             CommissionDetailState(

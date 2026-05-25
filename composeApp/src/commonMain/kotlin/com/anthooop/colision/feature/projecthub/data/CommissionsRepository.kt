@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface CommissionsRepository {
     fun observeByProject(projectId: String): Flow<List<CommissionEntity>>
+    suspend fun findById(commissionId: String): CommissionEntity?
     suspend fun refresh(projectId: String): Result<Unit>
     suspend fun create(projectId: String, name: String): Result<CommissionEntity>
     suspend fun rename(commissionId: String, name: String): Result<Unit>
@@ -22,6 +23,9 @@ class DefaultCommissionsRepository(
 
     override fun observeByProject(projectId: String): Flow<List<CommissionEntity>> =
         commissionDao.observeByProject(projectId)
+
+    override suspend fun findById(commissionId: String): CommissionEntity? =
+        commissionDao.findById(commissionId)
 
     override suspend fun refresh(projectId: String): Result<Unit> = runCatching {
         val dtos = supabase.from("commission")

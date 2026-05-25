@@ -3,7 +3,6 @@ package com.anthooop.colision.feature.projecthub.members
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anthooop.colision.core.common.CurrentMemberProvider
-import com.anthooop.colision.core.database.dao.MemberCommissionDao
 import com.anthooop.colision.core.database.entity.CommissionEntity
 import com.anthooop.colision.core.database.entity.MemberCommissionEntity
 import com.anthooop.colision.core.database.entity.MemberEntity
@@ -30,7 +29,6 @@ class MembersListViewModel(
     private val activeProject: ActiveProjectProvider,
     private val membersRepository: MembersRepository,
     private val commissionsRepository: CommissionsRepository,
-    private val memberCommissionDao: MemberCommissionDao,
     private val currentMemberProvider: CurrentMemberProvider,
 ) : ViewModel() {
 
@@ -90,7 +88,7 @@ class MembersListViewModel(
                         combine(
                             membersRepository.observeByProject(project.id),
                             commissionsRepository.observeByProject(project.id),
-                            memberCommissionDao.observeForProject(project.id),
+                            membersRepository.observeAssignmentsForProject(project.id),
                             currentMemberProvider.observe(),
                         ) { members, commissions, links, currentMember ->
                             MembersSnapshot(

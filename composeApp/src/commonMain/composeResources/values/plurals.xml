@@ -29,4 +29,10 @@
         <item quantity="one">%1$d membre déjà mobilisé</item>
         <item quantity="other">%1$d membres déjà mobilisés</item>
     </plurals>
+
+    <!-- ArbitrationScreen: "1 membre convoqué" / "N membres convoqués" -->
+    <plurals name="arbitration_card_invited">
+        <item quantity="one">%1$d membre convoqué</item>
+        <item quantity="other">%1$d membres convoqués</item>
+    </plurals>
 </resources>

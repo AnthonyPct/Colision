@@ -11,7 +11,12 @@ import kotlinx.coroutines.flow.Flow
 
 interface MembersRepository {
     fun observeByProject(projectId: String): Flow<List<MemberEntity>>
+    fun observeByCommission(commissionId: String): Flow<List<MemberEntity>>
+    fun observeAttendingMeeting(meetingId: String): Flow<List<MemberEntity>>
     fun observeAssignments(memberId: String): Flow<List<MemberCommissionEntity>>
+    fun observeAssignmentsByCommission(commissionId: String): Flow<List<MemberCommissionEntity>>
+    fun observeAssignmentsForProject(projectId: String): Flow<List<MemberCommissionEntity>>
+    suspend fun findById(memberId: String): MemberEntity?
     suspend fun refresh(projectId: String): Result<Unit>
     suspend fun addMember(
         projectId: String,
@@ -32,8 +37,27 @@ class DefaultMembersRepository(
     override fun observeByProject(projectId: String): Flow<List<MemberEntity>> =
         memberDao.observeByProject(projectId)
 
+    override fun observeByCommission(commissionId: String): Flow<List<MemberEntity>> =
+        memberDao.observeByCommission(commissionId)
+
+    override fun observeAttendingMeeting(meetingId: String): Flow<List<MemberEntity>> =
+        memberDao.observeAttendingMeeting(meetingId)
+
     override fun observeAssignments(memberId: String): Flow<List<MemberCommissionEntity>> =
         memberCommissionDao.observeByMember(memberId)
+
+    override fun observeAssignmentsByCommission(
+        commissionId: String,
+    ): Flow<List<MemberCommissionEntity>> =
+        memberCommissionDao.observeByCommission(commissionId)
+
+    override fun observeAssignmentsForProject(
+        projectId: String,
+    ): Flow<List<MemberCommissionEntity>> =
+        memberCommissionDao.observeForProject(projectId)
+
+    override suspend fun findById(memberId: String): MemberEntity? =
+        memberDao.findById(memberId)
 
     override suspend fun refresh(projectId: String): Result<Unit> = runCatching {
         val members = supabase.from("member")
