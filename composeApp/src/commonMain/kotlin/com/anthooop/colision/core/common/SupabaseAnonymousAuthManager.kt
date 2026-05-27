@@ -3,12 +3,21 @@ package com.anthooop.colision.core.common
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.status.SessionStatus
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class SupabaseAnonymousAuthManager(
     private val client: SupabaseClient,
     private val logger: Logger,
     private val crashReporter: CrashReporter,
 ) : AnonymousAuthManager {
+
+    // Serializes the read-then-sign-in critical section. Without it, concurrent
+    // callers (AppViewModel.init + ProjectSyncManager foreground sync) both see
+    // a non-Authenticated status before either completes, and each calls
+    // signInAnonymously() → two auth.users + device rows on a single cold start
+    // (bug #66).
+    private val sessionMutex = Mutex()
 
     override suspend fun ensureSession(): Result<Unit> = runCatching {
         // Wait until Auth has finished loading the persisted session from
@@ -17,9 +26,11 @@ class SupabaseAnonymousAuthManager(
         // creating a fresh auth.users + device on every cold start — which
         // detaches the previously claimed member.device_id.
         client.auth.awaitInitialization()
-        when (client.auth.sessionStatus.value) {
-            is SessionStatus.Authenticated -> Unit
-            else -> client.auth.signInAnonymously()
+        sessionMutex.withLock {
+            when (client.auth.sessionStatus.value) {
+                is SessionStatus.Authenticated -> Unit
+                else -> client.auth.signInAnonymously()
+            }
         }
     }.onFailure { t ->
         crashReporter.captureException(t, tag = TAG)
@@ -33,18 +44,22 @@ class SupabaseAnonymousAuthManager(
     // API changes.
     override suspend fun refreshIfNeeded(): Result<Unit> = runCatching {
         client.auth.awaitInitialization()
-        val status = client.auth.sessionStatus.value
-        if (status !is SessionStatus.Authenticated) {
-            client.auth.signInAnonymously()
-            return@runCatching
+        sessionMutex.withLock {
+            val status = client.auth.sessionStatus.value
+            if (status !is SessionStatus.Authenticated) {
+                client.auth.signInAnonymously()
+                return@withLock
+            }
+            client.auth.refreshCurrentSession()
         }
-        client.auth.refreshCurrentSession()
     }.onFailure { t ->
         // Refresh token expired or otherwise broken — start over.
         crashReporter.captureException(t, tag = TAG)
         logger.warn(TAG, "refreshIfNeeded failed, re-signing anonymously", t)
-        runCatching { client.auth.signOut() }
-        runCatching { client.auth.signInAnonymously() }
+        sessionMutex.withLock {
+            runCatching { client.auth.signOut() }
+            runCatching { client.auth.signInAnonymously() }
+        }
     }
 
     private companion object {
