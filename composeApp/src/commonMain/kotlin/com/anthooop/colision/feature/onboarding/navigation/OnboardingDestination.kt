@@ -11,7 +11,13 @@ sealed interface OnboardingDestination {
     data object CreateProject : OnboardingDestination
 
     @Serializable
+    data class CreateProjectCommissions(val projectId: String) : OnboardingDestination
+
+    @Serializable
     data class CreateProjectCode(val projectId: String) : OnboardingDestination
+
+    @Serializable
+    data object CreatorNotificationPermission : OnboardingDestination
 
     @Serializable
     data object JoinCode : OnboardingDestination

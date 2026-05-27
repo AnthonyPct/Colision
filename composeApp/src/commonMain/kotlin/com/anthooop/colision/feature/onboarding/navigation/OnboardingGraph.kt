@@ -18,6 +18,7 @@ import com.anthooop.colision.feature.onboarding.joinconfirm.JoinConfirmRoute
 import com.anthooop.colision.feature.onboarding.joincommissions.JoinCommissionsRoute
 import com.anthooop.colision.feature.onboarding.joinidentity.JoinIdentityRoute
 import com.anthooop.colision.feature.onboarding.notificationperm.NotificationPermRoute
+import com.anthooop.colision.feature.onboarding.projectcommissions.CreateProjectCommissionsRoute
 import com.anthooop.colision.feature.onboarding.projectcreate.CreateProjectRoute
 import com.anthooop.colision.feature.onboarding.projectsharecode.ProjectShareCodeRoute
 import com.anthooop.colision.feature.onboarding.welcome.WelcomeRoute
@@ -37,10 +38,23 @@ fun NavGraphBuilder.onboardingGraph(navController: NavController) {
         }
         composable<OnboardingDestination.CreateProject> {
             CreateProjectRoute(
+                // J1: the creator sets up commissions before sharing the code, so
+                // the project isn't empty when invitees pick their commissions.
                 onNavigateToShareCode = { projectId ->
-                    navController.navigate(OnboardingDestination.CreateProjectCode(projectId)) {
+                    navController.navigate(OnboardingDestination.CreateProjectCommissions(projectId)) {
                         popUpTo(OnboardingDestination.CreateProject) { inclusive = true }
                     }
+                },
+                onNavigateBack = { navController.popBackStack() },
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+        composable<OnboardingDestination.CreateProjectCommissions> { backStackEntry ->
+            val args = backStackEntry.toRoute<OnboardingDestination.CreateProjectCommissions>()
+            CreateProjectCommissionsRoute(
+                projectId = args.projectId,
+                onNavigateToShareCode = { projectId ->
+                    navController.navigate(OnboardingDestination.CreateProjectCode(projectId))
                 },
                 onNavigateBack = { navController.popBackStack() },
                 modifier = Modifier.fillMaxSize(),
@@ -50,12 +64,23 @@ fun NavGraphBuilder.onboardingGraph(navController: NavController) {
             val args = backStackEntry.toRoute<OnboardingDestination.CreateProjectCode>()
             ProjectShareCodeRoute(
                 projectId = args.projectId,
+                // After sharing the code, the creator still goes through the
+                // notification-permission step (PRD §"permissions appareil"),
+                // like any other member, before landing on Home.
+                onNavigateToHome = {
+                    navController.navigate(OnboardingDestination.CreatorNotificationPermission)
+                },
+                onNavigateBack = { navController.popBackStack() },
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
+        composable<OnboardingDestination.CreatorNotificationPermission> {
+            NotificationPermRoute(
                 onNavigateToHome = {
                     navController.navigate(RootGraph.Home) {
                         popUpTo(RootGraph.Onboarding) { inclusive = true }
                     }
                 },
-                onNavigateBack = { navController.popBackStack() },
                 modifier = Modifier.fillMaxSize(),
             )
         }

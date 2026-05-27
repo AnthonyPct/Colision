@@ -9,6 +9,7 @@ import com.anthooop.colision.feature.onboarding.joinconfirm.JoinConfirmViewModel
 import com.anthooop.colision.feature.onboarding.joincommissions.JoinCommissionsViewModel
 import com.anthooop.colision.feature.onboarding.joinidentity.JoinIdentityViewModel
 import com.anthooop.colision.feature.onboarding.notificationperm.NotificationPermViewModel
+import com.anthooop.colision.feature.onboarding.projectcommissions.CreateProjectCommissionsViewModel
 import com.anthooop.colision.feature.onboarding.projectcreate.CreateProjectViewModel
 import com.anthooop.colision.feature.onboarding.projectsharecode.ProjectShareCodeViewModel
 import com.anthooop.colision.feature.onboarding.welcome.WelcomeViewModel
@@ -24,6 +25,7 @@ val onboardingModule: Module = module {
 
     viewModelOf(::WelcomeViewModel)
     viewModelOf(::CreateProjectViewModel)
+    viewModelOf(::CreateProjectCommissionsViewModel)
     viewModelOf(::ProjectShareCodeViewModel)
     viewModelOf(::JoinCodeViewModel)
     viewModelOf(::JoinConfirmViewModel)

@@ -31,6 +31,14 @@
     <string name="create_project_error_network">Impossible de créer le projet — vérifie ta connexion.</string>
     <string name="create_project_error_generic">Impossible de créer le projet — réessaie dans un instant.</string>
 
+    <!-- CreateProjectCommissionsScreen -->
+    <string name="create_commissions_title">Ajoute tes commissions</string>
+    <string name="create_commissions_subtitle">Crée les sous-groupes de ton projet (Jeunesse, Sport, Travaux…). Tes collègues choisiront les leurs en rejoignant.</string>
+    <string name="create_commissions_input_placeholder">Ex. Jeunesse</string>
+    <string name="create_commissions_empty">Aucune commission pour l\'instant. Tu pourras aussi en ajouter plus tard.</string>
+    <string name="create_commissions_error">Impossible d\'ajouter la commission — %1$s.</string>
+    <string name="create_commissions_remove_cd">Supprimer la commission %1$s</string>
+
     <!-- ProjectShareCodeScreen -->
     <string name="share_code_title">Voici ton code\nde partage</string>
     <string name="share_code_subtitle">Partage ce code aux autres membres de ton conseil pour qu'ils rejoignent %1$s.</string>
