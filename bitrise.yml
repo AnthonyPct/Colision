@@ -1,0 +1,129 @@
+# Bitrise CI configuration — Colision
+#
+# Versioned in the repo. Bitrise app setting must be:
+#   App settings → bitrise.yml source → Repository (path: bitrise.yml)
+# Otherwise changes here are ignored.
+#
+# Workflows:
+#   - android_build : signed AAB + APK (productionRelease), auto on tag v*
+#   - ios_build     : signed IPA + TestFlight upload, auto on tag v*
+#
+# Unit tests are NOT in this file on purpose — GitHub Actions
+# (`.github/workflows/build-android.yml` + `build-ios.yml`) runs them
+# on every push/PR for free. See docs/ci.md for the full split.
+
+app:
+    envs:
+        - PROJECT_ROOT_DIR: ./
+          opts:
+            is_expand: false
+        - MODULE: composeApp
+          opts:
+            is_expand: false
+        - VARIANT: productionRelease
+          opts:
+            is_expand: false
+        - BITRISE_PROJECT_PATH: ./iosApp/iosApp.xcodeproj
+          opts:
+            is_expand: false
+        - BITRISE_SCHEME: iosApp
+          opts:
+            is_expand: false
+        - BITRISE_DISTRIBUTION_METHOD: app-store
+          opts:
+            is_expand: false
+        - SENTRY_COCOA_VERSION: 8.58.2
+          opts:
+            is_expand: false
+        - TEAM_ID: 6J96GZQV2Q
+          opts:
+            is_expand: false
+default_step_lib_source: https://github.com/bitrise-steplib/bitrise-steplib.git
+format_version: "26"
+meta:
+    bitrise.io:
+        machine_type_id: g2.mac.medium
+        stack: osx-xcode-26.5.x
+pipelines:
+    build:
+        workflows:
+            android_build: {}
+            ios_build: {}
+project_type: kotlin-multiplatform
+workflows:
+    android_build:
+        steps:
+            - git-clone@8: {}
+            - restore-gradle-cache@3: {}
+            - activate-build-cache-for-gradle@2: {}
+            - android-build@1:
+                title: Android Build (AAB)
+                inputs:
+                    - project_location: $PROJECT_ROOT_DIR
+                    - module: $MODULE
+                    - variant: $VARIANT
+                    - build_type: aab
+            - android-build@1:
+                title: Android Build (APK)
+                inputs:
+                    - project_location: $PROJECT_ROOT_DIR
+                    - module: $MODULE
+                    - variant: $VARIANT
+                    - build_type: apk
+            - sign-apk@2:
+                run_if: '{{getenv "BITRISEIO_ANDROID_KEYSTORE_URL" | ne ""}}'
+            - save-gradle-cache@1: {}
+            - deploy-to-bitrise-io@2: {}
+        triggers:
+            tag:
+                - name: 'v*'
+    ios_build:
+        steps:
+            - git-clone@8: {}
+            - restore-gradle-cache@3: {}
+            - activate-build-cache-for-gradle@2: {}
+            - script@1:
+                title: Fetch Sentry.xcframework (Kotlin linker, CI)
+                inputs:
+                    - content: |-
+                        #!/usr/bin/env bash
+                        # The sentry-kotlin-multiplatform linker needs a built Sentry
+                        # framework at the Kotlin link step. On a fresh CI runner there is
+                        # no DerivedData, so we download the prebuilt xcframework that
+                        # matches the SPM-pinned sentry-cocoa version and point the linker
+                        # at the iOS DEVICE slice via SENTRY_FRAMEWORK_PATH (read in
+                        # composeApp/build.gradle.kts -> sentryKmp.linker.frameworkPath).
+                        # Device slice is required because xcode-archive builds for
+                        # iphoneos (iosArm64), not the simulator.
+                        set -euo pipefail
+                        DEST="$BITRISE_SOURCE_DIR/.sentry-framework"
+                        rm -rf "$DEST" && mkdir -p "$DEST"
+                        curl -sSfL -o "$DEST/Sentry.xcframework.zip" \
+                          "https://github.com/getsentry/sentry-cocoa/releases/download/${SENTRY_COCOA_VERSION}/Sentry.xcframework.zip"
+                        unzip -q -o "$DEST/Sentry.xcframework.zip" -d "$DEST"
+                        SLICE="$(find "$DEST" -type d -path '*Sentry.xcframework/ios-arm64_arm64e' | head -1)"
+                        if [ -z "$SLICE" ]; then
+                          echo "ERROR: Sentry device slice not found in archive"; exit 1
+                        fi
+                        envman add --key SENTRY_FRAMEWORK_PATH --value "$SLICE"
+                        echo "SENTRY_FRAMEWORK_PATH=$SLICE"
+            - xcode-archive@6:
+                title: iOS Archive (App Store, signed)
+                inputs:
+                    - project_path: $BITRISE_PROJECT_PATH
+                    - scheme: $BITRISE_SCHEME
+                    - configuration: Release
+                    - distribution_method: $BITRISE_DISTRIBUTION_METHOD
+                    - automatic_code_signing: api-key
+                    - xcconfig_content: |-
+                        TEAM_ID = $TEAM_ID
+                        DEVELOPMENT_TEAM = $TEAM_ID
+                        CODE_SIGN_STYLE = Automatic
+                        CURRENT_PROJECT_VERSION = $BITRISE_BUILD_NUMBER
+            - deploy-to-itunesconnect-application-loader@2:
+                title: Upload IPA to App Store Connect (TestFlight)
+            - save-gradle-cache@1: {}
+            - deploy-to-bitrise-io@2: {}
+        triggers:
+            tag:
+                - name: 'v*'

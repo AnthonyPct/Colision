@@ -62,17 +62,23 @@ sur le même ref (`concurrency.cancel-in-progress`).
 
 ### Où vit `bitrise.yml`
 
-**Le `bitrise.yml` est stocké côté Bitrise, pas dans le repo.** Les modifications
-passent par l'UI Bitrise, ou par l'outillage MCP (`update_bitrise_yml`). Si on
-décide un jour de versionner la config dans le repo, il faudra activer l'option
-*Store bitrise.yml in repository* côté Bitrise et committer le fichier — mais
-ce n'est pas le cas actuellement.
+**Le `bitrise.yml` est versionné dans le repo** (`./bitrise.yml`). Bitrise lit
+la config depuis la branche en cours de build à chaque exécution. Pour que ça
+fonctionne, l'app Bitrise doit avoir **App settings → bitrise.yml source →
+Repository** activé (path : `bitrise.yml`, branch : default branch).
+
+Conséquence pratique : chaque branche peut avoir sa propre version de la
+config CI, et toute modif passe par un commit normal Git. Pour éditer la
+config : modifier le fichier dans le repo, commit, push.
+
+Si on souhaite valider le YAML avant de pusher : MCP `validate_bitrise_yml`
+(reste utile en pré-commit, sans avoir besoin de pousser).
 
 ### Workflows
 
-#### `run_tests`
-- Déclencheurs : `push` sur `main`, `pull_request` toutes branches.
-- Steps : git-clone → gradle cache (restore/save + build cache) → `gradle-unit-test@2` → deploy artifacts.
+Bitrise n'exécute **pas** les tests unitaires (Android et iOS). Ce job
+appartient à GitHub Actions, qui le fait sur runner gratuit sur chaque push/PR.
+Bitrise se concentre sur les artefacts de release.
 
 #### `android_build` *(release artifacts, manuel)*
 - Steps :
@@ -286,7 +292,6 @@ active (`feat/...`) via Bitrise.
 | GHA `build-android` | ✅ | ✅ | — | ❌ |
 | GHA `build-ios` | ✅ | ✅ | — | ❌ |
 | GHA `lint` | ✅ | ✅ | — | ❌ |
-| Bitrise `run_tests` | ✅ | ✅ | ❌ | ✅ |
 | Bitrise `android_build` | ❌ | ❌ | ✅ | ✅ |
 | Bitrise `ios_build` | ❌ | ❌ | ✅ | ✅ |
 

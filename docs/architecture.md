@@ -510,10 +510,10 @@ Pipeline à deux étages : **GitHub Actions** pour la vérif continue (gratuit, 
 **Aucun secret à provisionner sur GH au MVP**. Les valeurs Supabase URL + anon key sont placées directement dans `composeApp/src/{development,production}/kotlin/.../config/BuildConfig.kt` (acceptable car le repo est privé et la anon key est intentionnellement publique côté Supabase).
 
 **Bitrise** (release artifacts, app slug `80a2ca79-ec67-4620-9fae-646d339e0af8`, stack `osx-xcode-26.5.x`) :
-- `run_tests` (auto sur `push main` + PRs) : `gradle-unit-test` — redondant avec GHA, à reconsidérer
-- `android_build` (manuel) : `productionRelease` → AAB + APK, signés par `sign-apk@2` quand le keystore d'upload est présent dans *Code Signing & Files*. `versionCode` dynamique depuis `$BITRISE_BUILD_NUMBER`. Keystore local en `config/signature/colision-upload.jks` (gitignoré).
-- `ios_build` (manuel) — état actuel : **build de validation simulateur non-signé** (`CODE_SIGNING_ALLOWED=NO`) avec workaround Sentry. Sera remplacé par `xcode-archive@6` + App Store Connect API key + `distribution_method: app-store` une fois l'enrôlement Apple Developer activé et l'app créée dans App Store Connect.
-- `bitrise.yml` **stocké côté Bitrise** (pas dans le repo) — édité via UI ou MCP `update_bitrise_yml` après `validate_bitrise_yml`.
+- `android_build` (tag `v*` ou manuel) : `productionRelease` → AAB + APK, signés par `sign-apk@2` quand le keystore d'upload est présent dans *Code Signing & Files*. `versionCode` dynamique depuis `$BITRISE_BUILD_NUMBER`. Keystore local en `config/signature/colision-upload.jks` (gitignoré).
+- `ios_build` (tag `v*` ou manuel) : `xcode-archive@6` signé App Store via clef API → IPA + upload automatique TestFlight via `deploy-to-itunesconnect-application-loader@2`. Workaround Sentry xcframework (slice device).
+- Pas de workflow tests unitaires côté Bitrise — assuré par GHA gratuitement.
+- `bitrise.yml` **versionné dans le repo** (`./bitrise.yml`). App Bitrise réglée sur *bitrise.yml source → Repository* pour lire depuis le repo à chaque build.
 
 #### Crash Monitoring + Product Analytics : Sentry (unifié)
 
