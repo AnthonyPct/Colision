@@ -500,20 +500,20 @@ Configuré via `deepLink { uriPattern = "colision://meeting/{id}" }` dans le Nav
 
 #### CI/CD Hybride
 
+Pipeline à deux étages : **GitHub Actions** pour la vérif continue (gratuit, sur chaque push/PR), **Bitrise** pour les artefacts de release et la signature. Détails opérationnels (workflows, signing, troubleshooting) dans `docs/ci.md`.
+
 **GitHub Actions** — `.github/workflows/` :
-- `build-android.yml` (runner `ubuntu-latest`) : `assembleDevelopmentDebug` + `testDebugUnitTest` sur chaque push/PR
-- `build-ios.yml` (runner `macos-14`) : `linkDebugFrameworkIosSimulatorArm64` + `iosSimulatorArm64Test` sur chaque push/PR
-- `lint.yml` (runner `ubuntu-latest`) : `detekt` + `ktlintCheck`
-- `android-instrumented.yml` (runner `ubuntu-latest`, KVM-enabled) : optionnel, sur push `main` ou nightly, via `reactivecircus/android-emulator-runner@v2`
+- `build-android.yml` (runner `ubuntu-latest`) : `assembleDevelopmentDebug` + `testDevelopmentDebugUnitTest` sur push/PR `main` ou `develop`
+- `build-ios.yml` (runner `macos-15` — `macos-14` casse l'autolink Swift runtime sur les deps CryptoKit interop) : `linkDebugFrameworkIosSimulatorArm64` + `iosSimulatorArm64Test`, avec téléchargement de `Sentry.xcframework` pinné (workaround linker — cf. `docs/ci.md`)
+- `lint.yml` (runner `ubuntu-latest`) : `lintDevelopmentDebug` (detekt + ktlint à brancher quand les plugins seront ajoutés)
 
 **Aucun secret à provisionner sur GH au MVP**. Les valeurs Supabase URL + anon key sont placées directement dans `composeApp/src/{development,production}/kotlin/.../config/BuildConfig.kt` (acceptable car le repo est privé et la anon key est intentionnellement publique côté Supabase).
 
-**Bitrise** (release pipeline, différé au 1er test externe) :
-- Signing iOS automatisé (provisioning + certificats via UI Bitrise)
-- Signing Android (keystore via UI Bitrise)
-- Upload TestFlight (via App Store Connect API)
-- Upload Play Internal Track (via Google Play Developer API)
-- Triggered manuellement ou sur tag `v*`
+**Bitrise** (release artifacts, app slug `80a2ca79-ec67-4620-9fae-646d339e0af8`, stack `osx-xcode-26.5.x`) :
+- `android_build` (tag `v*` ou manuel) : `productionRelease` → AAB + APK, signés par `sign-apk@2` quand le keystore d'upload est présent dans *Code Signing & Files*. `versionCode` dynamique depuis `$BITRISE_BUILD_NUMBER`. Keystore local en `config/signature/colision-upload.jks` (gitignoré).
+- `ios_build` (tag `v*` ou manuel) : `xcode-archive@6` signé App Store via clef API → IPA + upload automatique TestFlight via `deploy-to-itunesconnect-application-loader@2`. Workaround Sentry xcframework (slice device).
+- Pas de workflow tests unitaires côté Bitrise — assuré par GHA gratuitement.
+- `bitrise.yml` **versionné dans le repo** (`./bitrise.yml`). App Bitrise réglée sur *bitrise.yml source → Repository* pour lire depuis le repo à chaque build.
 
 #### Crash Monitoring + Product Analytics : Sentry (unifié)
 
