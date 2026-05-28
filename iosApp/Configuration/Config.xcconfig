@@ -1,7 +1,18 @@
+// TEAM_ID is injected as an env var (locally via Xcode build settings or
+// .xcconfig override; on CI via Bitrise secret env). Leave the default
+// empty so a checkout without TEAM_ID still resolves to a valid (unsigned)
+// build; CI overrides this for signed archives.
 TEAM_ID=
 
 PRODUCT_NAME=Colision
-PRODUCT_BUNDLE_IDENTIFIER=com.anthooop.colision.Colision$(TEAM_ID)
+// Stable bundle id, mirrors the Android applicationId (com.anthooop.colision).
+// Must match the App ID registered in Apple Developer and the app entry in
+// App Store Connect — do not append $(TEAM_ID) here.
+PRODUCT_BUNDLE_IDENTIFIER=com.anthooop.colision
 
+// CURRENT_PROJECT_VERSION is the iOS build number (CFBundleVersion). TestFlight
+// requires every upload to have a strictly higher value than the previous one,
+// so CI overrides this with $BITRISE_BUILD_NUMBER at archive time (via the
+// xcode-archive step's xcconfig_content). Local builds keep the default 1.
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0
