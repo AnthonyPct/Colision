@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" width="320" height="240" fill="none">
+  <title>Colision — détection de conflit entre commissions</title>
+  <defs>
+    <linearGradient id="bg-fill" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#C7E8DC"></stop>
+      <stop offset="1" stop-color="#C7E8DC" stop-opacity="0.4"></stop>
+    </linearGradient>
+  </defs>
+
+  
+  <circle cx="120" cy="120" r="86" fill="url(#bg-fill)" opacity="0.95"></circle>
+  <circle cx="210" cy="120" r="86" fill="#0E7C66" opacity="0.18"></circle>
+  <circle cx="120" cy="120" r="86" fill="none" stroke="#0E7C66" stroke-width="2"></circle>
+  <circle cx="210" cy="120" r="86" fill="none" stroke="#0E7C66" stroke-width="2"></circle>
+
+  
+  <g fill="#0E7C66">
+    <circle cx="88" cy="86" r="5"></circle>
+    <circle cx="100" cy="140" r="5"></circle>
+    <circle cx="140" cy="76" r="5"></circle>
+    <circle cx="78" cy="116" r="5"></circle>
+    <circle cx="152" cy="156" r="5"></circle>
+  </g>
+
+  
+  <g fill="#0E7C66">
+    <circle cx="238" cy="86" r="5"></circle>
+    <circle cx="248" cy="140" r="5"></circle>
+    <circle cx="228" cy="76" r="5"></circle>
+    <circle cx="252" cy="116" r="5"></circle>
+    <circle cx="200" cy="168" r="5"></circle>
+  </g>
+
+  
+  <circle cx="165" cy="120" r="20" fill="none" stroke="#C8553D" stroke-width="1.2" stroke-opacity="0.2"></circle>
+  <circle cx="165" cy="120" r="14" fill="none" stroke="#C8553D" stroke-width="1.5" stroke-opacity="0.4"></circle>
+  <circle cx="165" cy="120" r="9" fill="#C8553D"></circle>
+</svg>
