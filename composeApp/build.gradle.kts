@@ -119,7 +119,9 @@ android {
         applicationId = "com.anthooop.colision"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
+        // CI (Bitrise) injects a monotonically increasing build number so each
+        // Play upload gets a higher versionCode; local builds fall back to 1.
+        versionCode = System.getenv("BITRISE_BUILD_NUMBER")?.toIntOrNull() ?: 1
         versionName = "1.0"
     }
     packaging {

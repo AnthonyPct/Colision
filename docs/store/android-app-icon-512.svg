@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none">
+  <title>Colision — Play Store icon 512</title>
+  <rect width="512" height="512" rx="112" fill="#0E7C66"></rect>
+  <circle cx="192" cy="256" r="112" stroke="#FAF7F2" stroke-width="24"></circle>
+  <circle cx="320" cy="256" r="112" stroke="#FAF7F2" stroke-width="24"></circle>
+  <path d="M200 216L312 296M200 296L312 216" stroke="#FAF7F2" stroke-width="24" stroke-linecap="round"></path>
+</svg>

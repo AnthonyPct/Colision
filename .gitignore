@@ -17,3 +17,8 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+
+# Signing — never commit keystores or signing secrets
+config/signature/
+*.jks
+*.keystore
