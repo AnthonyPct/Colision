@@ -8,7 +8,9 @@ import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.core.common.DefaultCurrentMemberProvider
 import com.anthooop.colision.core.common.DefaultDispatcherProvider
 import com.anthooop.colision.core.common.DefaultProjectSyncManager
+import com.anthooop.colision.core.common.DeviceRepository
 import com.anthooop.colision.core.common.DispatcherProvider
+import com.anthooop.colision.core.common.SupabaseDeviceRepository
 import com.anthooop.colision.core.common.ProjectSyncManager
 import com.anthooop.colision.core.common.Logger
 import com.anthooop.colision.core.common.SentryAnalytics
@@ -37,6 +39,13 @@ val coreModule: Module = module {
     }
     single<CurrentMemberProvider> {
         DefaultCurrentMemberProvider(supabase = get(), memberDao = get())
+    }
+    single<DeviceRepository> {
+        SupabaseDeviceRepository(
+            supabase = get(),
+            logger = get<Logger>(),
+            crashReporter = get(),
+        )
     }
     single<ProjectSyncManager> {
         DefaultProjectSyncManager(
