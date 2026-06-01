@@ -16,3 +16,9 @@ PRODUCT_BUNDLE_IDENTIFIER=com.anthooop.colision
 // xcode-archive step's xcconfig_content). Local builds keep the default 1.
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0
+
+// Push Notifications capability. The .entitlements file is read at sign
+// time; without this line the iosApp target compiles fine but APNs
+// registration silently no-ops at runtime. Path is relative to the
+// .xcodeproj's SRCROOT (= iosApp/).
+CODE_SIGN_ENTITLEMENTS=iosApp/iosApp.entitlements
