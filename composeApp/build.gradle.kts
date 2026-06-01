@@ -16,6 +16,17 @@ plugins {
     alias(libs.plugins.sentryKmp)
 }
 
+// Apply the Google Services plugin only when google-services.json is present.
+// This keeps `git clone && ./gradlew build` green for fresh checkouts that
+// haven't downloaded the Firebase config from the console yet — FCM is then
+// effectively disabled (FcmTokenProvider returns null and the device row
+// keeps its empty fcm_token, so push silently no-ops). Drop the file from
+// the Firebase console at composeApp/google-services.json to enable push;
+// Bitrise injects it via Generic File Storage.
+if (rootProject.file("composeApp/google-services.json").exists()) {
+    apply(plugin = libs.plugins.googleServices.get().pluginId)
+}
+
 // Secrets reader: local.properties (gitignored) overrides the in-repo
 // defaults. CI loads secrets via env vars — the same key wins regardless of
 // source. Public values (Supabase anon key, Sentry DSN — both meant to be

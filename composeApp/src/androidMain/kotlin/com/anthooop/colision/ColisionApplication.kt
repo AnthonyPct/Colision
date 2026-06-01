@@ -6,6 +6,7 @@ import com.anthooop.colision.core.di.androidPlatformModule
 import com.anthooop.colision.core.di.appModule
 import com.anthooop.colision.core.di.coreModule
 import com.anthooop.colision.core.di.featureModules
+import com.anthooop.colision.core.push.NotificationChannels
 import io.sentry.kotlin.multiplatform.Sentry
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -16,6 +17,9 @@ class ColisionApplication : Application() {
         super.onCreate()
         initSentry()
         initKoin()
+        // Create the FCM notification channel before the first message arrives.
+        // Idempotent — the system collapses duplicate creates to the same id.
+        NotificationChannels.ensureCreated(this)
     }
 
     private fun initSentry() {

@@ -10,7 +10,9 @@ import com.anthooop.colision.core.common.Logger
 import com.anthooop.colision.core.common.LoggerAndroid
 import com.anthooop.colision.core.common.NotificationPermissionManager
 import com.anthooop.colision.core.common.NotificationPermissionManagerAndroid
+import com.anthooop.colision.core.common.PushTokenProvider
 import com.anthooop.colision.core.database.COLISION_DB_FILE
+import com.anthooop.colision.core.push.FcmPushTokenProvider
 import com.anthooop.colision.core.database.ColisionDatabase
 import com.anthooop.colision.core.network.createSessionDataStore
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +24,9 @@ val androidPlatformModule: Module = module {
     single<Logger> { LoggerAndroid() }
     single<NotificationPermissionManager> {
         NotificationPermissionManagerAndroid(androidContext().applicationContext)
+    }
+    single<PushTokenProvider> {
+        FcmPushTokenProvider(logger = get(), crashReporter = get())
     }
     single<ConnectivityObserver> {
         AndroidConnectivityObserver(androidContext().applicationContext)

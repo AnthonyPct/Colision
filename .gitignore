@@ -22,3 +22,7 @@ node_modules/
 config/signature/
 *.jks
 *.keystore
+
+# Firebase config (downloaded from console — CI injects via secret storage)
+google-services.json
+GoogleService-Info.plist
