@@ -14,17 +14,7 @@ plugins {
     alias(libs.plugins.room)
     alias(libs.plugins.buildkonfig)
     alias(libs.plugins.sentryKmp)
-}
-
-// Apply the Google Services plugin only when google-services.json is present.
-// This keeps `git clone && ./gradlew build` green for fresh checkouts that
-// haven't downloaded the Firebase config from the console yet — FCM is then
-// effectively disabled (FcmTokenProvider returns null and the device row
-// keeps its empty fcm_token, so push silently no-ops). Drop the file from
-// the Firebase console at composeApp/google-services.json to enable push;
-// Bitrise injects it via Generic File Storage.
-if (rootProject.file("composeApp/google-services.json").exists()) {
-    apply(plugin = libs.plugins.googleServices.get().pluginId)
+    alias(libs.plugins.googleServices)
 }
 
 // Secrets reader: local.properties (gitignored) overrides the in-repo

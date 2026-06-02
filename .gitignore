@@ -23,6 +23,6 @@ config/signature/
 *.jks
 *.keystore
 
-# Firebase config (downloaded from console — CI injects via secret storage)
-google-services.json
+# Firebase iOS config — kept out of the repo until we wire it (FCM is
+# Android-only today; iOS goes direct APNs from the Edge Functions).
 GoogleService-Info.plist
