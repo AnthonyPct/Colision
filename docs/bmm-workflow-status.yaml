@@ -1,0 +1,54 @@
+# BMM Workflow Status
+# Tracks completion of BMAD workflows for the Colision project
+
+project_name: Colision
+
+workflow_status:
+  product-brief:
+    status: completed
+    output_file: docs/product-brief-Colision-2026-05-10.md
+    started_at: 2026-05-10
+    completed_at: 2026-05-14
+    facilitator: Mary (analyst)
+    user: Anthony Picquet
+
+  prd:
+    status: completed
+    output_file: docs/prd.md
+    started_at: 2026-05-14
+    completed_at: 2026-05-14
+    facilitator: John (pm)
+    user: Anthony Picquet
+
+  ux-design:
+    status: completed_externally
+    output_file: docs/design/
+    completed_at: 2026-05-15
+    facilitator: Claude Design (claude.ai/design)
+    user: Anthony Picquet
+    notes: "Design system + 4 screens livrés en HTML/JSX via Claude Design. Workflow BMAD create-ux-design skippé car déjà fait en externe."
+
+  architecture:
+    status: completed
+    output_file: docs/architecture.md
+    started_at: 2026-05-15
+    completed_at: 2026-05-16
+    facilitator: Winston (architect)
+    user: Anthony Picquet
+
+  epics-and-stories:
+    status: completed
+    output_file: docs/epics.md
+    started_at: 2026-05-16
+    completed_at: 2026-05-16
+    facilitator: John (pm)
+    user: Anthony Picquet
+    metrics:
+      epic_count: 6
+      story_count: 35
+      fr_coverage: "43/43"
+    github_issues:
+      labels_created: 8
+      epic_issues: "#1..#6"
+      story_issues: "#7..#41"
+      sub_issue_links: 35

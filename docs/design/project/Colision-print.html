@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <title>Colision — Hi-fi prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: #2A312D;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      color: #1A1F1C;
+    }
+    button { font-family: inherit; }
+    input { font-family: inherit; }
+    @keyframes blink { 0%, 100% { opacity: 1; } } /* disabled for print */
+
+    /* ── Print page shell ──────────────────────────────── */
+    .print-root { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 0; }
+    .print-page {
+      width: 1500px; height: 1000px; /* 3:2 landscape (close to A4 landscape ratio) */
+      background: #FAF7F2;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      padding: 56px 64px;
+      display: flex; flex-direction: column;
+      position: relative;
+      page-break-after: always;
+      break-after: page;
+    }
+    .print-page:last-child { page-break-after: auto; break-after: auto; }
+
+    .print-page-header { margin-bottom: 24px; flex-shrink: 0; }
+    .print-eyebrow {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; color: #0E7C66;
+    }
+    .print-page-title {
+      font-size: 34px; font-weight: 700; letter-spacing: -0.5px;
+      color: #0E1310; margin-top: 4px;
+    }
+    .print-page-desc {
+      font-size: 15px; color: #5A615C; margin-top: 6px; max-width: 760px;
+    }
+    .print-page-footer {
+      margin-top: auto; padding-top: 16px; flex-shrink: 0;
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: #8A8F89; font-weight: 500;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      border-top: 1px solid #E8E2D3;
+    }
+
+    /* ── Frames row ─────────────────────────────────────── */
+    .print-frames {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      gap: 96px;
+    }
+    .print-frame-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .print-platform-tag {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; color: #8A8F89;
+    }
+
+    /* ── Cover page ────────────────────────────────────── */
+    .print-cover { background: linear-gradient(180deg, #FAF7F2 0%, #F4EFE5 100%); }
+    .print-cover-inner { display: flex; flex-direction: column; height: 100%; }
+    .print-logo-row { display: flex; gap: 28px; align-items: flex-start; margin-bottom: 64px; }
+    .print-logo-mark {
+      width: 96px; height: 96px; border-radius: 28px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .print-cover-title {
+      font-size: 72px; font-weight: 700; letter-spacing: -1.5px;
+      line-height: 1; color: #0E1310; margin-top: 8px;
+    }
+    .print-cover-sub {
+      font-size: 22px; color: #5A615C; margin-top: 12px; max-width: 720px;
+    }
+    .print-cover-grid {
+      flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 40px 80px;
+      align-content: center; padding: 40px 0;
+    }
+    .print-cover-body {
+      font-size: 16px; color: #1A1F1C; margin-top: 8px; line-height: 1.5;
+      max-width: 540px;
+    }
+    .print-cover-footer {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: #8A8F89; font-weight: 500;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      padding-top: 24px; border-top: 1px solid #E8E2D3;
+    }
+
+    /* ── Tokens page ───────────────────────────────────── */
+    .print-tokens-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+    .print-section-title {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.6px;
+      text-transform: uppercase; color: #5A615C; margin-bottom: 14px;
+    }
+    .swatches { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+    .swatch { display: flex; align-items: center; gap: 12px; }
+    .swatch-chip { width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E8E2D3; flex-shrink: 0; }
+    .swatch-name { font-size: 14px; font-weight: 600; color: #1A1F1C; }
+    .swatch-sub { font-size: 12px; color: #5A615C; margin-top: 2px; }
+    .type-stack { display: flex; flex-direction: column; gap: 16px; color: #0E1310; }
+    .type-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #8A8F89; margin-bottom: 4px; }
+    .spacing-stack { display: flex; gap: 16px; align-items: flex-end; }
+    .radius-demo { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+    /* ── @media print ───────────────────────────────────── */
+    @page {
+      size: 1500px 1000px;
+      margin: 0;
+    }
+    @media print {
+      body { background: #FFF; }
+      .print-root { gap: 0; padding: 0; }
+      .print-page {
+        box-shadow: none; margin: 0;
+        page-break-after: always; break-after: page;
+        page-break-inside: avoid; break-inside: avoid;
+      }
+      .print-page:last-child { page-break-after: auto; break-after: auto; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+
+    ::-webkit-scrollbar { width: 0; height: 0; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="ios-frame.jsx"></script>
+  <script type="text/babel" src="android-frame.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+
+  <script type="text/babel" src="tokens.jsx"></script>
+  <script type="text/babel" src="icons.jsx"></script>
+  <script type="text/babel" src="components.jsx"></script>
+  <script type="text/babel" src="data.jsx"></script>
+
+  <script type="text/babel" src="screens-onboarding.jsx"></script>
+  <script type="text/babel" src="screens-agenda.jsx"></script>
+  <script type="text/babel" src="screens-meeting.jsx"></script>
+  <script type="text/babel" src="screens-arbitrage.jsx"></script>
+
+  <script type="text/babel" src="app.jsx"></script>
+  <script type="text/babel" src="print-host.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function mountWhenReady() {
+      if (typeof PrintHost === 'function' && typeof App === 'function') {
+        ReactDOM.createRoot(document.getElementById('root')).render(<PrintHost/>);
+        // wait for fonts + render, then auto-print
+        Promise.all([
+          document.fonts ? document.fonts.ready : Promise.resolve(),
+          new Promise(r => setTimeout(r, 1500)),
+        ]).then(() => {
+          if (window.__autoPrint !== false) window.print();
+        });
+      } else {
+        setTimeout(mountWhenReady, 30);
+      }
+    }
+    mountWhenReady();
+  </script>
+</body>
+</html>

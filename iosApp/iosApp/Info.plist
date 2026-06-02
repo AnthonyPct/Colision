@@ -4,5 +4,18 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSPrivacyPolicyURL</key>
+	<string>https://anthonypct.github.io/Colision/</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.anthooop.colision.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>colision</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

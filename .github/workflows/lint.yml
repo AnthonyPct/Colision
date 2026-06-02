@@ -1,0 +1,45 @@
+name: Lint
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Detekt + ktlint Gradle plugins are not wired yet; this job runs the
+      # Android lint task that Gradle always provides and serves as the
+      # CI hook for those checks once they're added (tracked as follow-up).
+      - name: Android lint (development debug)
+        run: ./gradlew :composeApp:lintDevelopmentDebug --no-configuration-cache
+
+      - name: Upload lint report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-lint-report
+          path: composeApp/build/reports/lint-results-*.html
+          retention-days: 7

@@ -1,0 +1,84 @@
+# Detekt starter config for Colision. Wire up the detekt Gradle plugin and
+# `./gradlew detekt` task in a follow-up — this file lands the rules so the
+# config is versioned alongside CI.
+#
+# Reference: https://detekt.dev/docs/rules
+
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+processors:
+  active: true
+
+console-reports:
+  active: true
+
+output-reports:
+  active: true
+
+complexity:
+  active: true
+  LongMethod:
+    active: true
+    threshold: 60
+  LongParameterList:
+    active: true
+    functionThreshold: 6
+    constructorThreshold: 7
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 25
+    thresholdInClasses: 20
+    thresholdInInterfaces: 15
+    thresholdInObjects: 15
+    thresholdInEnums: 15
+
+empty-blocks:
+  active: true
+  EmptyFunctionBlock:
+    active: true
+  EmptyClassBlock:
+    active: true
+
+exceptions:
+  active: true
+  SwallowedException:
+    active: true
+  ThrowingExceptionsWithoutMessageOrCause:
+    active: true
+  TooGenericExceptionCaught:
+    active: true
+
+naming:
+  active: true
+  ClassNaming:
+    classPattern: '[A-Z][a-zA-Z0-9]*'
+  FunctionNaming:
+    functionPattern: '[a-z][a-zA-Z0-9]*|`.*`'
+  VariableNaming:
+    variablePattern: '[a-z][A-Za-z0-9]*'
+
+performance:
+  active: true
+
+potential-bugs:
+  active: true
+
+style:
+  active: true
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+  WildcardImport:
+    active: true
+  UnusedImports:
+    active: true
+  UnusedPrivateMember:
+    active: true

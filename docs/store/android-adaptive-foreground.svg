@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432 432" width="432" height="432" fill="none">
+  <title>Colision — Android adaptive foreground</title>
+  <g transform="translate(216,216)">
+    <circle cx="-40" cy="0" r="64" stroke="#FAF7F2" stroke-width="14"></circle>
+    <circle cx="40" cy="0" r="64" stroke="#FAF7F2" stroke-width="14"></circle>
+    <path d="M-36 -26L34 26M-36 26L34 -26" stroke="#FAF7F2" stroke-width="14" stroke-linecap="round"></path>
+  </g>
+</svg>

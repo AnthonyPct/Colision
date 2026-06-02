@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
+      MVP: allowBackup disabled. Restoring the Room cache after a reinstall
+      onto a fresh anonymous Supabase session detaches the device_id and
+      leaks a previous project's data (bug #67).
+    -->
     <application
-        android:allowBackup="true"
+        android:name=".ColisionApplication"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -16,7 +25,41 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!--
+              Deep-link target for the push pipeline (FR32). The
+              `dispatch_conflict_push` Edge Function emits payloads carrying
+              `colision://arbitration/{conflictMeetingId}` — tapping the push
+              hands the URI to NavController which routes it to
+              ArbitrageDestination.Arbitration.
+            -->
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="colision" />
+            </intent-filter>
         </activity>
+
+        <!--
+          FCM message receiver. Dispatches push notifications emitted by the
+          Supabase dispatch_*_push Edge Functions. Inactive on builds without
+          a google-services.json (the SDK simply never invokes the service).
+        -->
+        <service
+            android:name=".core.push.ColisionFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Default small icon + accent color used when an FCM push doesn't carry its own. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="colision_push" />
     </application>
 
 </manifest>

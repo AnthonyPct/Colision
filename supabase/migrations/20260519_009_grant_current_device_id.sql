@@ -1,0 +1,14 @@
+-- Migration 009 : grant EXECUTE on `current_device_id()` to authenticated.
+--
+-- Migration 005 revoked it from PUBLIC but never granted it back. That was
+-- fine as long as the function was only called from inside other
+-- SECURITY DEFINER functions (`is_project_member`, `create_project`, …) —
+-- those run as the definer (postgres), which has EXECUTE.
+--
+-- The RLS policies introduced in migration 008, however, call
+-- `current_device_id()` directly from the policy expression (e.g.
+--   with check (device_id = public.current_device_id() or …)
+-- ). That expression evaluates in the caller's role, not the policy's,
+-- so the authenticated user hit 42501 the moment they tried to insert
+-- a member through the policy's self-bootstrap branch.
+grant execute on function public.current_device_id() to authenticated;

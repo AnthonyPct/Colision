@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "974130352484",
+    "project_id": "colision-d6c72",
+    "storage_bucket": "colision-d6c72.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974130352484:android:2e832b9b1b4f46a7a5ea71",
+        "android_client_info": {
+          "package_name": "com.anthooop.colision"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4daa-14kCj33E0f-8XqLNQQILBFPiJbs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974130352484:android:08f82897dbac2de4a5ea71",
+        "android_client_info": {
+          "package_name": "com.anthooop.colision.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4daa-14kCj33E0f-8XqLNQQILBFPiJbs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

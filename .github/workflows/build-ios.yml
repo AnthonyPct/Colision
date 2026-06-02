@@ -1,0 +1,82 @@
+name: Build iOS
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Must match the Sentry Cocoa version pinned in
+  # iosApp/iosApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved.
+  # Bump in lockstep with that file (and unpin from 8.x once the sentry-
+  # kotlin-multiplatform Gradle plugin supports Sentry Cocoa 9.x).
+  SENTRY_COCOA_VERSION: '8.58.2'
+
+jobs:
+  build:
+    # macos-15 ships Xcode 16+ by default. macos-14 (Xcode 15.4) misses the
+    # Swift runtime autolink paths Kotlin/Native expects when test binaries
+    # pull a transitive dep using CryptoKit interop (whyoleg.cryptography
+    # via supabase-auth) — "_swift_Builtin_float not found" errors at the
+    # `linkDebugTestIosSimulatorArm64` step.
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # The Sentry KMP Gradle plugin needs Sentry.xcframework at link time.
+      # On CI we can't bootstrap it via `xcodebuild build` (Xcode would call
+      # Gradle which would call the plugin which needs the framework → cycle).
+      # Download the pre-built xcframework directly from the sentry-cocoa
+      # GitHub release and point the plugin at it via SENTRY_FRAMEWORK_PATH.
+      - name: Cache Sentry.xcframework
+        id: cache-sentry-xcframework
+        uses: actions/cache@v4
+        with:
+          path: ~/sentry-xcframework
+          key: sentry-cocoa-${{ env.SENTRY_COCOA_VERSION }}
+
+      - name: Download Sentry.xcframework (${{ env.SENTRY_COCOA_VERSION }})
+        if: steps.cache-sentry-xcframework.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p ~/sentry-xcframework
+          curl -fsSL -o /tmp/sentry-xcframework.zip \
+            "https://github.com/getsentry/sentry-cocoa/releases/download/${SENTRY_COCOA_VERSION}/Sentry.xcframework.zip"
+          unzip -q /tmp/sentry-xcframework.zip -d ~/sentry-xcframework
+
+      - name: Export SENTRY_FRAMEWORK_PATH
+        run: |
+          echo "SENTRY_FRAMEWORK_PATH=$HOME/sentry-xcframework/Sentry.xcframework" >> "$GITHUB_ENV"
+
+      - name: Link iOS framework (simulator arm64, debug)
+        run: ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64 --no-configuration-cache
+
+      - name: Run iOS simulator arm64 tests
+        run: ./gradlew :composeApp:iosSimulatorArm64Test --no-configuration-cache
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-test-reports
+          path: composeApp/build/reports/tests/**
+          retention-days: 7
