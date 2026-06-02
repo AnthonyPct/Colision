@@ -14,6 +14,7 @@ plugins {
     alias(libs.plugins.room)
     alias(libs.plugins.buildkonfig)
     alias(libs.plugins.sentryKmp)
+    alias(libs.plugins.googleServices)
 }
 
 // Secrets reader: local.properties (gitignored) overrides the in-repo

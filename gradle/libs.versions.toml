@@ -26,6 +26,7 @@ kotlinxDatetime = "0.7.0"
 kotlinxCoroutines = "1.10.2"
 navigationCompose = "2.9.2"
 firebase-bom = "34.13.0"
+google-services = "4.4.3"
 sentry-kmp = "0.26.0"
 turbine = "1.2.1"
 detekt = "1.23.7"
@@ -110,4 +111,5 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfig" }
+googleServices = { id = "com.google.gms.google-services", version.ref = "google-services" }
 sentryKmp = { id = "io.sentry.kotlin.multiplatform.gradle", version.ref = "sentry-kmp" }

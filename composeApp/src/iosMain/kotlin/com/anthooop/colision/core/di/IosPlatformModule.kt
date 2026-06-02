@@ -10,7 +10,9 @@ import com.anthooop.colision.core.common.Logger
 import com.anthooop.colision.core.common.LoggerIos
 import com.anthooop.colision.core.common.NotificationPermissionManager
 import com.anthooop.colision.core.common.NotificationPermissionManagerIos
+import com.anthooop.colision.core.common.PushTokenProvider
 import com.anthooop.colision.core.database.COLISION_DB_FILE
+import com.anthooop.colision.core.push.ApnsPushTokenProvider
 import com.anthooop.colision.core.database.ColisionDatabase
 import com.anthooop.colision.core.network.createSessionDataStore
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -25,6 +27,7 @@ import platform.Foundation.NSUserDomainMask
 val iosPlatformModule: Module = module {
     single<Logger> { LoggerIos() }
     single<NotificationPermissionManager> { NotificationPermissionManagerIos() }
+    single<PushTokenProvider> { ApnsPushTokenProvider() }
     single<ConnectivityObserver> { IosConnectivityObserver() }
     single<ColisionDatabase> {
         Room.databaseBuilder<ColisionDatabase>(

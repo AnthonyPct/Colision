@@ -11,6 +11,7 @@
 // `push_failure_log` and report to Sentry.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { sendApns } from "../_shared/apns.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -170,10 +171,11 @@ async function sendPush(
     if (res.status >= 500) throw new Error(`fcm ${res.status}`);
     if (!res.ok) throw new Error(`fcm fatal ${res.status}`);
   } else if (device.platform === "ios" && device.apns_token) {
-    // APNs HTTP/2 with JWT auth left as a TODO — currently a best-effort
-    // no-op so the pipeline doesn't blow up in environments without an
-    // APNs key. iOS push will be enabled in the launch epic (Epic 6).
-    return;
+    await sendApns(device.apns_token, {
+      title,
+      body,
+      data: { type: "meeting_created", meeting_id: meetingId },
+    });
   } else {
     return;
   }

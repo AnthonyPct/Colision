@@ -11,7 +11,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1AB432B8D6D051F5A1246AD6 /* .app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = .app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1AB432B8D6D051F5A1246AD6 /* Colision.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Colision.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -51,7 +51,7 @@
 		A7EE178D57F6FCDD565DDD6E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1AB432B8D6D051F5A1246AD6 /* .app */,
+				1AB432B8D6D051F5A1246AD6 /* Colision.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -80,7 +80,7 @@
 				8EEA62EF2FBBA1AE00F428D0 /* Sentry */,
 			);
 			productName = iosApp;
-			productReference = 1AB432B8D6D051F5A1246AD6 /* .app */;
+			productReference = 1AB432B8D6D051F5A1246AD6 /* Colision.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

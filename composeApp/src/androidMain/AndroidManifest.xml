@@ -39,6 +39,27 @@
                 <data android:scheme="colision" />
             </intent-filter>
         </activity>
+
+        <!--
+          FCM message receiver. Dispatches push notifications emitted by the
+          Supabase dispatch_*_push Edge Functions. Inactive on builds without
+          a google-services.json (the SDK simply never invokes the service).
+        -->
+        <service
+            android:name=".core.push.ColisionFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Default small icon + accent color used when an FCM push doesn't carry its own. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="colision_push" />
     </application>
 
 </manifest>

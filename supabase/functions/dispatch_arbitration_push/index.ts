@@ -14,6 +14,7 @@
 // arrival (NFR-P4).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { sendApns } from "../_shared/apns.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -210,9 +211,14 @@ async function sendPush(target: MemberRow, meetingId: string, body: string) {
     if (res.status >= 500) throw new Error(`fcm ${res.status}`);
     if (!res.ok) throw new Error(`fcm fatal ${res.status}`);
   } else if (device.platform === "ios" && device.apns_token) {
-    // APNs left as a TODO until Epic 6 (launch), mirroring
-    // dispatch_conflict_push.
-    return;
+    await sendApns(device.apns_token, {
+      body,
+      data: {
+        type: "arbitration_recorded",
+        meeting_id: meetingId,
+        deep_link: `colision://meeting/${meetingId}`,
+      },
+    });
   }
 }
 

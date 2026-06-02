@@ -2,7 +2,10 @@ package com.anthooop.colision.feature.onboarding.notificationperm
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anthooop.colision.core.common.DeviceRepository
 import com.anthooop.colision.core.common.NotificationPermissionManager
+import com.anthooop.colision.core.common.NotificationPermissionStatus
+import com.anthooop.colision.core.common.PushTokenProvider
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +18,8 @@ import kotlinx.coroutines.launch
 
 class NotificationPermViewModel(
     private val permissionManager: NotificationPermissionManager,
+    private val pushTokenProvider: PushTokenProvider,
+    private val deviceRepository: DeviceRepository,
 ) : ViewModel() {
 
     ///////////////////////////////////////////////////////////////////////////
@@ -56,13 +61,23 @@ class NotificationPermViewModel(
             // The platform manager triggers the native dialog and waits for the
             // outcome. Granted or denied, the user always lands on Home — story
             // 2.7 AC: the app remains functional without the permission.
-            runCatching { permissionManager.request() }
-            // TODO(story 2.7 follow-up): if granted, register FCM / APNs token
-            // on the device row. Track the work in a separate ticket once a
-            // platform device-id is wired up.
+            val status = runCatching { permissionManager.request() }.getOrNull()
+            if (status == NotificationPermissionStatus.Granted) {
+                registerPushToken()
+            }
             _state.update { it.copy(isRequesting = false) }
             emit(NotificationPermEvent.NavigateToHome)
         }
+    }
+
+    // Fetches the FCM/APNs token from the platform and writes it onto the
+    // Supabase `device` row (RLS-scoped to the current anonymous session).
+    // Best-effort: a null token or a failed upsert is logged but never
+    // blocks navigation — the next foreground sweep (or the next time the
+    // user lands here) gets another shot.
+    private suspend fun registerPushToken() {
+        val token = runCatching { pushTokenProvider.fetchToken() }.getOrNull() ?: return
+        deviceRepository.upsertToken(pushTokenProvider.platform, token)
     }
 
     private fun emit(event: NotificationPermEvent) {
