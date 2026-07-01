@@ -1,6 +1,8 @@
 package com.anthooop.colision.feature.onboarding.joinconfirm
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,35 +75,45 @@ fun JoinConfirmScreen(
             }
         }
 
-        Text(
-            text = stringResource(Res.string.join_confirm_eyebrow),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(Spacing.SP2))
-        Text(
-            text = state.projectName.ifEmpty {
-                stringResource(Res.string.join_confirm_loading_placeholder)
-            },
-            style = MaterialTheme.typography.displayMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(Modifier.height(Spacing.SP2))
-        Text(
-            text = pluralStringResource(
-                Res.plurals.join_confirm_commissions_count,
-                state.commissions.size,
-                state.commissions.size,
-            ),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        // Scrollable content: with many commissions on a small screen this
+        // block would otherwise push the confirm CTA off-screen. The buttons
+        // below stay anchored and always visible.
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
+        ) {
+            Text(
+                text = stringResource(Res.string.join_confirm_eyebrow),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(Spacing.SP2))
+            Text(
+                text = state.projectName.ifEmpty {
+                    stringResource(Res.string.join_confirm_loading_placeholder)
+                },
+                style = MaterialTheme.typography.displayMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(Spacing.SP2))
+            Text(
+                text = pluralStringResource(
+                    Res.plurals.join_confirm_commissions_count,
+                    state.commissions.size,
+                    state.commissions.size,
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-        Spacer(Modifier.height(Spacing.SP6))
+            Spacer(Modifier.height(Spacing.SP6))
 
-        ProjectPreviewCard(commissions = state.commissions)
+            ProjectPreviewCard(commissions = state.commissions)
+        }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(Spacing.SP4))
 
         Button(
             onClick = { onIntent(JoinConfirmIntent.ConfirmTapped) },

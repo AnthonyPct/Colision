@@ -31,8 +31,19 @@ enable_anonymous_sign_ins = true
 site_url = "http://127.0.0.1:3000"
 additional_redirect_urls = ["colision://"]
 jwt_expiry = 3600
-refresh_token_rotation_enabled = true
-security_refresh_token_reuse_interval = 10
+# Refresh-token rotation is DISABLED on purpose for the anonymous device model.
+# With rotation on + a 10s reuse interval, any race between supabase-kt's
+# background refresh (which mints a new refresh token) and the DataStore write
+# that persists it — e.g. the app being killed/backgrounded in between — left
+# the device holding an already-invalidated token. The next cold start then
+# failed to refresh, `ensureSession()` fell back to signInAnonymously(), and a
+# fresh auth.users + device row detached the previously claimed
+# `member.device_id` → the user became a nameless "ghost" (lost identity while
+# their data stayed intact). Anonymous sessions here guard low-sensitivity
+# per-device data behind RLS, so a stable (non-rotating) refresh token is an
+# acceptable MVP trade-off and removes the drift's root cause.
+refresh_token_rotation_enabled = false
+security_refresh_token_reuse_interval = 0
 
 [storage]
 enabled = false
