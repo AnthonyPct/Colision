@@ -58,6 +58,10 @@ import colision.composeapp.generated.resources.month_september
 import colision.composeapp.generated.resources.write_offline_message
 import com.anthooop.colision.core.design.Spacing
 import com.anthooop.colision.core.design.rememberOfflineGate
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -208,7 +212,7 @@ private fun WeekView(
     meetings: List<AgendaMeeting>,
     onMeetingTap: (String) -> Unit,
 ) {
-    val grouped = meetings.groupBy { it.meeting.startsAt.substring(0, 10) }
+    val grouped = meetings.groupBy { localDay(it.meeting.startsAt) }
     val dates = grouped.keys.sorted()
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -362,7 +366,7 @@ private fun MonthView(
     meetings: List<AgendaMeeting>,
     onMeetingTap: (String) -> Unit,
 ) {
-    val byDay = meetings.groupBy { it.meeting.startsAt.substring(0, 10) }
+    val byDay = meetings.groupBy { localDay(it.meeting.startsAt) }
     val days = byDay.keys.sorted()
     val months = rememberMonthNames()
     LazyColumn(
@@ -428,14 +432,35 @@ private fun MonthView(
     }
 }
 
+// Meeting timestamps are stored as UTC instants (e.g. "2026-07-01T18:00:00Z").
+// Display must convert back to the device's timezone, otherwise a 20:00 local
+// meeting in France (UTC+2) renders as "18:00". A plain "yyyy-MM-dd" string
+// (no 'T') is passed through unchanged.
+@OptIn(ExperimentalTime::class)
 internal fun extractTime(isoDate: String): String {
+    val instant = runCatching { Instant.parse(isoDate) }.getOrNull()
+    if (instant != null) {
+        val ldt = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+        return "${ldt.hour.toString().padStart(2, '0')}:${ldt.minute.toString().padStart(2, '0')}"
+    }
     val tIdx = isoDate.indexOf('T').takeIf { it >= 0 } ?: return ""
     return isoDate.substring(tIdx + 1, minOf(tIdx + 6, isoDate.length))
 }
 
+// Local calendar day ("yyyy-MM-dd") of an instant, for grouping meetings by
+// day. Grouping on the raw UTC substring would file a late-evening meeting
+// under the wrong day.
+@OptIn(ExperimentalTime::class)
+internal fun localDay(iso: String): String =
+    runCatching { Instant.parse(iso) }.getOrNull()
+        ?.toLocalDateTime(TimeZone.currentSystemDefault())?.date?.toString()
+        ?: iso.substringBefore('T')
+
+@OptIn(ExperimentalTime::class)
 internal fun parseIsoDate(isoDateOrDate: String, months: List<String>): String {
-    val tIdx = isoDateOrDate.indexOf('T')
-    val datePart = if (tIdx >= 0) isoDateOrDate.substring(0, tIdx) else isoDateOrDate
+    val datePart = runCatching { Instant.parse(isoDateOrDate) }.getOrNull()
+        ?.toLocalDateTime(TimeZone.currentSystemDefault())?.date?.toString()
+        ?: isoDateOrDate.substringBefore('T')
     val parts = datePart.split('-')
     if (parts.size != 3) return datePart
     val day = parts[2].trimStart('0').ifBlank { "0" }
