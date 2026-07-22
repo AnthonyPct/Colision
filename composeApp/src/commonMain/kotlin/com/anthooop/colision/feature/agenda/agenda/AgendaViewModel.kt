@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -155,6 +156,7 @@ class AgendaViewModel(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     private fun buildState(
         firstName: String,
         memberId: String?,
@@ -163,14 +165,18 @@ class AgendaViewModel(
         links: List<MeetingCommissionEntity>,
         arbitrations: List<ArbitrationEntity>,
     ): AgendaState {
+        // The dashboard only shows what's still to come, so the first row is
+        // always the next meeting. Past (finished) meetings are dropped before
+        // conflict computation too — there's nothing left to arbitrate on them.
+        val upcoming = upcomingMeetings(meetings, Clock.System.now())
         val byId = commissions.associateBy { it.id }
         val linksByMeeting = links.groupBy { it.meetingId }
         val conflictPeers = if (memberId == null) {
             emptyMap()
         } else {
-            computeConflictPeers(memberId, meetings, arbitrations)
+            computeConflictPeers(memberId, upcoming, arbitrations)
         }
-        val items = meetings.map { m ->
+        val items = upcoming.map { m ->
             val peer = conflictPeers[m.id]
             AgendaMeeting(
                 meeting = m,
@@ -236,4 +242,22 @@ class AgendaViewModel(
         val mm = ldt.minute.toString().padStart(2, '0')
         return "${hh}h${mm}"
     }
+}
+
+/**
+ * Keeps only meetings that are not over yet, relative to [now]: a meeting is
+ * dropped once its `endsAt` is in the past. Ongoing meetings (started but not
+ * finished) are kept, so "the next thing" is never hidden while it's happening.
+ *
+ * Meetings whose `endsAt` can't be parsed are kept (fail-open) rather than
+ * silently dropped. Extracted as a pure function so the dashboard's
+ * past-meeting filter is unit-testable without the ViewModel.
+ */
+@OptIn(ExperimentalTime::class)
+internal fun upcomingMeetings(
+    meetings: List<MeetingEntity>,
+    now: Instant,
+): List<MeetingEntity> = meetings.filter { meeting ->
+    val end = runCatching { Instant.parse(meeting.endsAt) }.getOrNull()
+    end == null || end >= now
 }
