@@ -2,6 +2,7 @@ package com.anthooop.colision.core.di
 
 import com.anthooop.colision.core.common.Analytics
 import com.anthooop.colision.core.common.AnonymousAuthManager
+import com.anthooop.colision.core.common.AuthSessionGateway
 import com.anthooop.colision.core.common.ConnectivityObserver
 import com.anthooop.colision.core.common.CrashReporter
 import com.anthooop.colision.core.common.CurrentMemberProvider
@@ -16,6 +17,7 @@ import com.anthooop.colision.core.common.Logger
 import com.anthooop.colision.core.common.SentryAnalytics
 import com.anthooop.colision.core.common.SentryCrashReporter
 import com.anthooop.colision.core.common.SupabaseAnonymousAuthManager
+import com.anthooop.colision.core.common.SupabaseAuthSessionGateway
 import com.anthooop.colision.core.database.ColisionDatabase
 import com.anthooop.colision.core.network.DataStoreSessionManager
 import com.anthooop.colision.core.network.SupabaseClientProvider
@@ -30,9 +32,10 @@ val coreModule: Module = module {
     single<Analytics> { SentryAnalytics() }
     single<SessionManager> { DataStoreSessionManager(store = get()) }
     single<SupabaseClient> { SupabaseClientProvider.create(sessionManager = get()) }
+    single<AuthSessionGateway> { SupabaseAuthSessionGateway(client = get()) }
     single<AnonymousAuthManager> {
         SupabaseAnonymousAuthManager(
-            client = get(),
+            gateway = get(),
             logger = get<Logger>(),
             crashReporter = get(),
         )
