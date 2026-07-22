@@ -12,11 +12,10 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { sendApns } from "../_shared/apns.ts";
+import { sendFcm } from "../_shared/fcm.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const FCM_PROJECT_ID = Deno.env.get("FCM_PROJECT_ID") ?? "";
-const FCM_ACCESS_TOKEN = Deno.env.get("FCM_ACCESS_TOKEN") ?? "";
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
@@ -147,29 +146,12 @@ async function sendPush(
 ): Promise<void> {
   const device = target.device!;
   if (device.platform === "android" && device.fcm_token) {
-    const res = await fetch(
-      `https://fcm.googleapis.com/v1/projects/${FCM_PROJECT_ID}/messages:send`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${FCM_ACCESS_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: {
-            token: device.fcm_token,
-            data: {
-              type: "meeting_created",
-              meeting_id: meetingId,
-              title,
-              body,
-            },
-          },
-        }),
-      },
-    );
-    if (res.status >= 500) throw new Error(`fcm ${res.status}`);
-    if (!res.ok) throw new Error(`fcm fatal ${res.status}`);
+    await sendFcm(device.fcm_token, {
+      type: "meeting_created",
+      meeting_id: meetingId,
+      title,
+      body,
+    });
   } else if (device.platform === "ios" && device.apns_token) {
     await sendApns(device.apns_token, {
       title,

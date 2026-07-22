@@ -4,6 +4,8 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSPrivacyPolicyURL</key>
 	<string>https://anthonypct.github.io/Colision/</string>
 	<key>CFBundleURLTypes</key>
