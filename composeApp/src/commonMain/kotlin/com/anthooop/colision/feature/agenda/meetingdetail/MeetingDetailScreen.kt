@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -176,6 +178,7 @@ private fun DeletedState() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MeetingBody(state: MeetingDetailState, onIntent: (MeetingDetailIntent) -> Unit) {
     val meeting = state.meeting ?: return
@@ -187,7 +190,14 @@ private fun MeetingBody(state: MeetingDetailState, onIntent: (MeetingDetailInten
     ) {
         item {
             if (state.commissions.isNotEmpty()) {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // FlowRow, not Row: multiple long commission names in a plain Row
+                // squeezed the trailing chips to ~0 width, wrapping them
+                // character-by-character and inserting a huge empty gap before
+                // the title.
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
                     state.commissions.forEach { c ->
                         Box(
                             modifier = Modifier
