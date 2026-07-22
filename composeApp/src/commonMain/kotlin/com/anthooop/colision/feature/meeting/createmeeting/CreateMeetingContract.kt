@@ -7,6 +7,8 @@ enum class DurationOption(val minutes: Int) {
     Min60(60),
     Min90(90),
     Min120(120),
+    Min150(150),
+    Min180(180),
 }
 
 data class CreateMeetingState(
