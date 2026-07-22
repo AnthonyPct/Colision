@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -250,6 +252,7 @@ private fun DayHeader(date: String) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MeetingCard(item: AgendaMeeting, onTap: () -> Unit) {
     val borderColor = if (item.conflicted) {
@@ -319,7 +322,13 @@ private fun MeetingCard(item: AgendaMeeting, onTap: () -> Unit) {
             }
             if (item.commissions.isNotEmpty()) {
                 Spacer(Modifier.height(Spacing.SP2))
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                // FlowRow, not Row: with several commissions the last chips used
+                // to be squeezed to ~0 width and wrap character-by-character,
+                // ballooning the card height (bug on multi-commission meetings).
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
                     item.commissions.take(3).forEach { c ->
                         CommissionChip(name = c.name)
                     }

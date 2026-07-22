@@ -339,8 +339,12 @@ private fun TimeAndDuration(
     onTimeChange: (String) -> Unit,
     onDurationSelect: (DurationOption) -> Unit,
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.SP3)) {
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.SP2)) {
+    // Time on its own line, then the duration chips full-width below it.
+    // The design paired them side-by-side with only 3 options (60/90/120);
+    // supporting up to 3h (5 options) no longer fits a half-width row without
+    // clipping the labels, so the duration selector spans the full width.
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.SP3)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.SP2)) {
             SectionLabel(stringResource(Res.string.create_meeting_start_label))
             OutlinedTextField(
                 value = time,
@@ -357,7 +361,7 @@ private fun TimeAndDuration(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.SP2)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.SP2)) {
             SectionLabel(stringResource(Res.string.create_meeting_duration_label))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
                 DurationOption.entries.forEach { option ->

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.anthooop.colision.core.common.AppError
 import com.anthooop.colision.core.common.AppErrorThrowable
 import com.anthooop.colision.core.common.ConnectivityObserver
+import com.anthooop.colision.core.common.appErrorResult
 import com.anthooop.colision.core.common.CurrentMemberProvider
 import com.anthooop.colision.feature.agenda.data.CreateMeetingInput
 import com.anthooop.colision.feature.agenda.data.MeetingsRepository
@@ -174,15 +175,26 @@ class CreateMeetingViewModel(
                 return@launch
             }
             val (startsAt, endsAt) = isoRange(current.date, current.time, current.duration.minutes)
-            val memberId = currentMemberProvider.current()?.id
-            val input = CreateMeetingInput(
+            val input = buildCreateMeetingInput(
                 projectId = projectId,
-                title = current.title.trim().takeIf { it.isNotBlank() },
+                title = current.title,
                 startsAt = startsAt,
                 endsAt = endsAt,
                 commissionIds = current.selectedCommissionIds.toList(),
-                createdByMemberId = memberId,
-            )
+                creatorMemberId = currentMemberProvider.current()?.id,
+            ).getOrElse { t ->
+                // No resolved creator — current() returns null transiently right
+                // after a (re-)claim, before the local member row is cached.
+                // Abort instead of writing an orphan meeting with a null creator
+                // (incident 2026-07-22), which nobody could then manage.
+                _state.update {
+                    it.copy(
+                        isSubmitting = false,
+                        error = (t as? AppErrorThrowable)?.error ?: AppError.Unknown(t),
+                    )
+                }
+                return@launch
+            }
 
             // Authoritative server-side conflict check (FR20, NFR-P2 < 200ms).
             val detection = conflictsRepository.detect(
@@ -250,4 +262,41 @@ class CreateMeetingViewModel(
     companion object {
         private const val LOCAL_PRECHECK_DEBOUNCE_MS = 300L
     }
+}
+
+/**
+ * Builds a [CreateMeetingInput], enforcing that a meeting always records its
+ * creator.
+ *
+ * [creatorMemberId] can be null transiently right after a (re-)claim, before
+ * the local `member` row is cached and [CurrentMemberProvider.current] can
+ * resolve it. Creating a meeting anyway wrote `created_by_member_id = null`,
+ * producing orphan meetings that couldn't be edited or deleted from the UI
+ * (incident 2026-07-22). In that case this returns a failure carrying
+ * [AppError.AnonymousSessionExpired] and the caller aborts.
+ *
+ * Extracted as a pure function so the guard is unit-testable without standing
+ * up the whole ViewModel and its data-layer fakes.
+ */
+internal fun buildCreateMeetingInput(
+    projectId: String,
+    title: String,
+    startsAt: String,
+    endsAt: String,
+    commissionIds: List<String>,
+    creatorMemberId: String?,
+): Result<CreateMeetingInput> {
+    if (creatorMemberId.isNullOrBlank()) {
+        return appErrorResult(AppError.AnonymousSessionExpired)
+    }
+    return Result.success(
+        CreateMeetingInput(
+            projectId = projectId,
+            title = title.trim().takeIf { it.isNotBlank() },
+            startsAt = startsAt,
+            endsAt = endsAt,
+            commissionIds = commissionIds,
+            createdByMemberId = creatorMemberId,
+        ),
+    )
 }

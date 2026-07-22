@@ -108,6 +108,7 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.turbine)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }
@@ -123,7 +124,7 @@ android {
         // CI (Bitrise) injects a monotonically increasing build number so each
         // Play upload gets a higher versionCode; local builds fall back to 1.
         versionCode = System.getenv("BITRISE_BUILD_NUMBER")?.toIntOrNull() ?: 1
-        versionName = "1.0.2"
+        versionName = "1.1.0"
     }
     packaging {
         resources {
