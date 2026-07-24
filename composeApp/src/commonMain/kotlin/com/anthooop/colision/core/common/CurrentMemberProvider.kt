@@ -44,6 +44,7 @@ private data class DeviceRowDto(val id: String)
 class DefaultCurrentMemberProvider(
     private val supabase: SupabaseClient,
     private val memberDao: MemberDao,
+    private val crashReporter: CrashReporter,
 ) : CurrentMemberProvider {
 
     private val deviceIdMutex = Mutex()
@@ -77,6 +78,7 @@ class DefaultCurrentMemberProvider(
                 cachedAuthUserId = null
                 cachedDeviceId = null
             }
+            crashReporter.setUserContext(null)
             return null
         }
         deviceIdMutex.withLock {
@@ -94,6 +96,10 @@ class DefaultCurrentMemberProvider(
             }.getOrNull()
             cachedAuthUserId = authUserId
             cachedDeviceId = resolved
+            // Tag Sentry with the stable device.id so production issues are
+            // attributable to a member/project (previously unset → events only
+            // carried Sentry's random install id, unmappable to our data).
+            crashReporter.setUserContext(resolved)
             return resolved
         }
     }

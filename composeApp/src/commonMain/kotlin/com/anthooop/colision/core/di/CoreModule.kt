@@ -39,11 +39,10 @@ val coreModule: Module = module {
         SupabaseAnonymousAuthManager(
             gateway = get(),
             logger = get<Logger>(),
-            crashReporter = get(),
         )
     }
     single<CurrentMemberProvider> {
-        DefaultCurrentMemberProvider(supabase = get(), memberDao = get())
+        DefaultCurrentMemberProvider(supabase = get(), memberDao = get(), crashReporter = get())
     }
     single<DeviceRepository> {
         SupabaseDeviceRepository(

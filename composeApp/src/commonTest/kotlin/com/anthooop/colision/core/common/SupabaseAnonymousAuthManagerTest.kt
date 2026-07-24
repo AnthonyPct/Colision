@@ -19,7 +19,6 @@ class SupabaseAnonymousAuthManagerTest {
         SupabaseAnonymousAuthManager(
             gateway = gateway,
             logger = NoopLogger,
-            crashReporter = NoopCrashReporter(),
         )
 
     @Test
@@ -57,27 +56,32 @@ class SupabaseAnonymousAuthManagerTest {
     }
 
     @Test
-    fun `refresh failure recovers the identity and never signs in anonymously`() = runTest {
+    fun `refresh failure re-imports the stored session and never signs in or hard-refreshes`() = runTest {
+        // COLISION-A regression: on RefreshFailure the in-memory session may hold
+        // no refresh token, so refreshCurrentSession() throws "No refresh token
+        // found". Recovery must re-import the persisted blob instead.
         val gateway = FakeAuthSessionGateway(AuthStatus.RefreshFailure, storedSession = true)
 
         val result = manager(gateway).ensureSession()
 
         assertTrue(result.isSuccess)
         assertEquals(0, gateway.signInCount) // <- core regression: flaky network must NOT drift
-        assertEquals(1, gateway.refreshCount)
+        assertEquals(1, gateway.recoverCount) // re-import, not a hard refresh
+        assertEquals(0, gateway.refreshCount)
     }
 
     @Test
     fun `refresh failure that cannot recover keeps the identity and does not sign in`() = runTest {
         val gateway = FakeAuthSessionGateway(AuthStatus.RefreshFailure, storedSession = true).apply {
-            refreshResult = Result.failure(IllegalStateException("offline"))
+            recoverResult = Result.failure(IllegalStateException("offline"))
         }
 
         val result = manager(gateway).ensureSession()
 
         assertTrue(result.isFailure) // soft failure — caller retries next foreground
         assertEquals(0, gateway.signInCount) // identity preserved, no new ghost minted
-        assertEquals(1, gateway.refreshCount)
+        assertEquals(1, gateway.recoverCount)
+        assertEquals(0, gateway.refreshCount)
     }
 
     @Test

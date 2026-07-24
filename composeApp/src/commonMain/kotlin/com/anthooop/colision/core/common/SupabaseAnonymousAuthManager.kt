@@ -17,7 +17,6 @@ import kotlinx.coroutines.sync.withLock
 class SupabaseAnonymousAuthManager(
     private val gateway: AuthSessionGateway,
     private val logger: Logger,
-    private val crashReporter: CrashReporter,
 ) : AnonymousAuthManager {
 
     // Serializes the read-then-act critical section. Without it, concurrent
@@ -35,10 +34,16 @@ class SupabaseAnonymousAuthManager(
             when (gateway.status()) {
                 AuthStatus.Authenticated -> Unit
 
-                // Stored identity exists but its refresh failed (almost always
-                // flaky connectivity). Recover it; NEVER sign in anonymously.
+                // Stored identity exists but its refresh failed (flaky
+                // connectivity, or the process was killed mid-refresh under
+                // memory pressure). The in-memory session can end up WITHOUT a
+                // usable refresh token, so calling refreshCurrentSession() throws
+                // "No refresh token found in current session" (Sentry COLISION-A).
+                // Re-import the persisted blob instead — it still carries a valid
+                // refresh token (saveSession persists the whole session), and
+                // autoRefresh renews the access token in place. NEVER sign in.
                 AuthStatus.RefreshFailure ->
-                    gateway.refreshCurrentSession().getOrThrow()
+                    recoverOrRefresh()
 
                 AuthStatus.NoSession ->
                     if (gateway.hasStoredSession()) {
@@ -57,17 +62,22 @@ class SupabaseAnonymousAuthManager(
             }
         }
     }.onFailure { t ->
-        crashReporter.captureException(t, tag = TAG)
-        logger.warn(TAG, "ensureSession failed", t)
+        // Recoverable and self-healing (offline, or killed mid-refresh): the
+        // caller keeps the cached data and retries on the next foreground. This
+        // is NOT a crash, so it is deliberately not reported to Sentry — only
+        // logged — to avoid drowning the dashboard in transient auth noise.
+        logger.warn(TAG, "ensureSession failed; keeping stored identity", t)
     }
 
     override suspend fun refreshIfNeeded(): Result<Unit> = runCatching {
         gateway.awaitInitialization()
         sessionMutex.withLock {
             when (gateway.status()) {
-                AuthStatus.Authenticated,
-                AuthStatus.RefreshFailure ->
+                AuthStatus.Authenticated ->
                     gateway.refreshCurrentSession().getOrThrow()
+
+                AuthStatus.RefreshFailure ->
+                    recoverOrRefresh()
 
                 AuthStatus.NoSession ->
                     if (gateway.hasStoredSession()) {
@@ -83,9 +93,22 @@ class SupabaseAnonymousAuthManager(
     }.onFailure { t ->
         // Refresh failed (typically offline). Keep the existing identity and let
         // the next foreground retry — do NOT re-sign anonymously, which is the
-        // exact drift that created ghost members.
-        crashReporter.captureException(t, tag = TAG)
+        // exact drift that created ghost members. Not reported to Sentry.
         logger.warn(TAG, "refreshIfNeeded failed; keeping stored identity", t)
+    }
+
+    /**
+     * Recovery for [AuthStatus.RefreshFailure]: prefer re-importing the persisted
+     * session (which holds a valid refresh token) over refreshCurrentSession()
+     * on a possibly token-less in-memory session. Falls back to a direct refresh
+     * only if, unexpectedly, nothing is persisted.
+     */
+    private suspend fun recoverOrRefresh() {
+        if (gateway.hasStoredSession()) {
+            gateway.recoverStoredSession().getOrThrow()
+        } else {
+            gateway.refreshCurrentSession().getOrThrow()
+        }
     }
 
     private companion object {
