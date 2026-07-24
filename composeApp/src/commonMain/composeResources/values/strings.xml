@@ -250,4 +250,64 @@
     <string name="arbitration_resolved_body">Cette réunion a été annulée ou ton conflit a déjà été résolu.</string>
     <string name="arbitration_resolved_action_back">Retour à l'agenda</string>
     <string name="arbitration_submit_error">Impossible d'enregistrer ton choix — réessaie.</string>
+
+    <!-- Weekdays (long form, lowercase) -->
+    <string name="weekday_monday">lundi</string>
+    <string name="weekday_tuesday">mardi</string>
+    <string name="weekday_wednesday">mercredi</string>
+    <string name="weekday_thursday">jeudi</string>
+    <string name="weekday_friday">vendredi</string>
+    <string name="weekday_saturday">samedi</string>
+    <string name="weekday_sunday">dimanche</string>
+
+    <!-- Polls (common) -->
+    <string name="poll_generic_error">Une erreur est survenue — réessaie.</string>
+
+    <!-- PollsListScreen -->
+    <string name="polls_title">Sondages</string>
+    <string name="polls_filter_open">Ouverts (%1$d)</string>
+    <string name="polls_filter_closed">Clos (%1$d)</string>
+    <string name="polls_empty_open">Aucun sondage ouvert.</string>
+    <string name="polls_empty_closed">Aucun sondage clos.</string>
+    <string name="polls_new">Nouveau sondage</string>
+    <string name="polls_result">Résultat : %1$s</string>
+    <string name="polls_voted">Tu as voté · voir les résultats</string>
+    <string name="polls_not_voted">Tu n\'as pas encore voté</string>
+    <string name="polls_members_only">Réservé aux membres · lecture seule</string>
+    <string name="polls_footer">%1$s · clôture %2$s</string>
+    <string name="polls_public_pill">Tout le projet</string>
+    <string name="poll_deadline_closed">Clos</string>
+    <string name="poll_deadline_last_day">Dernier jour</string>
+    <string name="poll_deadline_days">%1$d j restants</string>
+
+    <!-- PollDetailScreen -->
+    <string name="poll_detail_loading">Chargement…</string>
+    <string name="poll_detail_created_by">Créé par %1$s · clôture le %2$s</string>
+    <string name="poll_detail_banner_closed">Ce sondage est clos. %1$d membres ont voté.</string>
+    <string name="poll_detail_banner_readonly">Réservé aux membres de %1$s. Tu peux consulter les résultats.</string>
+    <string name="poll_detail_banner_voted">Ton vote est enregistré. Tu peux le changer jusqu\'à la clôture.</string>
+    <string name="poll_detail_banner_vote">Choisis une option ci-dessous, puis valide ton vote.</string>
+    <string name="poll_detail_total">%1$s sur %2$d membres concernés</string>
+    <string name="poll_detail_submit_vote">Valider mon vote</string>
+    <string name="poll_detail_change_vote">Changer mon vote</string>
+    <string name="poll_detail_offline">Connexion requise pour voter</string>
+    <string name="poll_detail_deleted_title">Sondage supprimé</string>
+    <string name="poll_detail_deleted_body">Ce sondage n\'existe plus.</string>
+    <string name="poll_detail_delete_confirm_title">Supprimer ce sondage ?</string>
+    <string name="poll_detail_delete_confirm_body">Cette action est définitive. Les votes seront perdus.</string>
+
+    <!-- CreatePollScreen -->
+    <string name="create_poll_title">Nouveau sondage</string>
+    <string name="create_poll_question_label">Question</string>
+    <string name="create_poll_question_placeholder">Ex. : Quelle date pour la fête de la jeunesse ?</string>
+    <string name="create_poll_options_label">Réponses possibles</string>
+    <string name="create_poll_option_placeholder">Réponse %1$d</string>
+    <string name="create_poll_add_option">Ajouter une réponse</string>
+    <string name="create_poll_scope_label">Qui peut voter ?</string>
+    <string name="create_poll_public">Tout le projet</string>
+    <string name="create_poll_date_label">Date limite de vote</string>
+    <string name="create_poll_date_hint">Le sondage se clôt automatiquement à cette date.</string>
+    <string name="create_poll_date_picker_title">Choisir la date limite</string>
+    <string name="create_poll_submit">Lancer le sondage</string>
+    <string name="create_poll_offline">Connexion requise pour créer un sondage</string>
 </resources>

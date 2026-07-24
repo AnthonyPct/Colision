@@ -9,6 +9,7 @@ import com.anthooop.colision.core.database.dao.CommissionDao
 import com.anthooop.colision.core.database.dao.MeetingDao
 import com.anthooop.colision.core.database.dao.MemberCommissionDao
 import com.anthooop.colision.core.database.dao.MemberDao
+import com.anthooop.colision.core.database.dao.PollDao
 import com.anthooop.colision.core.database.dao.ProjectDao
 import com.anthooop.colision.core.database.entity.ArbitrationEntity
 import com.anthooop.colision.core.database.entity.CommissionEntity
@@ -16,6 +17,10 @@ import com.anthooop.colision.core.database.entity.MeetingCommissionEntity
 import com.anthooop.colision.core.database.entity.MeetingEntity
 import com.anthooop.colision.core.database.entity.MemberCommissionEntity
 import com.anthooop.colision.core.database.entity.MemberEntity
+import com.anthooop.colision.core.database.entity.PollCommissionEntity
+import com.anthooop.colision.core.database.entity.PollEntity
+import com.anthooop.colision.core.database.entity.PollOptionEntity
+import com.anthooop.colision.core.database.entity.PollVoteEntity
 import com.anthooop.colision.core.database.entity.ProjectEntity
 
 @Database(
@@ -27,8 +32,12 @@ import com.anthooop.colision.core.database.entity.ProjectEntity
         MeetingEntity::class,
         MeetingCommissionEntity::class,
         ArbitrationEntity::class,
+        PollEntity::class,
+        PollOptionEntity::class,
+        PollCommissionEntity::class,
+        PollVoteEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @ConstructedBy(ColisionDatabaseConstructor::class)
@@ -39,6 +48,7 @@ abstract class ColisionDatabase : RoomDatabase() {
     abstract fun memberCommissionDao(): MemberCommissionDao
     abstract fun meetingDao(): MeetingDao
     abstract fun arbitrationDao(): ArbitrationDao
+    abstract fun pollDao(): PollDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")

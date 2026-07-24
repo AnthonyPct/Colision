@@ -59,6 +59,7 @@ val coreModule: Module = module {
             membersRepository = get(),
             meetingsRepository = get(),
             arbitrationsRepository = get(),
+            pollsRepository = get(),
             logger = get(),
         )
     }
@@ -70,4 +71,5 @@ val coreModule: Module = module {
     single { get<ColisionDatabase>().memberCommissionDao() }
     single { get<ColisionDatabase>().meetingDao() }
     single { get<ColisionDatabase>().arbitrationDao() }
+    single { get<ColisionDatabase>().pollDao() }
 }
