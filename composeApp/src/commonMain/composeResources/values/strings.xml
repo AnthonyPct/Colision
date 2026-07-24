@@ -310,4 +310,12 @@
     <string name="create_poll_date_picker_title">Choisir la date limite</string>
     <string name="create_poll_submit">Lancer le sondage</string>
     <string name="create_poll_offline">Connexion requise pour créer un sondage</string>
+
+    <!-- UpdateDialog (in-app update prompt) -->
+    <string name="update_dialog_title">Mise à jour disponible</string>
+    <string name="update_dialog_title_forced">Mise à jour requise</string>
+    <string name="update_dialog_message">Une nouvelle version de Colision est disponible. Mets-la à jour pour profiter des dernières améliorations.</string>
+    <string name="update_dialog_message_forced">Cette version n\'est plus prise en charge. Mets à jour Colision pour continuer.</string>
+    <string name="update_action_update">Mettre à jour</string>
+    <string name="update_action_later">Plus tard</string>
 </resources>

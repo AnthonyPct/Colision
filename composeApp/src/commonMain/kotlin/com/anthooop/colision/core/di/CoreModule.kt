@@ -2,6 +2,8 @@ package com.anthooop.colision.core.di
 
 import com.anthooop.colision.core.common.Analytics
 import com.anthooop.colision.core.common.AnonymousAuthManager
+import com.anthooop.colision.core.common.AppConfigRepository
+import com.anthooop.colision.core.common.DefaultAppConfigRepository
 import com.anthooop.colision.core.common.AuthSessionGateway
 import com.anthooop.colision.core.common.ConnectivityObserver
 import com.anthooop.colision.core.common.CrashReporter
@@ -63,6 +65,8 @@ val coreModule: Module = module {
             logger = get(),
         )
     }
+
+    single<AppConfigRepository> { DefaultAppConfigRepository(supabase = get()) }
 
     // DAOs are derived from the platform-provided ColisionDatabase singleton.
     single { get<ColisionDatabase>().projectDao() }

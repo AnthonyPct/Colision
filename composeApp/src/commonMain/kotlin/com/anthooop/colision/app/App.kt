@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -13,6 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -40,6 +42,14 @@ import com.anthooop.colision.feature.agenda.navigation.AgendaDestination
 import com.anthooop.colision.feature.onboarding.navigation.onboardingGraph
 import com.anthooop.colision.feature.poll.navigation.PollDestination
 import com.anthooop.colision.feature.projecthub.navigation.ProjectHubDestination
+import colision.composeapp.generated.resources.Res
+import colision.composeapp.generated.resources.update_action_later
+import colision.composeapp.generated.resources.update_action_update
+import colision.composeapp.generated.resources.update_dialog_message
+import colision.composeapp.generated.resources.update_dialog_message_forced
+import colision.composeapp.generated.resources.update_dialog_title
+import colision.composeapp.generated.resources.update_dialog_title_forced
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -48,6 +58,7 @@ fun App() {
     ColisionTheme {
         val appViewModel: AppViewModel = koinViewModel()
         val startState by appViewModel.startState.collectAsStateWithLifecycle()
+        val updateState by appViewModel.updateState.collectAsStateWithLifecycle()
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -66,6 +77,13 @@ fun App() {
                     ColisionNavHost(startGraph = s.startGraph)
                 }
             }
+        }
+        (updateState as? AppUpdateState.Available)?.let { update ->
+            UpdateDialog(
+                update = update,
+                onUpdate = { appViewModel.onUpdateTapped() },
+                onDismiss = { appViewModel.onUpdateDismissed() },
+            )
         }
     }
 }
@@ -176,4 +194,34 @@ private fun HomeBottomBar(navController: NavController, current: NavDestination?
             )
         }
     }
+}
+
+@Composable
+private fun UpdateDialog(
+    update: AppUpdateState.Available,
+    onUpdate: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val title = stringResource(
+        if (update.forced) Res.string.update_dialog_title_forced else Res.string.update_dialog_title,
+    )
+    val message = update.message?.takeIf { it.isNotBlank() } ?: stringResource(
+        if (update.forced) Res.string.update_dialog_message_forced else Res.string.update_dialog_message,
+    )
+    AlertDialog(
+        // Forced updates can't be dismissed by tapping outside / back.
+        onDismissRequest = { if (!update.forced) onDismiss() },
+        title = { Text(title) },
+        text = { Text(message) },
+        confirmButton = {
+            TextButton(onClick = onUpdate) {
+                Text(stringResource(Res.string.update_action_update))
+            }
+        },
+        dismissButton = if (update.forced) {
+            null
+        } else {
+            { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.update_action_later)) } }
+        },
+    )
 }

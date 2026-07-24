@@ -32,6 +32,11 @@ fun secret(name: String, default: String = ""): String =
         ?: localProperties.getProperty(name)
         ?: default
 
+// Single source of truth for the marketing version. Drives both the Android
+// `versionName` and BuildKonfig.APP_VERSION (read from commonMain by the
+// in-app update check). Bump this one value on release.
+val appVersion = "1.2.1"
+
 kotlin {
     androidTarget {
         compilerOptions {
@@ -124,7 +129,7 @@ android {
         // CI (Bitrise) injects a monotonically increasing build number so each
         // Play upload gets a higher versionCode; local builds fall back to 1.
         versionCode = System.getenv("BITRISE_BUILD_NUMBER")?.toIntOrNull() ?: 1
-        versionName = "1.2.0"
+        versionName = appVersion
     }
     packaging {
         resources {
@@ -246,6 +251,7 @@ buildkonfig {
         buildConfigField(STRING, "SUPABASE_URL", secret("SUPABASE_URL", default = supabaseUrlDev))
         buildConfigField(STRING, "SUPABASE_ANON_KEY", secret("SUPABASE_ANON_KEY", default = supabaseAnonKeyDev))
         buildConfigField(STRING, "SENTRY_DSN", secret("SENTRY_DSN", default = sentryDsnShared))
+        buildConfigField(STRING, "APP_VERSION", appVersion)
         buildConfigField(BOOLEAN, "IS_DEVELOPMENT_FLAVOR", "true")
     }
 
