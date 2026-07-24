@@ -19,7 +19,7 @@ CURRENT_PROJECT_VERSION=1
 // local builds; on CI the ios_build workflow overrides it from the git tag
 // (see bitrise.yml) so a forgotten bump here can't ship the wrong train.
 // Keep in sync with `appVersion` in composeApp/build.gradle.kts on release.
-MARKETING_VERSION=1.2.1
+MARKETING_VERSION=1.2.2
 
 // Push Notifications capability. The .entitlements file is read at sign
 // time; without this line the iosApp target compiles fine but APNs
