@@ -107,6 +107,26 @@ workflows:
                         fi
                         envman add --key SENTRY_FRAMEWORK_PATH --value "$SLICE"
                         echo "SENTRY_FRAMEWORK_PATH=$SLICE"
+            - script@1:
+                title: Derive iOS marketing version from git tag
+                inputs:
+                    - content: |-
+                        #!/usr/bin/env bash
+                        # ios_build only triggers on `v*` tags, so BITRISE_GIT_TAG is the
+                        # release version (e.g. "v1.2.1"). Strip the leading `v` and feed
+                        # it to MARKETING_VERSION at archive time. This makes the git tag
+                        # the single source of truth for the iOS marketing version and
+                        # prevents shipping a stale train when Config.xcconfig wasn't
+                        # bumped (incident: v1.2.0 uploaded as 1.1.0 → train closed).
+                        # Falls back to the committed Config.xcconfig value for non-tag
+                        # (manual) runs.
+                        set -euo pipefail
+                        MV="${BITRISE_GIT_TAG#v}"
+                        if [ -z "$MV" ]; then
+                          MV="$(grep '^MARKETING_VERSION=' iosApp/Configuration/Config.xcconfig | cut -d '=' -f2)"
+                        fi
+                        envman add --key IOS_MARKETING_VERSION --value "$MV"
+                        echo "IOS_MARKETING_VERSION=$MV"
             - xcode-archive@6:
                 title: iOS Archive (App Store, signed)
                 inputs:
@@ -120,6 +140,7 @@ workflows:
                         DEVELOPMENT_TEAM = $TEAM_ID
                         CODE_SIGN_STYLE = Automatic
                         CURRENT_PROJECT_VERSION = $BITRISE_BUILD_NUMBER
+                        MARKETING_VERSION = $IOS_MARKETING_VERSION
             - deploy-to-itunesconnect-application-loader@2:
                 title: Upload IPA to App Store Connect (TestFlight)
             - save-gradle-cache@1: {}

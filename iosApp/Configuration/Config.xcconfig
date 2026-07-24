@@ -15,7 +15,11 @@ PRODUCT_BUNDLE_IDENTIFIER=com.anthooop.colision
 // so CI overrides this with $BITRISE_BUILD_NUMBER at archive time (via the
 // xcode-archive step's xcconfig_content). Local builds keep the default 1.
 CURRENT_PROJECT_VERSION=1
-MARKETING_VERSION=1.1.0
+// Marketing version (CFBundleShortVersionString). Committed source of truth for
+// local builds; on CI the ios_build workflow overrides it from the git tag
+// (see bitrise.yml) so a forgotten bump here can't ship the wrong train.
+// Keep in sync with `appVersion` in composeApp/build.gradle.kts on release.
+MARKETING_VERSION=1.2.1
 
 // Push Notifications capability. The .entitlements file is read at sign
 // time; without this line the iosApp target compiles fine but APNs
