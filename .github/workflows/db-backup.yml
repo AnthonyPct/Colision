@@ -1,0 +1,57 @@
+name: DB backup
+
+# Sauvegarde de la base Supabase (plan free = aucun backup automatique).
+# Un pg_dump complet (schéma + données) est stocké comme artefact du run,
+# privé au dépôt. Contient des données personnelles (membres réels) : ne
+# jamais rendre le dépôt public sans revoir la rétention des artefacts.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # tous les jours à 03:00 UTC
+  workflow_dispatch: {}    # + déclenchement manuel depuis l'onglet Actions
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # pg_dump doit avoir une version >= au serveur (Supabase = Postgres 17).
+      # Le runner ne fournit que le client 16 par défaut → on installe le 17
+      # depuis le dépôt PGDG officiel.
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+
+      - name: Dump database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "${SUPABASE_DB_URL:-}" ]; then
+            echo "::error::Secret SUPABASE_DB_URL manquant (voir README du workflow)."
+            exit 1
+          fi
+          STAMP=$(date -u +%Y-%m-%d_%H%M)
+          mkdir -p backup
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" \
+            --no-owner --no-privileges --format=plain \
+            | gzip > "backup/colision_${STAMP}.sql.gz"
+          echo "STAMP=$STAMP" >> "$GITHUB_ENV"
+          ls -lh backup
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: colision-db-${{ env.STAMP }}
+          path: backup/*.sql.gz
+          retention-days: 90          # max autorisé par GitHub
+          if-no-files-found: error
