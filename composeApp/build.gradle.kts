@@ -35,7 +35,7 @@ fun secret(name: String, default: String = ""): String =
 // Single source of truth for the marketing version. Drives both the Android
 // `versionName` and BuildKonfig.APP_VERSION (read from commonMain by the
 // in-app update check). Bump this one value on release.
-val appVersion = "1.2.1"
+val appVersion = "1.2.2"
 
 kotlin {
     androidTarget {
