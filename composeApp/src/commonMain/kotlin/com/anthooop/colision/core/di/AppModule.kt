@@ -5,6 +5,7 @@ import com.anthooop.colision.feature.agenda.di.agendaModule
 import com.anthooop.colision.feature.arbitrage.di.arbitrageModule
 import com.anthooop.colision.feature.meeting.di.meetingModule
 import com.anthooop.colision.feature.onboarding.di.onboardingModule
+import com.anthooop.colision.feature.poll.di.pollModule
 import com.anthooop.colision.feature.projecthub.di.projectHubModule
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModelOf
@@ -20,4 +21,5 @@ val featureModules: List<Module> = listOf(
     agendaModule,
     meetingModule,
     arbitrageModule,
+    pollModule,
 )

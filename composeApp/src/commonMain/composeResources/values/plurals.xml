@@ -35,4 +35,16 @@
         <item quantity="one">%1$d membre convoqué</item>
         <item quantity="other">%1$d membres convoqués</item>
     </plurals>
+
+    <!-- Polls: "1 vote" / "N votes" -->
+    <plurals name="polls_vote_count">
+        <item quantity="one">%1$d vote</item>
+        <item quantity="other">%1$d votes</item>
+    </plurals>
+
+    <!-- CreatePollScreen: eligible-voter preview -->
+    <plurals name="create_poll_eligible">
+        <item quantity="one">%1$d membre pourra voter.</item>
+        <item quantity="other">%1$d membres pourront voter.</item>
+    </plurals>
 </resources>

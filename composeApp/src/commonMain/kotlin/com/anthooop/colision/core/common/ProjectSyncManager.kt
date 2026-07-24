@@ -2,6 +2,7 @@ package com.anthooop.colision.core.common
 
 import com.anthooop.colision.feature.agenda.data.MeetingsRepository
 import com.anthooop.colision.feature.meeting.data.ArbitrationsRepository
+import com.anthooop.colision.feature.poll.data.PollsRepository
 import com.anthooop.colision.feature.projecthub.data.ActiveProjectProvider
 import com.anthooop.colision.feature.projecthub.data.CommissionsRepository
 import com.anthooop.colision.feature.projecthub.data.MembersRepository
@@ -40,6 +41,7 @@ class DefaultProjectSyncManager(
     private val membersRepository: MembersRepository,
     private val meetingsRepository: MeetingsRepository,
     private val arbitrationsRepository: ArbitrationsRepository,
+    private val pollsRepository: PollsRepository,
     private val logger: Logger,
 ) : ProjectSyncManager {
 
@@ -86,6 +88,7 @@ class DefaultProjectSyncManager(
             membersRepository.refresh(projectId),
             meetingsRepository.refresh(projectId),
             arbitrationsRepository.refresh(projectId),
+            pollsRepository.refresh(projectId),
         )
         val failure = results.firstOrNull { it.isFailure }?.exceptionOrNull()
         if (failure != null) {
