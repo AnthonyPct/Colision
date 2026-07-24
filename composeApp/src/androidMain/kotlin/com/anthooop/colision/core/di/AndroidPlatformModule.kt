@@ -11,6 +11,8 @@ import com.anthooop.colision.core.common.LoggerAndroid
 import com.anthooop.colision.core.common.NotificationPermissionManager
 import com.anthooop.colision.core.common.NotificationPermissionManagerAndroid
 import com.anthooop.colision.core.common.PushTokenProvider
+import com.anthooop.colision.core.common.UrlLauncher
+import com.anthooop.colision.core.common.UrlLauncherAndroid
 import com.anthooop.colision.core.database.COLISION_DB_FILE
 import com.anthooop.colision.core.push.FcmPushTokenProvider
 import com.anthooop.colision.core.database.ColisionDatabase
@@ -31,6 +33,7 @@ val androidPlatformModule: Module = module {
     single<ConnectivityObserver> {
         AndroidConnectivityObserver(androidContext().applicationContext)
     }
+    single<UrlLauncher> { UrlLauncherAndroid(androidContext().applicationContext) }
     single<ColisionDatabase> {
         val ctx = androidContext().applicationContext
         val dbFile = ctx.getDatabasePath(COLISION_DB_FILE)

@@ -11,6 +11,8 @@ import com.anthooop.colision.core.common.LoggerIos
 import com.anthooop.colision.core.common.NotificationPermissionManager
 import com.anthooop.colision.core.common.NotificationPermissionManagerIos
 import com.anthooop.colision.core.common.PushTokenProvider
+import com.anthooop.colision.core.common.UrlLauncher
+import com.anthooop.colision.core.common.UrlLauncherIos
 import com.anthooop.colision.core.database.COLISION_DB_FILE
 import com.anthooop.colision.core.push.ApnsPushTokenProvider
 import com.anthooop.colision.core.database.ColisionDatabase
@@ -29,6 +31,7 @@ val iosPlatformModule: Module = module {
     single<NotificationPermissionManager> { NotificationPermissionManagerIos() }
     single<PushTokenProvider> { ApnsPushTokenProvider() }
     single<ConnectivityObserver> { IosConnectivityObserver() }
+    single<UrlLauncher> { UrlLauncherIos() }
     single<ColisionDatabase> {
         Room.databaseBuilder<ColisionDatabase>(
             name = iosDocumentsDirectory() + "/" + COLISION_DB_FILE,
